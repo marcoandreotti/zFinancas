@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -85,7 +85,7 @@
                                 CommandParameter="{Binding .}" />
                         </Border.GestureRecognizers>
 
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="12">
                             <Border WidthRequest="38"
                                     HeightRequest="38"
                                     BackgroundColor="{StaticResource SuperficieElevada}"
@@ -124,6 +124,15 @@
                             </VerticalStackLayout>
 
                             <Button Grid.Column="3"
+                                    Text="Compensar"
+                                    IsVisible="{Binding Pendente}"
+                                    Style="{StaticResource BotaoTexto}"
+                                    FontSize="11"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LancamentosViewModel}}, Path=CompensarCommand}"
+                                    CommandParameter="{Binding .}"
+                                    VerticalOptions="Center" />
+
+                            <Button Grid.Column="4"
                                     Text="⋯"
                                     FontSize="18"
                                     Style="{StaticResource BotaoTexto}"

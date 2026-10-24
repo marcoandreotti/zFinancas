@@ -54,6 +54,7 @@ public sealed class LancamentosViewModel : BaseViewModel
         EditarCommand = new ComandoAssincrono<LancamentoVm>(item =>
             item is null ? Task.CompletedTask : _navegacao.AbrirLancamentoAsync(item.Id));
         AcoesCommand = new ComandoAssincrono<LancamentoVm>(ExecutarAcoesAsync);
+        CompensarCommand = new ComandoAssincrono<LancamentoVm>(CompensarAsync);
         AbrirSelecaoContasCommand = new ComandoAssincrono(AbrirSelecaoContasAsync);
     }
 
@@ -63,6 +64,9 @@ public sealed class LancamentosViewModel : BaseViewModel
     public ICommand NovoCommand { get; }
     public ICommand EditarCommand { get; }
     public ICommand AcoesCommand { get; }
+
+    /// <summary>Compensação direta na linha (mesmo atalho do extrato).</summary>
+    public ICommand CompensarCommand { get; }
     public ICommand AbrirSelecaoContasCommand { get; }
     public SelecaoContasViewModel? SelecaoContas
     {
@@ -614,4 +618,16 @@ public sealed class LancamentosViewModel : BaseViewModel
         }
     }
 #endif
+    /// <summary>Atalho da linha: abre o painel de compensação (data escolhida).</summary>
+    private Task CompensarAsync(LancamentoVm? item)
+    {
+        if (item is null || !item.Pendente)
+        {
+            return Task.CompletedTask;
+        }
+
+        AbrirCompensacao(item);
+
+        return Task.CompletedTask;
+    }
 }

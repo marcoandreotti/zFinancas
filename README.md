@@ -13,7 +13,7 @@ sem telemetria e sem depender de internet.
 | **Login** | seleção de usuário, senha, dica de senha e entrada por biometria (celular) |
 | **Primeiro acesso** | cria o usuário ADM, semeia conta e centro de custo principais e entrega o código de recuperação |
 | **Dashboard** | carrossel de contas, saldo compensado / a compensar / vencido, entradas e saídas e últimos 7 dias |
-| **Lançamentos** | filtros por conta/pendência/busca, compensar, descompensar, excluir uma ou várias parcelas (painel de seleção) e quitar parcelas escolhidas |
+| **Lançamentos** | filtros por contas/pendência/busca, **Compensar** direto na linha (data escolhida), descompensar, excluir uma ou várias parcelas e quitar parcelas escolhidas |
 | **Lançamento por voz** | toque no microfone e fale: “gastei 32,50 no mercado ontem” — o formulário abre preenchido |
 | **Novo lançamento** | despesa ou recebimento, recorrência (semanal, quinzenal, mensal, anual) com parcelas e agrupador |
 | **Extrato** | conta + período, saldo anterior (só compensados), saldo linha a linha e destaque dos pendentes |
