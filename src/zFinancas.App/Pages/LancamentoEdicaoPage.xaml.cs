@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
 
@@ -7,6 +7,12 @@ namespace zFinancas.App.Pages;
 public partial class LancamentoEdicaoPage : ContentPage
 {
     private bool _aplicandoMascara;
+
+    /// <summary>
+    /// Alguns aparelhos recusam reescrever o texto do <c>EditText</c> enquanto ele processa a
+    /// digitação. Nesse caso passamos a formatar apenas ao sair do campo.
+    /// </summary>
+    private bool _formatarSomenteAoSair;
 
     public LancamentoEdicaoPage()
     {
@@ -27,10 +33,12 @@ public partial class LancamentoEdicaoPage : ContentPage
     }
 
     /// <summary>
-    /// Máscara de moeda aplicada na própria Entry.
-    /// No Android, reescrever o texto pelo binding durante a digitação estoura
-    /// "end should be &lt; than charSequence length" — aqui a troca é feita no evento,
-    /// com guarda de reentrância e cursor no fim.
+    /// Máscara de moeda do campo valor.
+    /// <para>
+    /// A reescrita do texto é <b>postergada</b> para o próximo ciclo da UI: no Android, trocar
+    /// o texto dentro do próprio <c>TextChanged</c> (ou pelo binding) estoura
+    /// <c>IllegalArgumentException: end should be &lt; than charSequence length</c>.
+    /// </para>
     /// </summary>
     private void OnValorDigitado(object? sender, TextChangedEventArgs e)
     {
@@ -41,22 +49,65 @@ public partial class LancamentoEdicaoPage : ContentPage
 
         var mascarado = MascaraMoeda.Aplicar(e.NewTextValue);
 
-        if (!string.Equals(mascarado, e.NewTextValue, StringComparison.Ordinal))
-        {
-            _aplicandoMascara = true;
+        ViewModel.ValorTexto = mascarado;
 
-            try
-            {
-                campo.Text = mascarado;
-                campo.CursorPosition = mascarado.Length;
-            }
-            finally
-            {
-                _aplicandoMascara = false;
-            }
+        if (_formatarSomenteAoSair ||
+            e.NewTextValue is null ||
+            mascarado == e.NewTextValue)
+        {
+            return;
         }
 
+        Dispatcher.Dispatch(() => AplicarTexto(campo, mascarado));
+    }
+
+    /// <summary>Ao sair do campo, formata (caminho seguro, sem edição em andamento).</summary>
+    private void OnValorDesfocado(object? sender, FocusEventArgs e)
+    {
+        if (sender is not Entry campo)
+        {
+            return;
+        }
+
+        var mascarado = MascaraMoeda.Aplicar(campo.Text);
+
         ViewModel.ValorTexto = mascarado;
+
+        if (mascarado != campo.Text)
+        {
+            AplicarTexto(campo, mascarado);
+        }
+    }
+
+    private void AplicarTexto(Entry campo, string texto)
+    {
+        if (_aplicandoMascara)
+        {
+            return;
+        }
+
+        _aplicandoMascara = true;
+
+        try
+        {
+            campo.Text = texto;
+
+            // Só mexe no cursor quando o texto realmente assumiu o valor esperado.
+            if (campo.Text?.Length == texto.Length)
+            {
+                campo.CursorPosition = texto.Length;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Aparelho recusou a troca durante a digitação: formata só ao sair do campo.
+            _formatarSomenteAoSair = true;
+            RegistroDeFalhas.Registrar(ex, "MascaraValor");
+        }
+        finally
+        {
+            _aplicandoMascara = false;
+        }
     }
 
     /// <summary>Reflete no campo valores definidos pelo ViewModel (edição, voz).</summary>
@@ -69,17 +120,7 @@ public partial class LancamentoEdicaoPage : ContentPage
             return;
         }
 
-        _aplicandoMascara = true;
-
-        try
-        {
-            CampoValor.Text = texto;
-            CampoValor.CursorPosition = texto.Length;
-        }
-        finally
-        {
-            _aplicandoMascara = false;
-        }
+        AplicarTexto(CampoValor, texto);
     }
 
     private void AoMudarViewModel(object? sender, PropertyChangedEventArgs e)
