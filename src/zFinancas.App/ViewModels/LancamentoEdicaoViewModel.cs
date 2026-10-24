@@ -114,37 +114,11 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         get => _valorTexto;
         set
         {
-            // Celular pode não ter vírgula no teclado numérico: aceitamos os dois
-            // separadores e normalizamos para o padrão pt-BR (vírgula, 2 casas).
-            var normalizado = MascararValor(value);
-
-            if (SetProperty(ref _valorTexto, normalizado))
+            if (SetProperty(ref _valorTexto, value))
             {
                 AtualizarResumo();
             }
         }
-    }
-
-    /// <summary>
-    /// Máscara de moeda: aceita apenas dígitos e formata como pt-BR (centavos).
-    /// Digitar 3 2 5 0 vira 32,50; digitar 1 5 0 0 0 0 vira 1.500,00. Assim não há
-    /// ambiguidade entre vírgula e ponto, independente do teclado do aparelho.
-    /// </summary>
-    private static string MascararValor(string? texto)
-    {
-        if (string.IsNullOrWhiteSpace(texto)) return string.Empty;
-
-        var digitos = new string(texto.Where(char.IsDigit).ToArray());
-
-        if (digitos.Length == 0) return string.Empty;
-        if (digitos.Length > 13) digitos = digitos[..13];
-
-        if (!decimal.TryParse(digitos, NumberStyles.None, CultureInfo.InvariantCulture, out var centavos))
-        {
-            return string.Empty;
-        }
-
-        return (centavos / 100m).ToString("N2", CultureInfo.GetCultureInfo("pt-BR"));
     }
 
     public bool EhDespesa
@@ -318,7 +292,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
 
             Descricao = lancamento.Descricao;
             EhDespesa = lancamento.Valor < 0m;
-            ValorTexto = Math.Abs(lancamento.Valor).ToString("N2", CultureInfo.GetCultureInfo("pt-BR"));
+            ValorTexto = MascaraMoeda.Formatar(lancamento.Valor);
             ContaSelecionada = Contas.FirstOrDefault(c => c.Id == lancamento.ContaCorrenteId);
             CentroSelecionado = Centros.FirstOrDefault(c => c.Id == lancamento.CentroCustoId);
             DataVencimento = lancamento.DataVencimento;
@@ -577,7 +551,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         _rascunhoDeVoz = null;
 
         EhDespesa = rascunho.EhDespesa;
-        ValorTexto = Math.Abs(rascunho.Valor).ToString("N2", CultureInfo.GetCultureInfo("pt-BR"));
+        ValorTexto = MascaraMoeda.Formatar(rascunho.Valor);
         Descricao = rascunho.Descricao;
         DataVencimento = rascunho.DataVencimento;
         DataLancamento = rascunho.DataVencimento;
