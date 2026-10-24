@@ -94,7 +94,32 @@ public sealed class SessaoAtual : ISessaoAtual
     {
         lock (_bloqueio)
         {
+            // Administrador enxerga todas as contas — inclusive as criadas depois do login.
+            if (_usuario?.EhAdministrador == true)
+            {
+                return true;
+            }
+
             return _contas.Any(c => c.Id == contaId);
+        }
+    }
+
+    /// <summary>
+    /// Atualiza as contas da sessão (após criar/editar/ativar uma conta), para que a
+    /// seleção em outras telas já enxergue a mudança sem precisar relogar.
+    /// </summary>
+    public void AtualizarContas(IReadOnlyList<ContaCorrente> contas)
+    {
+        ArgumentNullException.ThrowIfNull(contas);
+
+        lock (_bloqueio)
+        {
+            _contas = contas;
+
+            if (_contaAtivaId is { } atual && !contas.Any(c => c.Id == atual))
+            {
+                _contaAtivaId = contas.FirstOrDefault(c => c.Principal)?.Id ?? contas.FirstOrDefault()?.Id;
+            }
         }
     }
 }

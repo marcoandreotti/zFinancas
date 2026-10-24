@@ -14,7 +14,10 @@
 
             <Grid ColumnDefinitions="*,Auto">
                 <VerticalStackLayout Spacing="2">
-                    <Label Text="Lançamentos" Style="{StaticResource TituloPagina}" />
+                    <Label Text="Lançamentos"
+                           Style="{StaticResource TituloPagina}"
+                           FontSize="{OnIdiom Phone=24, Desktop=30}"
+                           LineBreakMode="TailTruncation" />
                     <Label Text="{Binding QuantidadeTexto}" Style="{StaticResource Subtitulo}" />
                 </VerticalStackLayout>
 
@@ -124,10 +127,11 @@
                             </VerticalStackLayout>
 
                             <Button Grid.Column="3"
-                                    Text="Compensar"
+                                    Text="✓"
+                                    FontSize="16"
+                                    SemanticProperties.Description="Compensar"
                                     IsVisible="{Binding Pendente}"
                                     Style="{StaticResource BotaoTexto}"
-                                    FontSize="11"
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LancamentosViewModel}}, Path=CompensarCommand}"
                                     CommandParameter="{Binding .}"
                                     VerticalOptions="Center" />

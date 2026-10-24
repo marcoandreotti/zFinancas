@@ -26,4 +26,7 @@ public interface ISessaoAtual
     void DefinirContaAtiva(long? contaId);
 
     bool PodeAcessarConta(long contaId);
+
+    /// <summary>Atualiza as contas permitidas (após criar/editar uma conta).</summary>
+    void AtualizarContas(IReadOnlyList<ContaCorrente> contas);
 }

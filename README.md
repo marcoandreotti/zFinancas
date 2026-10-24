@@ -298,6 +298,19 @@ git push origin main develop --tags
 Regra prática: `main` sempre compila e passa nos testes (`.\build.ps1 -Test`);
 `develop` pode estar em andamento.
 
+## Ajustes de celular (Android)
+
+O layout se adapta a telas estreitas:
+
+- **Extrato**: título sem quebra, `↻` para atualizar, contas em linha própria, resumo em 2×2 e
+  compensação em um ícone `✓`;
+- **Lançamentos**: título com tamanho reduzido no celular e compensação em `✓` na linha;
+- **Dashboard**: botões quebram linha quando não cabem ao lado do cumprimento;
+- **Centros de custo**: ícones em chips grandes (o `Picker` nativo deixava o emoji mínimo);
+- **Contas**: chips de cor grandes com anel branco no selecionado;
+- **Valor**: aceita `,` **e** `.` no campo (normaliza para vírgula com 2 casas), já que o
+  teclado numérico do celular pode não ter vírgula.
+
 ## Solução de problemas
 
 ### `SQLite Error 8: attempt to write a readonly database`

@@ -192,6 +192,9 @@ public sealed class DashboardViewModel : BaseViewModel
 
     public string RotuloFalar => _ouvindo ? "Ouvindo…" : "Falar";
 
+    /// <summary>Texto do botão (mais curto no celular, onde o espaço é apertado).</summary>
+    public string RotuloNovoLancamento => DeviceInfo.Idiom == DeviceIdiom.Phone ? "+ Novo" : "+  Novo lançamento";
+
     /// <summary>
     /// Ouve a frase, interpreta e abre o cadastro já preenchido — nada é gravado
     /// sem a confirmação do usuário.

@@ -42,15 +42,15 @@
                             </VerticalStackLayout>
                         </Grid>
 
-                        <Label Text="COR" Style="{StaticResource Rotulo}" />
-                        <HorizontalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Cores}">
+                        <HorizontalStackLayout Spacing="10" BindableLayout.ItemsSource="{Binding Cores}">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:CorOpcao">
-                                    <Border WidthRequest="30"
-                                            HeightRequest="30"
-                                            StrokeThickness="0"
+                                    <Border WidthRequest="38"
+                                            HeightRequest="38"
+                                            Stroke="{Binding CorBorda}"
+                                            StrokeThickness="{Binding EspessuraBorda}"
                                             BackgroundColor="{Binding Cor}"
-                                            StrokeShape="RoundRectangle 15">
+                                            StrokeShape="RoundRectangle 19">
                                         <Border.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnCorTapped" />
                                         </Border.GestureRecognizers>

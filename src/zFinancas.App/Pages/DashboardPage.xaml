@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -17,13 +17,19 @@
                     <Label Text="{Binding DataTexto}" Style="{StaticResource Subtitulo}" />
                 </VerticalStackLayout>
 
-                <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                <FlexLayout Grid.Column="1"
+                            Direction="Row"
+                            Wrap="Wrap"
+                            JustifyContent="End"
+                            AlignItems="Center"
+                            VerticalOptions="Center">
                     <Button Text="{Binding RotuloFalar}"
                             Command="{Binding FalarCommand}"
-                            Style="{StaticResource BotaoSecundario}" />
-                    <Button Text="+  Novo lançamento"
+                            Style="{StaticResource BotaoSecundario}"
+                            Margin="0,0,8,0" />
+                    <Button Text="{Binding RotuloNovoLancamento}"
                             Command="{Binding NovoLancamentoCommand}" />
-                </HorizontalStackLayout>
+                </FlexLayout>
             </Grid>
 
             <!-- ============================ saldo consolidado -->

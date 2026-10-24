@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -25,21 +25,44 @@
                     <VerticalStackLayout Spacing="12">
                         <Label Text="{Binding TituloFormulario}" Style="{StaticResource TituloSecao}" />
 
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                            <VerticalStackLayout Spacing="6">
-                                <Label Text="DESCRIÇÃO" Style="{StaticResource Rotulo}" />
-                                <Border Style="{StaticResource Campo}">
-                                    <Entry Text="{Binding Descricao}" Placeholder="Ex.: Alimentação" MaxLength="50" />
-                                </Border>
-                            </VerticalStackLayout>
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="DESCRIÇÃO" Style="{StaticResource Rotulo}" />
+                            <Border Style="{StaticResource Campo}">
+                                <Entry Text="{Binding Descricao}" Placeholder="Ex.: Alimentação" MaxLength="50" />
+                            </Border>
+                        </VerticalStackLayout>
 
-                            <VerticalStackLayout Grid.Column="1" Spacing="6" WidthRequest="96">
-                                <Label Text="ÍCONE" Style="{StaticResource Rotulo}" />
-                                <Border Style="{StaticResource Campo}">
-                                    <Picker ItemsSource="{Binding Icones}" SelectedItem="{Binding Icone}" />
-                                </Border>
-                            </VerticalStackLayout>
-                        </Grid>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="ÍCONE" Style="{StaticResource Rotulo}" />
+
+                            <CollectionView ItemsSource="{Binding IconesOpcoes}"
+                                            HeightRequest="56"
+                                            SelectionMode="None"
+                                            HorizontalScrollBarVisibility="Never"
+                                            VerticalScrollBarVisibility="Never">
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" />
+                                </CollectionView.ItemsLayout>
+
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:IconeOpcao">
+                                        <Border WidthRequest="48"
+                                                HeightRequest="48"
+                                                BackgroundColor="{Binding Fundo}"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 14">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnIconeTapped" />
+                                            </Border.GestureRecognizers>
+                                            <Label Text="{Binding Valor}"
+                                                   FontSize="24"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
 
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                             <VerticalStackLayout Spacing="1" VerticalOptions="Center">

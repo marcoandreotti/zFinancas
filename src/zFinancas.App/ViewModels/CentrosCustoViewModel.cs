@@ -45,6 +45,9 @@ public sealed class CentrosCustoViewModel : BaseViewModel
 
     public ObservableCollection<CentroCustoVm> Itens { get; } = [];
 
+    /// <summary>Ícones exibidos como chips (fonte maior que o Picker nativo).</summary>
+    public ObservableCollection<IconeOpcao> IconesOpcoes { get; } = [];
+
     public ObservableCollection<string> Icones { get; }
 
     public ICommand CarregarCommand { get; }
@@ -92,7 +95,10 @@ public sealed class CentrosCustoViewModel : BaseViewModel
 
     public async Task CarregarAsync()
     {
-        await ExecutarAsync(async () =>
+        // Idem contas: este recarregamento também roda dentro do fluxo de salvar.
+        Ocupado = true;
+
+        try
         {
             var centros = await _servico.ListarAsync(incluirInativos: true);
 
@@ -103,7 +109,19 @@ public sealed class CentrosCustoViewModel : BaseViewModel
             }
 
             OnPropertyChanged(nameof(SemItens));
-        }, "Não foi possível carregar os centros de custo");
+        }
+        catch (Core.Dominio.Excecoes.DominioException ex)
+        {
+            await _dialogos.AlertaAsync("Centros de custo", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            await _dialogos.AlertaAsync("Centros de custo", ex.Message);
+        }
+        finally
+        {
+            Ocupado = false;
+        }
     }
 
     private void AbrirFormulario(CentroCustoVm? centro)
@@ -111,6 +129,9 @@ public sealed class CentrosCustoViewModel : BaseViewModel
         _centroEmEdicao = centro;
         Descricao = centro?.Descricao ?? string.Empty;
         Icone = centro?.Icone ?? "🧾";
+
+        PrepararIcones();
+        DefinirIcone(Icone);
         Principal = centro?.Principal ?? false;
         Ativo = centro?.Ativo ?? true;
 
@@ -200,5 +221,28 @@ public sealed class CentrosCustoViewModel : BaseViewModel
         }
 
         await CarregarAsync();
+    }
+    /// <summary>Seleciona o ícone pelo chip e atualiza a marcação visual.</summary>
+    public void DefinirIcone(string? icone)
+    {
+        if (string.IsNullOrWhiteSpace(icone)) return;
+
+        Icone = icone;
+
+        foreach (var opcao in IconesOpcoes)
+        {
+            opcao.Selecionado = string.Equals(opcao.Valor, icone, StringComparison.Ordinal);
+        }
+    }
+
+    /// <summary>Monta os chips de ícones a partir da lista de ícones disponíveis.</summary>
+    public void PrepararIcones()
+    {
+        if (IconesOpcoes.Count > 0) return;
+
+        foreach (var icone in Icones)
+        {
+            IconesOpcoes.Add(new IconeOpcao(icone));
+        }
     }
 }

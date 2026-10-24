@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
@@ -114,11 +114,42 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         get => _valorTexto;
         set
         {
-            if (SetProperty(ref _valorTexto, value))
+            // Celular pode não ter vírgula no teclado numérico: aceitamos os dois
+            // separadores e normalizamos para o padrão pt-BR (vírgula, 2 casas).
+            var normalizado = NormalizarValor(value);
+
+            if (SetProperty(ref _valorTexto, normalizado))
             {
                 AtualizarResumo();
             }
         }
+    }
+
+    /// <summary>Mantém apenas dígitos e um separador decimal, com no máximo 2 casas.</summary>
+    private static string NormalizarValor(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto)) return string.Empty;
+
+        var digitos = new System.Text.StringBuilder(texto.Length);
+        var decimais = -1;
+
+        foreach (var caractere in texto)
+        {
+            if (char.IsDigit(caractere))
+            {
+                if (decimais >= 0 && decimais >= 2) continue;
+
+                digitos.Append(caractere);
+                if (decimais >= 0) decimais++;
+            }
+            else if ((caractere == ',' || caractere == '.') && decimais < 0)
+            {
+                digitos.Append(',');
+                decimais = 0;
+            }
+        }
+
+        return digitos.ToString();
     }
 
     public bool EhDespesa
