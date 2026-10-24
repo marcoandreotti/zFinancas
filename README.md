@@ -17,7 +17,7 @@ sem telemetria e sem depender de internet.
 | **Lançamento por voz** | toque no microfone e fale: “gastei 32,50 no mercado ontem” — o formulário abre preenchido |
 | **Novo lançamento** | despesa ou recebimento, recorrência (semanal, quinzenal, mensal, anual) com parcelas e agrupador |
 | **Extrato** | conta + período, saldo anterior (só compensados), saldo linha a linha e destaque dos pendentes |
-| **Contas correntes** | CRUD com cor, ícone e conta principal única |
+| **Contas correntes** | CRUD com cor e ícone; menu `⋯` para editar, definir principal e **ativar/desativar** |
 | **Centros de custo** | CRUD com ícone (emoji), centro principal único |
 | **Usuários** | perfis ADM/USR, ativação, reset de senha e vínculo com contas |
 | **Sincronização** | exporta/importa pacote `.zfsync` com resolução de conflito |
