@@ -17,6 +17,12 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
+        // Android: libera vírgula E ponto no teclado numérico (o filtro nativo só aceita
+        // o separador do idioma do aparelho).
+#if ANDROID
+        Platforms.Android.TecladoNumerico.Configurar();
+#endif
+
         var builder = MauiApp.CreateBuilder();
 
         builder

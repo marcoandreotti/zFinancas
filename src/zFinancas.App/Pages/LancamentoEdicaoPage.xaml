@@ -76,6 +76,12 @@
                         </Grid>
                     </Border>
 
+
+
+                    <Label Text="Digite só números: 3250 → 32,50"
+                           Style="{StaticResource Subtitulo}"
+                           FontSize="10"
+                           Margin="0,-6,0,0" />
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                         <VerticalStackLayout Spacing="6">
                             <Label Text="CONTA CORRENTE" Style="{StaticResource Rotulo}" />
