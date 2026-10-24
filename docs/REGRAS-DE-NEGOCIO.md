@@ -59,6 +59,8 @@ abaixo tem teste automatizado correspondente.
 ### 3.3 Compensação
 
 - `COMPENSADO = true` exige `DATACOMPENSADO`; `COMPENSADO = false` exige data nula.
+- A data da compensação é **escolhida na hora** (padrão: o vencimento); há atalho para
+  “hoje”. O saldo compensado considera essa data, não a data em que o registro foi feito.
 - Lançamento compensado **não pode ser alterado nem excluído** — descompense primeiro.
 - `Descompensar` zera a data de compensação.
 

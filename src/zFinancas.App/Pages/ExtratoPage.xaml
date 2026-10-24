@@ -222,6 +222,72 @@
                     </Grid>
                 </Border>
             </Grid>
+            <!-- ===================== painel de compensação ===================== -->
+            <Grid Grid.RowSpan="2"
+                  IsVisible="{Binding CompensacaoAtiva}"
+                  BackgroundColor="#CC05080F"
+                  Padding="24">
+
+                <Border Style="{StaticResource CardElevado}"
+                        Padding="0"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Fill"
+                        MaximumWidthRequest="470">
+
+                    <VerticalStackLayout Padding="22,20" Spacing="14">
+
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Compensar lançamento" Style="{StaticResource TituloSecao}" />
+                            <Label Text="{Binding Compensacao.Descricao}"
+                                   Style="{StaticResource Subtitulo}"
+                                   FontSize="12" />
+                        </VerticalStackLayout>
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <Label Text="VALOR" Style="{StaticResource Rotulo}" VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding Compensacao.ValorTexto}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="15"
+                                   VerticalOptions="Center" />
+                        </Grid>
+
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="DATA DA COMPENSAÇÃO" Style="{StaticResource Rotulo}" />
+
+                            <Border Style="{StaticResource Campo}">
+                                <DatePicker Date="{Binding Compensacao.Data}" Format="dd/MM/yyyy" />
+                            </Border>
+
+                            <Label Text="{Binding Compensacao.VencimentoTexto}"
+                                   Style="{StaticResource Subtitulo}"
+                                   FontSize="11" />
+                        </VerticalStackLayout>
+
+                        <HorizontalStackLayout Spacing="10">
+                            <Button Text="{Binding Compensacao.RotuloHoje}"
+                                    Command="{Binding Compensacao.HojeCommand}"
+                                    Style="{StaticResource BotaoTexto}"
+                                    FontSize="11" />
+
+                            <Button Text="Usar o vencimento"
+                                    Command="{Binding Compensacao.ManterVencimentoCommand}"
+                                    Style="{StaticResource BotaoTexto}"
+                                    FontSize="11" />
+                        </HorizontalStackLayout>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Button Text="Cancelar"
+                                    Command="{Binding Compensacao.CancelarCommand}"
+                                    Style="{StaticResource BotaoSecundario}" />
+
+                            <Button Grid.Column="1"
+                                    Text="Confirmar"
+                                    Command="{Binding Compensacao.ConfirmarCommand}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
     </Grid>
 
 </ContentPage>

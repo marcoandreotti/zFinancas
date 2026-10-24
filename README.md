@@ -178,6 +178,22 @@ também é hash, o que permite recuperar o acesso sem tornar as senhas reversív
 
 Detalhes completos em [docs/REGRAS-DE-NEGOCIO.md](docs/REGRAS-DE-NEGOCIO.md).
 
+## Compensar com data escolhida
+
+Ao compensar (no **Extrato** ou em **Lançamentos** → `⋯` → “Marcar como compensado”),
+abre um painel com:
+
+- o lançamento e o valor;
+- a **data da compensação** já preenchida com o **vencimento** (opção “manter o vencimento”);
+- um `DatePicker` para escolher outra data;
+- atalho **Hoje (dd/MM/aaaa)** e **Usar o vencimento**;
+- botões **Cancelar** e **Confirmar**.
+
+![Compensar lançamento](docs/imagens/compensar.png)
+
+A data escolhida é gravada em `DATACOMPENSADO` — o saldo compensado passa a contar
+naquele dia, não importa a data em que você registrou.
+
 ## Seleção de contas para análise
 
 Em **Lançamentos** e **Extrato**, o botão de contas abre um painel com caixas de seleção:

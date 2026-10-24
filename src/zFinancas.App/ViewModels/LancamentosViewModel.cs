@@ -568,4 +568,50 @@ public sealed class LancamentosViewModel : BaseViewModel
         }
     }
 #endif
+    // ---------------------------------------------------------- compensação
+
+    private CompensarViewModel? _compensacao;
+
+    /// <summary>Painel de compensação em uso (null quando fechado).</summary>
+    public CompensarViewModel? Compensacao
+    {
+        get => _compensacao;
+        private set
+        {
+            if (SetProperty(ref _compensacao, value))
+            {
+                OnPropertyChanged(nameof(CompensacaoAtiva));
+            }
+        }
+    }
+
+    public bool CompensacaoAtiva => Compensacao is not null;
+
+    private void AbrirCompensacao(LancamentoVm item)
+    {
+        var painel = new CompensarViewModel(item);
+
+        painel.Confirmou += async (_, data) =>
+        {
+            Compensacao = null;
+            await _lancamentos.CompensarAsync(item.Id, data);
+            await CarregarAsync();
+        };
+
+        painel.Cancelou += (_, _) => Compensacao = null;
+
+        Compensacao = painel;
+    }
+#if DEBUG
+    /// <summary>Atalho de desenvolvimento: abre o painel de compensação da 1ª pendência.</summary>
+    public async Task DepurarCompensacaoAsync()
+    {
+        await CarregarAsync();
+        var item = Itens.FirstOrDefault(i => i.Pendente);
+        if (item is not null)
+        {
+            AbrirCompensacao(item);
+        }
+    }
+#endif
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -54,7 +54,7 @@ public sealed class ExtratoViewModel : BaseViewModel
         Titulo = "Extrato";
 
         CarregarCommand = new ComandoAssincrono(CarregarAsync);
-        CompensarCommand = new ComandoAssincrono<LancamentoVm>(CompensarAsync);
+        CompensarCommand = new ComandoAssincrono<LancamentoVm>(Compensar);
         AbrirSelecaoContasCommand = new ComandoAssincrono(AbrirSelecaoContasAsync);
 
         MesAtualCommand = new ComandoAssincrono(() =>
@@ -311,19 +311,42 @@ public sealed class ExtratoViewModel : BaseViewModel
 
     // ------------------------------------------------------------------ ações
 
-    private async Task CompensarAsync(LancamentoVm? item)
+    private Task Compensar(LancamentoVm? item)
     {
-        if (item is null || !item.Pendente) return;
+        if (item is null || !item.Pendente) return Task.CompletedTask;
 
-        var confirmar = await _dialogos.ConfirmarAsync(
-            "Compensar lançamento",
-            $"Marcar '{item.Descricao}' ({item.ValorTexto}) como compensado hoje?",
-            "Compensar",
-            "Cancelar");
+        var painel = new CompensarViewModel(item);
 
-        if (!confirmar) return;
+        painel.Confirmou += async (_, data) =>
+        {
+            Compensacao = null;
+            await _lancamentos.CompensarAsync(item.Id, data);
+            await CarregarAsync();
+        };
 
-        await _lancamentos.CompensarAsync(item.Id, DateTime.Today);
-        await CarregarAsync();
+        painel.Cancelou += (_, _) => Compensacao = null;
+
+        Compensacao = painel;
+
+        return Task.CompletedTask;
     }
+
+    // ---------------------------------------------------------- compensação
+
+    private CompensarViewModel? _compensacao;
+
+    /// <summary>Painel de compensação em uso (null quando fechado).</summary>
+    public CompensarViewModel? Compensacao
+    {
+        get => _compensacao;
+        private set
+        {
+            if (SetProperty(ref _compensacao, value))
+            {
+                OnPropertyChanged(nameof(CompensacaoAtiva));
+            }
+        }
+    }
+
+    public bool CompensacaoAtiva => Compensacao is not null;
 }

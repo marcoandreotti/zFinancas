@@ -1,4 +1,4 @@
-﻿using zFinancas.App.Servicos;
+using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
 
 namespace zFinancas.App.Pages;
@@ -38,6 +38,10 @@ public partial class LancamentosPage : ContentPage
             else if (modal == "excluir")
             {
                 await _viewModel.DepurarExclusaoAsync();
+            }
+            else if (modal == "compensar")
+            {
+                await _viewModel.DepurarCompensacaoAsync();
             }
 
             _hookDeModalExecutado = true;
