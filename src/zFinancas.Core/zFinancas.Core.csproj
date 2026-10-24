@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Camada de domínio + aplicação do zFinancas.
+       Sem dependências externas: regras de negócio puras e testáveis. -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>zFinancas.Core</RootNamespace>
+    <AssemblyName>zFinancas.Core</AssemblyName>
+  </PropertyGroup>
+
+</Project>

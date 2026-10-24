@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
+             x:Class="zFinancas.App.Pages.SincronizacaoPage"
+             x:DataType="vm:SincronizacaoViewModel"
+             Title=""
+             Background="{StaticResource GradienteFundo}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,16,24,32" Spacing="16" MaximumWidthRequest="820">
+
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Sincronização" Style="{StaticResource TituloPagina}" />
+                <Label Text="PC ? celular, sem internet" Style="{StaticResource Subtitulo}" />
+            </VerticalStackLayout>
+
+            <Border Style="{StaticResource CardElevado}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="COMO FUNCIONA" Style="{StaticResource Rotulo}" />
+                    <Label Text="{Binding Explicacao}" Style="{StaticResource Subtitulo}" />
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Border BackgroundColor="{StaticResource SuperficieSuave}"
+                                Stroke="{StaticResource BordaSuave}"
+                                StrokeThickness="1" Padding="12"
+                                StrokeShape="RoundRectangle 14">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="ESTE APARELHO" Style="{StaticResource Rotulo}" />
+                                <Label Text="{Binding NomeDispositivo}" FontFamily="OpenSansSemibold" FontSize="13" />
+                                <Label Text="{Binding Plataforma}" Style="{StaticResource Subtitulo}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Column="1"
+                                BackgroundColor="{StaticResource SuperficieSuave}"
+                                Stroke="{StaticResource BordaSuave}"
+                                StrokeThickness="1" Padding="12"
+                                StrokeShape="RoundRectangle 14">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="ID DE SINCRONIZAÇÃO" Style="{StaticResource Rotulo}" />
+                                <Label Text="{Binding DispositivoId}" FontSize="11" TextColor="{StaticResource TextoSecundario}" />
+                                <Label Text="{Binding UltimaSincronizacao}" Style="{StaticResource Subtitulo}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="EXPORTAR" Style="{StaticResource Rotulo}" />
+                    <Label Text="Gera um arquivo .zfsync com contas, centros de custo, usuários, vínculos e lançamentos."
+                           Style="{StaticResource Subtitulo}" />
+                    <Button Text="Exportar pacote de sincronização" Command="{Binding ExportarCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="IMPORTAR" Style="{StaticResource Rotulo}" />
+                    <Label Text="Selecione o arquivo .zfsync recebido do outro aparelho. Registros mais recentes prevalecem e nada é duplicado."
+                           Style="{StaticResource Subtitulo}" />
+                    <Button Text="Escolher arquivo e importar"
+                            Command="{Binding ImportarCommand}"
+                            Style="{StaticResource BotaoSecundario}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}" IsVisible="{Binding TemResultado}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="RESULTADO" Style="{StaticResource Rotulo}" />
+                    <Label Text="{Binding Resultado}" FontSize="13" />
+                    <BoxView Style="{StaticResource Separador}" />
+                    <Label Text="O pacote contém hashes de senha (nunca senhas em texto claro). Guarde-o com cuidado."
+                           Style="{StaticResource Subtitulo}" FontSize="11" />
+                </VerticalStackLayout>
+            </Border>
+
+            <ActivityIndicator IsRunning="{Binding Ocupado}" IsVisible="{Binding Ocupado}" HeightRequest="22" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
+

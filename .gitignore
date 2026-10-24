@@ -1,0 +1,29 @@
+## Build
+bin/
+obj/
+*.user
+*.suo
+
+## Ferramentas locais do agente/harness (caches isolados)
+.dotnetcli/
+.tmp/
+_tmp/
+
+## Banco local de desenvolvimento
+*.db
+*.db-shm
+*.db-wal
+*.zfsync
+
+## IDE
+.vs/
+.idea/
+.vscode/
+
+## SO
+Thumbs.db
+.DS_Store
+
+## Artefatos de execução de ferramentas
+--nologo*
+*.log

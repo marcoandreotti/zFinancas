@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Persistência SQLite do zFinancas.
+       Depende apenas do Core (inversão de dependência): implementa as interfaces de
+       repositório definidas no domínio e não expõe detalhes de SQL para cima. -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>zFinancas.Data</RootNamespace>
+    <AssemblyName>zFinancas.Data</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="$(SqliteVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\zFinancas.Core\zFinancas.Core.csproj" />
+  </ItemGroup>
+
+</Project>

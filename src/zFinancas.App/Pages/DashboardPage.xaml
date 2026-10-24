@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
+             x:Class="zFinancas.App.Pages.DashboardPage"
+             x:DataType="vm:DashboardViewModel"
+             Title=""
+             Background="{StaticResource GradienteFundo}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="26,18,26,34" Spacing="20" MaximumWidthRequest="1180">
+
+            <!-- ============================ cabeçalho -->
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="{Binding Saudacao}" Style="{StaticResource TituloPagina}" />
+                    <Label Text="{Binding DataTexto}" Style="{StaticResource Subtitulo}" />
+                </VerticalStackLayout>
+
+                <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                    <Button Text="{Binding RotuloFalar}"
+                            Command="{Binding FalarCommand}"
+                            Style="{StaticResource BotaoSecundario}" />
+                    <Button Text="+  Novo lançamento"
+                            Command="{Binding NovoLancamentoCommand}" />
+                </HorizontalStackLayout>
+            </Grid>
+
+            <!-- ============================ saldo consolidado -->
+            <Border StrokeThickness="0" Padding="24" Background="{StaticResource GradienteHero}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24" />
+                </Border.StrokeShape>
+
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="14">
+                    <Label Text="SALDO TOTAL (TODAS AS CONTAS)"
+                           FontSize="11"
+                           CharacterSpacing="1.2"
+                           TextColor="{StaticResource PrimariaClara}" />
+
+                    <Label Grid.Row="1"
+                           Text="{Binding TotalTexto}"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="36"
+                           TextColor="{StaticResource Branco}" />
+
+                    <BoxView Grid.Row="2" HeightRequest="1" Color="#33FFFFFF" Margin="0,4" />
+
+                    <Grid Grid.Row="3" ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Compensado" FontSize="11" TextColor="{StaticResource PrimariaClara}" />
+                            <Label Text="{Binding CompensadoTexto}" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{StaticResource Branco}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="A compensar" FontSize="11" TextColor="{StaticResource PrimariaClara}" />
+                            <Label Text="{Binding PendenteTexto}" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{StaticResource Alerta}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="2" Spacing="2">
+                            <Label Text="Vencido" FontSize="11" TextColor="{StaticResource PrimariaClara}" />
+                            <Label Text="{Binding VencidoTexto}" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{StaticResource Negativo}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- ============================ contas -->
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Suas contas" Style="{StaticResource TituloSecao}" VerticalOptions="Center" />
+                <Button Grid.Column="1"
+                        Text="Ver extrato"
+                        Command="{Binding VerExtratoCommand}"
+                        Style="{StaticResource BotaoTexto}" />
+            </Grid>
+
+            <!-- Coleção horizontal (no lugar do CarouselView, que “deslizava” no Windows) -->
+            <CollectionView ItemsSource="{Binding Contas}"
+                            HeightRequest="216"
+                            HorizontalScrollBarVisibility="Never"
+                            VerticalScrollBarVisibility="Never"
+                            SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal"
+                                       ItemSpacing="12"
+                                       SnapPointsType="None" />
+                </CollectionView.ItemsLayout>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ContaCartaoVm">
+                        <Border Background="{Binding Gradiente}"
+                                StrokeThickness="0"
+                                HeightRequest="206"
+                                WidthRequest="{OnIdiom Phone=300, Desktop=360}"
+                                Padding="20">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="22" />
+                            </Border.StrokeShape>
+
+                            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="6">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                    <Label Text="{Binding Icone}" FontSize="19" VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Descricao}"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="16"
+                                           VerticalOptions="Center" />
+                                    <Border Grid.Column="2"
+                                            IsVisible="{Binding Principal}"
+                                            BackgroundColor="#33FFFFFF"
+                                            StrokeThickness="0"
+                                            Padding="8,3"
+                                            StrokeShape="RoundRectangle 8"
+                                            VerticalOptions="Center">
+                                        <Label Text="principal" FontSize="10" TextColor="{StaticResource Branco}" />
+                                    </Border>
+                                </Grid>
+
+                                <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" Spacing="0">
+                                    <Label Text="{Binding TotalTexto}"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="26"
+                                           TextColor="{StaticResource Branco}" />
+                                    <Label Text="saldo total" FontSize="11" TextColor="#CCFFFFFF" />
+                                </VerticalStackLayout>
+
+                                <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+                                    <VerticalStackLayout Spacing="1">
+                                        <Label Text="Compensado" FontSize="10" TextColor="#B3FFFFFF" />
+                                        <Label Text="{Binding CompensadoTexto}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Branco}" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                        <Label Text="A compensar" FontSize="10" TextColor="#B3FFFFFF" />
+                                        <Label Text="{Binding PendenteTexto}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Branco}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- ============================ resumo da janela -->
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="*,Auto,*,Auto" ColumnSpacing="10">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="ENTRADAS (7 DIAS)" Style="{StaticResource Rotulo}" />
+                        <Label Text="{Binding EntradasTexto}" Style="{StaticResource ValorPositivo}" FontSize="15" />
+                    </VerticalStackLayout>
+
+                    <BoxView Grid.Column="1" WidthRequest="1" Color="{StaticResource BordaSuave}" />
+
+                    <VerticalStackLayout Grid.Column="2" Spacing="2">
+                        <Label Text="SAÍDAS (7 DIAS)" Style="{StaticResource Rotulo}" />
+                        <Label Text="{Binding SaidasTexto}" Style="{StaticResource ValorNegativo}" FontSize="15" />
+                    </VerticalStackLayout>
+
+                    <Label Grid.Column="3"
+                           Text="{Binding PeriodoTexto}"
+                           Style="{StaticResource Rotulo}"
+                           VerticalOptions="Center"
+                           HorizontalTextAlignment="End" />
+                </Grid>
+            </Border>
+
+            <!-- ============================ últimos 7 dias -->
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Últimos 7 dias" Style="{StaticResource TituloSecao}" VerticalOptions="Center" />
+                <Button Grid.Column="1"
+                        Text="Ver todos"
+                        Command="{Binding VerLancamentosCommand}"
+                        Style="{StaticResource BotaoTexto}" />
+            </Grid>
+
+            <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding UltimosLancamentos}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LancamentoVm">
+                        <Border Style="{StaticResource LinhaLista}" BackgroundColor="{Binding CorFundoDestaque}">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                <Border WidthRequest="38"
+                                        HeightRequest="38"
+                                        BackgroundColor="{StaticResource SuperficieElevada}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 12"
+                                        VerticalOptions="Center">
+                                    <Label Text="{Binding IconeCentro}"
+                                           FontSize="16"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
+                                </Border>
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                    <Label Text="{Binding Descricao}" FontFamily="OpenSansSemibold" FontSize="14" />
+                                    <Label Text="{Binding Detalhe}" Style="{StaticResource Subtitulo}" FontSize="11" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="2" Spacing="1" VerticalOptions="Center">
+                                    <Label Text="{Binding ValorTexto}"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="14"
+                                           TextColor="{Binding CorValor}"
+                                           HorizontalTextAlignment="End" />
+                                    <Label Text="{Binding SituacaoTexto}"
+                                           FontSize="10"
+                                           TextColor="{Binding CorSituacao}"
+                                           HorizontalTextAlignment="End" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <!-- vazio -->
+            <Border Style="{StaticResource Card}" IsVisible="{Binding SemLancamentos}">
+                <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                    <Label Text="🗓️" FontSize="26" HorizontalOptions="Center" />
+                    <Label Text="Nenhum lançamento nos últimos 7 dias" Style="{StaticResource TituloSecao}" HorizontalTextAlignment="Center" />
+                    <Label Text="Comece registrando uma despesa ou um recebimento." Style="{StaticResource Subtitulo}" HorizontalTextAlignment="Center" />
+                    <Button Text="Registrar lançamento"
+                            Command="{Binding NovoLancamentoCommand}"
+                            Style="{StaticResource BotaoSecundario}"
+                            Margin="0,6,0,0" />
+                </VerticalStackLayout>
+            </Border>
+
+            <ActivityIndicator IsRunning="{Binding Ocupado}" IsVisible="{Binding Ocupado}" HeightRequest="24" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
+
+

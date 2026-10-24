@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
+             x:Class="zFinancas.App.Pages.UsuariosPage"
+             x:DataType="vm:UsuariosViewModel"
+             Title=""
+             Background="{StaticResource GradienteFundo}">
+
+    <Grid RowDefinitions="Auto,*" Padding="24,16,24,0" RowSpacing="12" MaximumWidthRequest="980">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Usuários" Style="{StaticResource TituloPagina}" />
+                <Label Text="Administrador vê todas as contas; usuário vê apenas as contas vinculadas."
+                       Style="{StaticResource Subtitulo}" />
+            </VerticalStackLayout>
+
+            <Button Grid.Column="1"
+                    Text="+  Novo usuário"
+                    Command="{Binding NovoCommand}"
+                    IsVisible="{Binding EhAdministrador}"
+                    VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="8" Padding="0,0,0,20" BindableLayout.ItemsSource="{Binding Itens}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:UsuarioVm">
+                        <Border Style="{StaticResource LinhaLista}" Opacity="{Binding Opacidade}">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                <Border WidthRequest="42"
+                                        HeightRequest="42"
+                                        BackgroundColor="{StaticResource SuperficieElevada}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 14"
+                                        VerticalOptions="Center">
+                                    <Label Text="{Binding Iniciais}"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="15"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
+                                </Border>
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="{Binding Nome}" FontFamily="OpenSansSemibold" FontSize="14" />
+                                        <Border BackgroundColor="#1C2743"
+                                                StrokeThickness="0"
+                                                Padding="7,1"
+                                                StrokeShape="RoundRectangle 6"
+                                                VerticalOptions="Center">
+                                            <Label Text="{Binding PerfilDescricao}" FontSize="9" TextColor="{Binding CorPerfil}" />
+                                        </Border>
+                                    </HorizontalStackLayout>
+                                    <Label Text="{Binding ContasResumo}" Style="{StaticResource Subtitulo}" FontSize="11" />
+                                    <Label Text="{Binding Situacao}" FontSize="10" TextColor="{Binding CorSituacao}" />
+                                </VerticalStackLayout>
+
+                                <HorizontalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
+                                    <Button Text="Senha"
+                                            Style="{StaticResource BotaoTexto}"
+                                            FontSize="11"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UsuariosViewModel}}, Path=RedefinirSenhaCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Text="Editar"
+                                            Style="{StaticResource BotaoTexto}"
+                                            FontSize="11"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UsuariosViewModel}}, Path=EditarCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Text="Ativar/Desativar"
+                                            Style="{StaticResource BotaoTexto}"
+                                            FontSize="11"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UsuariosViewModel}}, Path=AlternarAtivoCommand}"
+                                            CommandParameter="{Binding .}" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>
+

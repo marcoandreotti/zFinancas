@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
+             x:Class="zFinancas.App.Pages.UsuarioEdicaoPage"
+             x:DataType="vm:UsuarioEdicaoViewModel"
+             Title="{Binding Titulo}"
+             Background="{StaticResource GradienteFundo}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,18,24,32" Spacing="16" MaximumWidthRequest="720">
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="DADOS DO USUÁRIO" Style="{StaticResource Rotulo}" />
+
+                    <Border Style="{StaticResource Campo}">
+                        <Entry Text="{Binding Nome}" Placeholder="Nome do usuário" MaxLength="30" />
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="PERFIL ADMINISTRADOR" Style="{StaticResource Rotulo}" />
+                            <Label Text="{Binding ExplicacaoPerfil}" Style="{StaticResource Subtitulo}" FontSize="11" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="{Binding EhAdministrador}" VerticalOptions="Center" />
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="USUÁRIO ATIVO" Style="{StaticResource Rotulo}" />
+                            <Label Text="Inativo não consegue entrar nem acessar as contas vinculadas."
+                                   Style="{StaticResource Subtitulo}" FontSize="11" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="{Binding Ativo}" VerticalOptions="Center" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}" IsVisible="{Binding MostraSenha}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="{Binding RotuloSenha}" Style="{StaticResource Rotulo}" />
+
+                    <Border Style="{StaticResource Campo}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Entry Text="{Binding Senha}"
+                                   IsPassword="{Binding SenhaMascarada}"
+                                   Placeholder="Mínimo de 4 caracteres"
+                                   MaxLength="50" />
+                            <Button Grid.Column="1"
+                                    Text="👁"
+                                    Command="{Binding AlternarSenhaCommand}"
+                                    Style="{StaticResource BotaoTexto}"
+                                    FontSize="15"
+                                    VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource Campo}">
+                        <Entry Text="{Binding Confirmacao}" IsPassword="{Binding SenhaMascarada}" Placeholder="Confirme a senha" MaxLength="50" />
+                    </Border>
+
+                    <Label Text="DICA DA SENHA (OPCIONAL)" Style="{StaticResource Rotulo}" />
+                    <Border Style="{StaticResource Campo}">
+                        <Entry Text="{Binding Dica}" Placeholder="Ex.: apelido da infância" MaxLength="50" />
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}" IsVisible="{Binding MostraContas}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="CONTAS VINCULADAS (USUARIOCONTACORRENTE)" Style="{StaticResource Rotulo}" />
+                    <Label Text="O usuário verá o dashboard, lançamentos e extrato apenas destas contas."
+                           Style="{StaticResource Subtitulo}" FontSize="11" />
+
+                    <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Contas}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ContaSelecionavel">
+                                <Border BackgroundColor="{StaticResource SuperficieSuave}"
+                                        Stroke="{StaticResource BordaSuave}"
+                                        StrokeThickness="1"
+                                        Padding="10,6"
+                                        StrokeShape="RoundRectangle 12">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                        <CheckBox IsChecked="{Binding Selecionada}" VerticalOptions="Center" />
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                            <Label Text="{Binding Icone}" FontSize="14" VerticalOptions="Center" />
+                                            <Label Text="{Binding Descricao}" FontSize="13" VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                        <Label Grid.Column="2"
+                                               Text="{Binding SituacaoConta}"
+                                               FontSize="10"
+                                               TextColor="{StaticResource TextoFraco}"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="Salvar usuário" Command="{Binding SalvarCommand}" IsEnabled="{Binding NaoOcupado}" />
+            <Button Text="Cancelar" Command="{Binding CancelarCommand}" Style="{StaticResource BotaoTexto}" HorizontalOptions="Center" />
+
+            <ActivityIndicator IsRunning="{Binding Ocupado}" IsVisible="{Binding Ocupado}" HeightRequest="22" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
+             x:Class="zFinancas.App.Pages.ExtratoPage"
+             x:DataType="vm:ExtratoViewModel"
+             Title=""
+             Background="{StaticResource GradienteFundo}">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="24,16,24,0" RowSpacing="12" MaximumWidthRequest="1180">
+
+        <!-- ============================ filtros -->
+        <VerticalStackLayout Grid.Row="0" Spacing="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="Extrato de lançamentos" Style="{StaticResource TituloPagina}" />
+                    <Label Text="{Binding PeriodoTexto}" Style="{StaticResource Subtitulo}" />
+                </VerticalStackLayout>
+
+                <Button Grid.Column="1"
+                        Text="Atualizar"
+                        Command="{Binding CarregarCommand}"
+                        Style="{StaticResource BotaoSecundario}"
+                        VerticalOptions="Center" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                <Button Text="{Binding ResumoContas}"
+                        Command="{Binding AbrirSelecaoContasCommand}"
+                        Style="{StaticResource BotaoSecundario}"
+                        HorizontalOptions="Fill" />
+
+                <Border Grid.Column="1" WidthRequest="150" Style="{StaticResource Campo}">
+                    <DatePicker Date="{Binding DataInicio}" Format="dd/MM/yyyy" />
+                </Border>
+
+                <Border Grid.Column="2" WidthRequest="150" Style="{StaticResource Campo}">
+                    <DatePicker Date="{Binding DataFim}" Format="dd/MM/yyyy" />
+                </Border>
+            </Grid>
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Mês atual" Command="{Binding MesAtualCommand}" Style="{StaticResource BotaoTexto}" />
+                <Button Text="Mês passado" Command="{Binding MesPassadoCommand}" Style="{StaticResource BotaoTexto}" />
+                <Button Text="Últimos 90 dias" Command="{Binding Ultimos90DiasCommand}" Style="{StaticResource BotaoTexto}" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
+        <!-- ============================ resumo de saldos -->
+        <Border Grid.Row="1" Style="{StaticResource CardElevado}">
+            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="SALDO ANTERIOR" Style="{StaticResource Rotulo}" />
+                    <Label Text="{Binding SaldoAnteriorTexto}" Style="{StaticResource ValorMedio}" FontSize="15" />
+                    <Label Text="só compensados" FontSize="9" TextColor="{StaticResource TextoFraco}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                    <Label Text="SALDO FINAL" Style="{StaticResource Rotulo}" />
+                    <Label Text="{Binding SaldoFinalTexto}" Style="{StaticResource ValorMedio}" FontSize="15" />
+                    <Label Text="projetado" FontSize="9" TextColor="{StaticResource TextoFraco}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="2" Spacing="2">
+                    <Label Text="COMPENSADO" Style="{StaticResource Rotulo}" />
+                    <Label Text="{Binding SaldoCompensadoTexto}" Style="{StaticResource ValorPositivo}" FontSize="15" />
+                    <Label Text="ao fim do período" FontSize="9" TextColor="{StaticResource TextoFraco}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="3" Spacing="2">
+                    <Label Text="ENTRADAS / SAÍDAS" Style="{StaticResource Rotulo}" />
+                    <HorizontalStackLayout Spacing="6">
+                        <Label Text="{Binding EntradasTexto}" Style="{StaticResource ValorPositivo}" FontSize="13" />
+                        <Label Text="•" TextColor="{StaticResource TextoFraco}" FontSize="13" />
+                        <Label Text="{Binding SaidasTexto}" Style="{StaticResource ValorNegativo}" FontSize="13" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- ============================ linhas -->
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Itens}"
+                        SelectionMode="None"
+                        VerticalScrollBarVisibility="Never"
+                        Margin="0,0,0,16">
+            <CollectionView.EmptyView>
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                        <Label Text="📊" FontSize="24" HorizontalOptions="Center" />
+                        <Label Text="Nenhum lançamento no período" Style="{StaticResource TituloSecao}" HorizontalTextAlignment="Center" />
+                        <Label Text="Escolha outra conta ou ajuste as datas." Style="{StaticResource Subtitulo}" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:LancamentoVm">
+                    <Border Style="{StaticResource LinhaLista}"
+                            Margin="0,0,0,6"
+                            BackgroundColor="{Binding CorFundoDestaque}"
+                            Stroke="{Binding CorBorda}">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+
+                            <Label Text="{Binding IconeCentro}"
+                                   FontSize="16"
+                                   WidthRequest="26"
+                                   VerticalOptions="Center"
+                                   HorizontalTextAlignment="Center" />
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                <HorizontalStackLayout Spacing="6">
+                                    <Label Text="{Binding Descricao}" FontFamily="OpenSansSemibold" FontSize="13" />
+                                    <Border IsVisible="{Binding Pendente}"
+                                            BackgroundColor="#33F7B955"
+                                            StrokeThickness="0"
+                                            Padding="6,1"
+                                            StrokeShape="RoundRectangle 6"
+                                            VerticalOptions="Center">
+                                        <Label Text="{Binding SituacaoTexto}" FontSize="9" TextColor="{StaticResource Alerta}" />
+                                    </Border>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Detalhe}" FontSize="10" TextColor="{StaticResource TextoSecundario}" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="2" Spacing="1" VerticalOptions="Center">
+                                <Label Text="{Binding ValorTexto}"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="13"
+                                       TextColor="{Binding CorValor}"
+                                       HorizontalTextAlignment="End" />
+                                <Label Text="{Binding SaldoTexto}"
+                                       FontSize="10"
+                                       TextColor="{StaticResource TextoFraco}"
+                                       HorizontalTextAlignment="End" />
+                            </VerticalStackLayout>
+
+                            <Button Grid.Column="3"
+                                    Text="Compensar"
+                                    IsVisible="{Binding Pendente}"
+                                    Style="{StaticResource BotaoTexto}"
+                                    FontSize="11"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExtratoViewModel}}, Path=CompensarCommand}"
+                                    CommandParameter="{Binding .}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+            <!-- ===================== painel de seleção de contas ===================== -->
+            <Grid Grid.RowSpan="2"
+                  IsVisible="{Binding SelecaoContasAtiva}"
+                  BackgroundColor="#CC05080F"
+                  Padding="24">
+
+                <Border Style="{StaticResource CardElevado}"
+                        Padding="0"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Fill"
+                        MaximumWidthRequest="560">
+
+                    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
+
+                        <VerticalStackLayout Grid.Row="0" Padding="20,20,20,10" Spacing="4">
+                            <Label Text="{Binding SelecaoContas.Titulo}" Style="{StaticResource TituloSecao}" />
+                            <Label Text="{Binding SelecaoContas.Instrucao}"
+                                   Style="{StaticResource Subtitulo}"
+                                   FontSize="11" />
+                        </VerticalStackLayout>
+
+                        <CollectionView Grid.Row="1"
+                                        ItemsSource="{Binding SelecaoContas.Contas}"
+                                        SelectionMode="None"
+                                        MaximumHeightRequest="320"
+                                        Margin="20,0">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ContaFiltro">
+                                    <Border BackgroundColor="{StaticResource Superficie}"
+                                            StrokeThickness="0"
+                                            Padding="12"
+                                            Margin="0,0,0,6"
+                                            StrokeShape="RoundRectangle 10">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                            <CheckBox IsChecked="{Binding Selecionada, Mode=TwoWay}"
+                                                      VerticalOptions="Center"
+                                                      Color="{StaticResource Primaria}" />
+
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Rotulo}"
+                                                   FontFamily="OpenSansSemibold"
+                                                   FontSize="13"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <VerticalStackLayout Grid.Row="2" Padding="20,10,20,18" Spacing="10">
+                            <HorizontalStackLayout Spacing="12">
+                                <Button Text="Marcar todas"
+                                        Command="{Binding SelecaoContas.MarcarTodasCommand}"
+                                        Style="{StaticResource BotaoTexto}" />
+
+                                <Button Text="Limpar"
+                                        Command="{Binding SelecaoContas.LimparCommand}"
+                                        Style="{StaticResource BotaoTexto}" />
+                            </HorizontalStackLayout>
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <Button Text="Cancelar"
+                                        Command="{Binding SelecaoContas.CancelarCommand}"
+                                        Style="{StaticResource BotaoSecundario}" />
+
+                                <Button Grid.Column="1"
+                                        Text="{Binding SelecaoContas.TextoConfirmar}"
+                                        Command="{Binding SelecaoContas.ConfirmarCommand}"
+                                        IsEnabled="{Binding SelecaoContas.TemSelecao}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </Grid>
+    </Grid>
+
+</ContentPage>
+

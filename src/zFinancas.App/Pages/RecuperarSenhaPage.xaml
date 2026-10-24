@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
+             x:Class="zFinancas.App.Pages.RecuperarSenhaPage"
+             x:DataType="vm:RecuperarSenhaViewModel"
+             Title="Recuperar senha"
+             Background="{StaticResource GradienteFundo}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,28,24,32"
+                             MaximumWidthRequest="520"
+                             Spacing="18"
+                             HorizontalOptions="Center">
+
+            <Border Style="{StaticResource Card}">
+                <Label Text="{Binding Explicacao}" Style="{StaticResource Subtitulo}" />
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="14">
+
+                    <Label Text="SEU NOME" Style="{StaticResource Rotulo}" />
+                    <Border Style="{StaticResource Campo}">
+                        <Entry Text="{Binding Nome}" Placeholder="Nome do usuário" MaxLength="30" />
+                    </Border>
+
+                    <Label Text="CÓDIGO DE RECUPERAÇÃO" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
+                    <Border Style="{StaticResource Campo}">
+                        <Entry Text="{Binding Codigo}"
+                               Placeholder="ABCD-EFGH-JKLM"
+                               MaxLength="20"
+                               CharacterSpacing="2"
+                               TextTransform="Uppercase" />
+                    </Border>
+
+                    <Label Text="NOVA SENHA" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
+                    <Border Style="{StaticResource Campo}">
+                        <Entry Text="{Binding NovaSenha}" IsPassword="True" MaxLength="50" />
+                    </Border>
+
+                    <Label Text="CONFIRME A NOVA SENHA" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
+                    <Border Style="{StaticResource Campo}">
+                        <Entry Text="{Binding Confirmacao}" IsPassword="True" MaxLength="50" />
+                    </Border>
+
+                    <Button Text="Redefinir senha"
+                            Command="{Binding RecuperarCommand}"
+                            IsEnabled="{Binding NaoOcupado}"
+                            Margin="0,10,0,0" />
+
+                    <ActivityIndicator IsRunning="{Binding Ocupado}"
+                                       IsVisible="{Binding Ocupado}"
+                                       HeightRequest="22" />
+
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

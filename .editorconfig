@@ -1,0 +1,32 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{csproj,props,targets,xaml,xml,json,yml,yaml}]
+indent_size = 2
+
+[*.cs]
+# --- convenções do projeto -------------------------------------------------
+dotnet_sort_system_directives_first = true
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_style_var_for_built_in_types = false:silent
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_prefer_braces = true:suggestion
+
+# Serviços e estratégias são registrados em DI e mantidos como instâncias
+# (mesmo quando não usam estado) para permitir substituição/teste sem tocar no domínio.
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1859.severity = none
+dotnet_diagnostic.CA1826.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA1002.severity = suggestion
+
+# Compara��o de nomes de usu�rio/conta � feita para o usu�rio final (acentos/idioma).
+dotnet_diagnostic.CA1309.severity = none
+dotnet_diagnostic.CA1305.severity = none

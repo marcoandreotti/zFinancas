@@ -1,0 +1,306 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
+             x:Class="zFinancas.App.Pages.LancamentosPage"
+             x:DataType="vm:LancamentosViewModel"
+             Title=""
+             Background="{StaticResource GradienteFundo}">
+
+    <Grid RowDefinitions="Auto,*" Padding="24,16,24,0" RowSpacing="14" MaximumWidthRequest="1180">
+
+        <!-- ============ cabeçalho e filtros -->
+        <VerticalStackLayout Grid.Row="0" Spacing="12">
+
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="Lançamentos" Style="{StaticResource TituloPagina}" />
+                    <Label Text="{Binding QuantidadeTexto}" Style="{StaticResource Subtitulo}" />
+                </VerticalStackLayout>
+
+                <Button Grid.Column="1"
+                        Text="+  Novo"
+                        Command="{Binding NovoCommand}"
+                        VerticalOptions="Center" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                <Border Style="{StaticResource Campo}">
+                    <Entry Text="{Binding Busca}" Placeholder="Buscar por descrição…" />
+                </Border>
+
+                <Button Grid.Column="1"
+                        Text="{Binding ResumoContas}"
+                        Command="{Binding AbrirSelecaoContasCommand}"
+                        Style="{StaticResource BotaoSecundario}"
+                        WidthRequest="210" />
+
+                <HorizontalStackLayout Grid.Column="2" Spacing="6" VerticalOptions="Center">
+                    <Label Text="Só pendentes" Style="{StaticResource Rotulo}" VerticalOptions="Center" />
+                    <Switch IsToggled="{Binding SomentePendentes}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Grid>
+
+            <Border Style="{StaticResource Card}" Padding="16,12">
+                <Grid ColumnDefinitions="*,Auto,*,Auto" ColumnSpacing="12">
+                    <VerticalStackLayout Spacing="1">
+                        <Label Text="COMPENSADO" Style="{StaticResource Rotulo}" />
+                        <Label Text="{Binding TotalCompensadoTexto}" Style="{StaticResource ValorPositivo}" FontSize="15" />
+                    </VerticalStackLayout>
+
+                    <BoxView Grid.Column="1" WidthRequest="1" Color="{StaticResource BordaSuave}" />
+
+                    <VerticalStackLayout Grid.Column="2" Spacing="1">
+                        <Label Text="A COMPENSAR" Style="{StaticResource Rotulo}" />
+                        <Label Text="{Binding TotalPendenteTexto}" Style="{StaticResource ValorNegativo}" FontSize="15" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+
+        <!-- ============ lista -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Itens}"
+                        SelectionMode="None"
+                        VerticalScrollBarVisibility="Never"
+                        Margin="0,0,0,16">
+            <CollectionView.EmptyView>
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                        <Label Text="🧾" FontSize="26" HorizontalOptions="Center" />
+                        <Label Text="Nenhum lançamento encontrado" Style="{StaticResource TituloSecao}" HorizontalTextAlignment="Center" />
+                        <Label Text="Ajuste os filtros ou registre um novo lançamento." Style="{StaticResource Subtitulo}" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:LancamentoVm">
+                    <Border Style="{StaticResource LinhaLista}"
+                            Margin="0,0,0,8"
+                            BackgroundColor="{Binding CorFundoDestaque}">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LancamentosViewModel}}, Path=EditarCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                            <Border WidthRequest="38"
+                                    HeightRequest="38"
+                                    BackgroundColor="{StaticResource SuperficieElevada}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 12"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding IconeCentro}" FontSize="16" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                <HorizontalStackLayout Spacing="6">
+                                    <Label Text="{Binding Descricao}" FontFamily="OpenSansSemibold" FontSize="14" />
+                                    <Border IsVisible="{Binding Pendente}"
+                                            BackgroundColor="#33F7B955"
+                                            StrokeThickness="0"
+                                            Padding="6,1"
+                                            StrokeShape="RoundRectangle 6"
+                                            VerticalOptions="Center">
+                                        <Label Text="pendente" FontSize="9" TextColor="{StaticResource Alerta}" />
+                                    </Border>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Detalhe}" Style="{StaticResource Subtitulo}" FontSize="11" />
+                                <Label Text="{Binding ContaDescricao}" FontSize="10" TextColor="{StaticResource TextoFraco}" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="2" Spacing="1" VerticalOptions="Center">
+                                <Label Text="{Binding ValorTexto}"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="14"
+                                       TextColor="{Binding CorValor}"
+                                       HorizontalTextAlignment="End" />
+                                <Label Text="{Binding RotuloParcela}"
+                                       FontSize="10"
+                                       TextColor="{StaticResource TextoFraco}"
+                                       HorizontalTextAlignment="End" />
+                            </VerticalStackLayout>
+
+                            <Button Grid.Column="3"
+                                    Text="⋯"
+                                    FontSize="18"
+                                    Style="{StaticResource BotaoTexto}"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LancamentosViewModel}}, Path=AcoesCommand}"
+                                    CommandParameter="{Binding .}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+                        <!-- ===================== painel de seleção de parcelas ===================== -->
+                        <Grid Grid.RowSpan="2"
+                              IsVisible="{Binding SelecaoAtiva}"
+                              BackgroundColor="#CC05080F"
+                              Padding="24">
+
+                            <Border Style="{StaticResource CardElevado}"
+                                    Padding="0"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="Fill"
+                                    MaximumWidthRequest="720">
+
+                                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
+
+                                    <VerticalStackLayout Grid.Row="0" Padding="20,20,20,10" Spacing="4">
+                                        <Label Text="{Binding Selecao.Titulo}" Style="{StaticResource TituloSecao}" />
+                                        <Label Text="{Binding Selecao.Instrucao}"
+                                               Style="{StaticResource Subtitulo}"
+                                               FontSize="11" />
+                                    </VerticalStackLayout>
+
+                                    <CollectionView Grid.Row="1"
+                                                    ItemsSource="{Binding Selecao.Parcelas}"
+                                                    SelectionMode="None"
+                                                    MaximumHeightRequest="330"
+                                                    Margin="20,0">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ParcelaSelecionavel">
+                                                <Border BackgroundColor="{StaticResource Superficie}"
+                                                        StrokeThickness="0"
+                                                        Padding="12"
+                                                        Margin="0,0,0,6"
+                                                        StrokeShape="RoundRectangle 10">
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                                        <CheckBox IsChecked="{Binding Selecionada, Mode=TwoWay}"
+                                                                  VerticalOptions="Center"
+                                                                  Color="{StaticResource Primaria}" />
+
+                                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                                            <Label Text="{Binding Descricao}" FontSize="13" FontFamily="OpenSansSemibold" />
+                                                            <Label Text="{Binding Detalhe}" Style="{StaticResource Subtitulo}" FontSize="10" />
+                                                        </VerticalStackLayout>
+
+                                                        <Label Grid.Column="2"
+                                                               Text="{Binding ValorTexto}"
+                                                               TextColor="{Binding CorValor}"
+                                                               FontFamily="OpenSansSemibold"
+                                                               FontSize="13"
+                                                               VerticalOptions="Center" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+
+                                    <VerticalStackLayout Grid.Row="2" Padding="20,10,20,18" Spacing="10">
+                                        <Grid ColumnDefinitions="Auto,*,*" ColumnSpacing="10">
+                                            <Button Text="Marcar todas"
+                                                    Command="{Binding MarcarTodasSelecaoCommand}"
+                                                    Style="{StaticResource BotaoTexto}" />
+
+                                            <Button Grid.Column="1"
+                                                    Text="Limpar"
+                                                    Command="{Binding LimparSelecaoCommand}"
+                                                    Style="{StaticResource BotaoTexto}" />
+
+                                            <VerticalStackLayout Grid.Column="2" Spacing="0" HorizontalOptions="End">
+                                                <Label Text="{Binding Selecao.QuantidadeTexto}"
+                                                       Style="{StaticResource Rotulo}"
+                                                       HorizontalOptions="End" />
+                                                <Label Text="{Binding Selecao.TotalTexto}"
+                                                       FontFamily="OpenSansSemibold"
+                                                       FontSize="15"
+                                                       HorizontalOptions="End" />
+                                            </VerticalStackLayout>
+                                        </Grid>
+
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                            <Button Text="Cancelar"
+                                                    Command="{Binding CancelarSelecaoCommand}"
+                                                    Style="{StaticResource BotaoSecundario}" />
+
+                                            <Button Grid.Column="1"
+                                                    Text="{Binding Selecao.TextoConfirmar}"
+                                                    Command="{Binding ConfirmarSelecaoCommand}"
+                                                    IsEnabled="{Binding Selecao.TemSelecao}" />
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </Grid>
+            <!-- ===================== painel de seleção de contas ===================== -->
+            <Grid Grid.RowSpan="2"
+                  IsVisible="{Binding SelecaoContasAtiva}"
+                  BackgroundColor="#CC05080F"
+                  Padding="24">
+
+                <Border Style="{StaticResource CardElevado}"
+                        Padding="0"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Fill"
+                        MaximumWidthRequest="560">
+
+                    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
+
+                        <VerticalStackLayout Grid.Row="0" Padding="20,20,20,10" Spacing="4">
+                            <Label Text="{Binding SelecaoContas.Titulo}" Style="{StaticResource TituloSecao}" />
+                            <Label Text="{Binding SelecaoContas.Instrucao}"
+                                   Style="{StaticResource Subtitulo}"
+                                   FontSize="11" />
+                        </VerticalStackLayout>
+
+                        <CollectionView Grid.Row="1"
+                                        ItemsSource="{Binding SelecaoContas.Contas}"
+                                        SelectionMode="None"
+                                        MaximumHeightRequest="320"
+                                        Margin="20,0">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ContaFiltro">
+                                    <Border BackgroundColor="{StaticResource Superficie}"
+                                            StrokeThickness="0"
+                                            Padding="12"
+                                            Margin="0,0,0,6"
+                                            StrokeShape="RoundRectangle 10">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                            <CheckBox IsChecked="{Binding Selecionada, Mode=TwoWay}"
+                                                      VerticalOptions="Center"
+                                                      Color="{StaticResource Primaria}" />
+
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Rotulo}"
+                                                   FontFamily="OpenSansSemibold"
+                                                   FontSize="13"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <VerticalStackLayout Grid.Row="2" Padding="20,10,20,18" Spacing="10">
+                            <HorizontalStackLayout Spacing="12">
+                                <Button Text="Marcar todas"
+                                        Command="{Binding SelecaoContas.MarcarTodasCommand}"
+                                        Style="{StaticResource BotaoTexto}" />
+
+                                <Button Text="Limpar"
+                                        Command="{Binding SelecaoContas.LimparCommand}"
+                                        Style="{StaticResource BotaoTexto}" />
+                            </HorizontalStackLayout>
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <Button Text="Cancelar"
+                                        Command="{Binding SelecaoContas.CancelarCommand}"
+                                        Style="{StaticResource BotaoSecundario}" />
+
+                                <Button Grid.Column="1"
+                                        Text="{Binding SelecaoContas.TextoConfirmar}"
+                                        Command="{Binding SelecaoContas.ConfirmarCommand}"
+                                        IsEnabled="{Binding SelecaoContas.TemSelecao}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </Grid>
+    </Grid>
+
+</ContentPage>
+

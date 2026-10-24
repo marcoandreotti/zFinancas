@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Runner de testes por reflexão.
+       Alguns ambientes (CI restrito, sandbox de agentes) bloqueiam o VSTest ao abrir o
+       handle do processo pai. Este console descobre e executa os [Fact] da suíte sem
+       depender do vstest.console, mantendo o mesmo conjunto de testes. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>zFinancas.TestRunner</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\tests\zFinancas.Tests\zFinancas.Tests.csproj" />
+  </ItemGroup>
+
+</Project>

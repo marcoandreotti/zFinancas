@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ============================================================
+         Paleta zFinancas — tema escuro, indigo + menta.
+         O app força AppTheme.Dark para manter a identidade visual
+         idêntica no Windows e no Android.
+         ============================================================ -->
+
+    <Color x:Key="Fundo">#070B16</Color>
+    <Color x:Key="FundoSecundario">#0B1220</Color>
+    <Color x:Key="Superficie">#111A2E</Color>
+    <Color x:Key="SuperficieElevada">#18233C</Color>
+    <Color x:Key="SuperficieSuave">#0E1626</Color>
+    <Color x:Key="Borda">#243152</Color>
+    <Color x:Key="BordaSuave">#1A2439</Color>
+
+    <Color x:Key="Primaria">#6C5BFF</Color>
+    <Color x:Key="PrimariaEscura">#4B3BE0</Color>
+    <Color x:Key="PrimariaClara">#9A8CFF</Color>
+    <Color x:Key="Menta">#2ED3A0</Color>
+    <Color x:Key="Positivo">#4D9BFF</Color>
+    <Color x:Key="Negativo">#FF5C7A</Color>
+    <Color x:Key="Alerta">#F7B955</Color>
+
+    <Color x:Key="Texto">#F4F7FF</Color>
+    <Color x:Key="TextoSecundario">#9AA8C7</Color>
+    <Color x:Key="TextoFraco">#64748B</Color>
+    <Color x:Key="Branco">#FFFFFF</Color>
+    <Color x:Key="Vidro">#1AFFFFFF</Color>
+    <Color x:Key="VidroForte">#26FFFFFF</Color>
+
+    <Color x:Key="Preto">#000000</Color>
+
+    <!-- Brushes -->
+    <LinearGradientBrush x:Key="GradienteHero" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#6C5BFF" Offset="0.0" />
+        <GradientStop Color="#4B3BE0" Offset="0.55" />
+        <GradientStop Color="#2B1FA8" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="GradienteMenta" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#2ED3A0" Offset="0.0" />
+        <GradientStop Color="#17A97E" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="GradienteFundo" StartPoint="0,0" EndPoint="0.4,1">
+        <GradientStop Color="#070B16" Offset="0.0" />
+        <GradientStop Color="#0B1220" Offset="0.6" />
+        <GradientStop Color="#0E1728" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="GradienteCartao" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#1B2748" Offset="0.0" />
+        <GradientStop Color="#131C32" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="BordaBrush" Color="{StaticResource Borda}" />
+    <SolidColorBrush x:Key="SuperficieBrush" Color="{StaticResource Superficie}" />
+
+</ResourceDictionary>

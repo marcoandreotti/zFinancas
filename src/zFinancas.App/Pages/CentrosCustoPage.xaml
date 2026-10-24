@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
+             x:Class="zFinancas.App.Pages.CentrosCustoPage"
+             x:DataType="vm:CentrosCustoViewModel"
+             Title=""
+             Background="{StaticResource GradienteFundo}">
+
+    <Grid RowDefinitions="Auto,*" Padding="24,16,24,0" RowSpacing="12" MaximumWidthRequest="980">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Centros de custo" Style="{StaticResource TituloPagina}" />
+                <Label Text="Agrupadores das suas despesas e receitas, com ícone para reconhecer rápido." Style="{StaticResource Subtitulo}" />
+            </VerticalStackLayout>
+
+            <Button Grid.Column="1" Text="+  Novo centro" Command="{Binding NovoCommand}" VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="12" Padding="0,0,0,20">
+
+                <Border Style="{StaticResource CardElevado}" IsVisible="{Binding FormularioVisivel}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="{Binding TituloFormulario}" Style="{StaticResource TituloSecao}" />
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="DESCRIÇÃO" Style="{StaticResource Rotulo}" />
+                                <Border Style="{StaticResource Campo}">
+                                    <Entry Text="{Binding Descricao}" Placeholder="Ex.: Alimentação" MaxLength="50" />
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="6" WidthRequest="96">
+                                <Label Text="ÍCONE" Style="{StaticResource Rotulo}" />
+                                <Border Style="{StaticResource Campo}">
+                                    <Picker ItemsSource="{Binding Icones}" SelectedItem="{Binding Icone}" />
+                                </Border>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                <Label Text="Centro principal" FontSize="13" />
+                                <Label Text="Usado como padrão nos lançamentos"
+                                       Style="{StaticResource Subtitulo}"
+                                       FontSize="11" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding Principal}" VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                <Label Text="Ativo" FontSize="13" />
+                                <Label Text="Inativo não aparece nas seleções"
+                                       Style="{StaticResource Subtitulo}"
+                                       FontSize="11" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding Ativo}" VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Button Text="Salvar" Command="{Binding SalvarCommand}" />
+                            <Button Grid.Column="1" Text="Cancelar" Command="{Binding CancelarCommand}" Style="{StaticResource BotaoSecundario}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Itens}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CentroCustoVm">
+                            <Border Style="{StaticResource LinhaLista}" Opacity="{Binding Opacidade}">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border WidthRequest="40"
+                                            HeightRequest="40"
+                                            BackgroundColor="{StaticResource SuperficieElevada}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 12"
+                                            VerticalOptions="Center">
+                                        <Label Text="{Binding Icone}" FontSize="17" HorizontalOptions="Center" VerticalOptions="Center" />
+                                    </Border>
+
+                                    <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                        <Label Text="{Binding Descricao}" FontFamily="OpenSansSemibold" FontSize="14" />
+                                        <Label Text="{Binding Situacao}" FontSize="11" TextColor="{Binding CorSituacao}" />
+                                    </VerticalStackLayout>
+
+                                    <Button Grid.Column="2"
+                                            Text="⋯"
+                                            Style="{StaticResource BotaoTexto}"
+                                            FontSize="16"
+                                            VerticalOptions="Center"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CentrosCustoViewModel}}, Path=AcoesCommand}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <ActivityIndicator IsRunning="{Binding Ocupado}" IsVisible="{Binding Ocupado}" HeightRequest="22" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>
+

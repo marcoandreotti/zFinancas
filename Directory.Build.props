@@ -1,0 +1,27 @@
+﻿<Project>
+
+  <!-- Convenções compartilhadas por todos os projetos do zFinancas. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- Versões centralizadas (sem gerenciamento central de pacotes para não
+         conflitar com os item groups implícitos do SDK do MAUI). -->
+    <MauiVersion>9.0.82</MauiVersion>
+    <SqliteVersion>9.0.10</SqliteVersion>
+    <ExtensionsVersion>9.0.10</ExtensionsVersion>
+    <XunitVersion>2.9.3</XunitVersion>
+    <XunitRunnerVersion>2.8.2</XunitRunnerVersion>
+    <TestSdkVersion>17.14.1</TestSdkVersion>
+  </PropertyGroup>
+
+  <!-- Domínio e dados não devem conhecer detalhes de UI. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'zFinancas.Core' Or '$(MSBuildProjectName)' == 'zFinancas.Data'">
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+  </PropertyGroup>
+
+</Project>
