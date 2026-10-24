@@ -272,6 +272,32 @@ conflito “última escrita vence”) e **12 testes do interpretador de voz**.
 - **`AGRUPADOR` numérico é local do aparelho**; o agrupamento lógico entre aparelhos usa
   `AGRUPADORUUID`.
 
+## Fluxo de branches
+
+| Branch | Papel |
+| --- | --- |
+| `main` | linha **estável**: só recebe o que já foi testado (cada merge pode virar uma tag) |
+| `develop` | linha de **trabalho**: onde o desenvolvimento acontece e é testado |
+| `feature/nome-curto` | opcional, para uma mudança isolada que depois entra na `develop` |
+
+```powershell
+git switch develop            # trabalhar aqui
+git switch -c feature/voz-en     # mudança isolada (opcional)
+
+# ... commits ...
+git switch develop
+git merge feature/voz-en         # junta na develop
+
+# quando estiver validado:
+git switch main
+git merge --no-ff develop        # leva para a estável
+git tag -a v1.1 -m "v1.1"        # marca a versão (opcional)
+git push origin main develop --tags
+```
+
+Regra prática: `main` sempre compila e passa nos testes (`.\build.ps1 -Test`);
+`develop` pode estar em andamento.
+
 ## Solução de problemas
 
 ### `SQLite Error 8: attempt to write a readonly database`
