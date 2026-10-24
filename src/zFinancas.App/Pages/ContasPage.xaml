@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -59,16 +59,24 @@
                             </BindableLayout.ItemTemplate>
                         </HorizontalStackLayout>
 
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                            <HorizontalStackLayout Spacing="8">
-                                <Switch IsToggled="{Binding Principal}" />
-                                <Label Text="Conta principal" VerticalOptions="Center" FontSize="13" />
-                            </HorizontalStackLayout>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                <Label Text="Conta principal" FontSize="13" />
+                                <Label Text="Selecionada por padrão nos lançamentos"
+                                       Style="{StaticResource Subtitulo}"
+                                       FontSize="11" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding Principal}" VerticalOptions="Center" />
+                        </Grid>
 
-                            <HorizontalStackLayout Grid.Column="1" Spacing="8">
-                                <Switch IsToggled="{Binding Ativa}" />
-                                <Label Text="Ativa" VerticalOptions="Center" FontSize="13" />
-                            </HorizontalStackLayout>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                <Label Text="Ativa" FontSize="13" />
+                                <Label Text="Inativa não aparece nas seleções"
+                                       Style="{StaticResource Subtitulo}"
+                                       FontSize="11" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding Ativa}" VerticalOptions="Center" />
                         </Grid>
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
@@ -98,24 +106,13 @@
                                         <Label Text="{Binding Situacao}" FontSize="11" TextColor="{Binding CorSituacao}" />
                                     </VerticalStackLayout>
 
-                                    <HorizontalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
-                                        <Button Text="Principal"
-                                                IsVisible="{Binding Principal, Converter={StaticResource InverterBooleano}}"
-                                                Style="{StaticResource BotaoTexto}"
-                                                FontSize="11"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContasViewModel}}, Path=DefinirPrincipalCommand}"
-                                                CommandParameter="{Binding .}" />
-                                        <Button Text="Editar"
-                                                Style="{StaticResource BotaoTexto}"
-                                                FontSize="11"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContasViewModel}}, Path=EditarCommand}"
-                                                CommandParameter="{Binding .}" />
-                                        <Button Text="{Binding RotuloAcao}"
-                                                Style="{StaticResource BotaoTexto}"
-                                                FontSize="11"
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContasViewModel}}, Path=AlternarAtivoCommand}"
-                                                CommandParameter="{Binding .}" />
-                                    </HorizontalStackLayout>
+                                    <Button Grid.Column="2"
+                                            Text="⋯"
+                                            Style="{StaticResource BotaoTexto}"
+                                            FontSize="16"
+                                            VerticalOptions="Center"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ContasViewModel}}, Path=AcoesCommand}"
+                                            CommandParameter="{Binding .}" />
                                 </Grid>
                             </Border>
                         </DataTemplate>

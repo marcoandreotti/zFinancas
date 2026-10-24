@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -42,6 +42,7 @@ public sealed class ContasViewModel : BaseViewModel
         SalvarCommand = new ComandoAssincrono(SalvarAsync);
         CancelarCommand = new Comando(() => FormularioVisivel = false);
         AlternarAtivoCommand = new ComandoAssincrono<ContaVm>(AlternarAtivoAsync);
+        AcoesCommand = new ComandoAssincrono<ContaVm>(ExecutarAcoesAsync);
         DefinirPrincipalCommand = new ComandoAssincrono<ContaVm>(DefinirPrincipalAsync);
 
         Cores = new ObservableCollection<CorOpcao>(ContaCorrente.PaletaCores.Select(hex => new CorOpcao(hex)));
@@ -61,6 +62,7 @@ public sealed class ContasViewModel : BaseViewModel
     public ICommand CancelarCommand { get; }
     public ICommand AlternarAtivoCommand { get; }
     public ICommand DefinirPrincipalCommand { get; }
+    public ICommand AcoesCommand { get; }
 
     public bool FormularioVisivel
     {
@@ -188,5 +190,42 @@ public sealed class ContasViewModel : BaseViewModel
             await _servico.DefinirPrincipalAsync(conta.Id);
             await CarregarAsync();
         }, "Não foi possível definir a conta principal");
+    }
+    /// <summary>Menu de ações da conta na lista (editar, principal, ativar/desativar).</summary>
+    private async Task ExecutarAcoesAsync(ContaVm? conta)
+    {
+        if (conta is null) return;
+
+        var opcoes = new List<string> { "Editar" };
+
+        if (!conta.Principal && conta.Ativo)
+        {
+            opcoes.Add("Definir como principal");
+        }
+
+        opcoes.Add(conta.Ativo ? "Desativar" : "Ativar");
+
+        var escolha = await _dialogos.EscolherAsync($"{conta.Icone} {conta.Descricao}", [.. opcoes]);
+
+        switch (escolha)
+        {
+            case "Editar":
+                AbrirFormulario(conta);
+                return;
+
+            case "Definir como principal":
+                await DefinirPrincipalAsync(conta);
+                break;
+
+            case "Ativar":
+            case "Desativar":
+                await AlternarAtivoAsync(conta);
+                break;
+
+            default:
+                return;
+        }
+
+        await CarregarAsync();
     }
 }
