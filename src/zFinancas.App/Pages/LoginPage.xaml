@@ -28,23 +28,16 @@
                                      VerticalOptions="Center">
 
                     <!-- marca -->
-                    <Border WidthRequest="72"
-                            HeightRequest="72"
-                            HorizontalOptions="Center"
-                            StrokeThickness="0"
-                            Background="{StaticResource GradienteHero}"
-                            StrokeShape="RoundRectangle 22">
-                        <Label Text="zF"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="24"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center" />
-                    </Border>
+                    <Image Source="simbolo.png"
+                           WidthRequest="104"
+                           HeightRequest="104"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center" />
 
                     <VerticalStackLayout Spacing="6">
-                        <Label Text="zFinancas"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="30"
+                        <Image Source="logotipoclaro.png"
+                               HeightRequest="36"
+                               Aspect="AspectFit"
                                HorizontalOptions="Center" />
                         <Label Text="{Binding Subtitulo}"
                                Style="{StaticResource Subtitulo}"

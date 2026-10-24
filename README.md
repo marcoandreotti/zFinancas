@@ -1,10 +1,30 @@
 # zFinancas
 
+<p align="center">
+  <img src="src/zFinancas.App/Resources/Images/logotipoclaro.png" alt="zFinancas" height="84" />
+</p>
+
 Controle financeiro pessoal **offline** em **.NET MAUI** para **Windows** e **Android**.
 Domínio testável, SQLite local e sincronização por arquivo entre PC e celular — sem nuvem,
 sem telemetria e sem depender de internet.
 
 ![Dashboard do zFinancas](docs/imagens/dashboard.png)
+
+
+## Identidade visual
+
+| Peça | Onde | Arquivo |
+| --- | --- | --- |
+| Ícone do app | launcher Android / atalho Windows | `Resources/AppIcon/appicon.png` (+ `appiconfg.png`) |
+| Splash do sistema | abertura fria | `Resources/Splash/splash.png` (fundo `#0B1020`) |
+| Abertura animada | primeiros 1,6 s (fade + escala) | `Pages/AberturaPage` + `simbolo.png` |
+| Logotipo claro | login e abertura | `Resources/Images/logotipoclaro.png` |
+| Símbolo | cabeçalho do dashboard | `Resources/Images/simbolo.png` |
+
+A versão clara do logotipo existe porque o texto original é azul-marinho e desaparece no
+tema escuro: os pixels escuros foram remapeados para `#F4F7FF`, mantendo o símbolo colorido.
+
+![Abertura](docs/imagens/abertura.png)
 
 ## O que já está pronto
 

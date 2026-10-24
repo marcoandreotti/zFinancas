@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="zFinancas.App.Pages.AberturaPage"
+             BackgroundColor="{StaticResource Fundo}"
+             NavigationPage.HasNavigationBar="False">
+
+    <Grid>
+        <!-- halo suave atrás da marca -->
+        <Border WidthRequest="360"
+                HeightRequest="360"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                StrokeThickness="0"
+                Opacity="0.16"
+                BackgroundColor="{StaticResource Primaria}"
+                StrokeShape="RoundRectangle 360">
+            <Border.Shadow>
+                <Shadow Brush="{StaticResource Primaria}" Opacity="0.6" Radius="60" />
+            </Border.Shadow>
+        </Border>
+
+        <VerticalStackLayout x:Name="Marca"
+                             Spacing="22"
+                             Opacity="0"
+                             Scale="0.86"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
+
+            <Image Source="simbolo.png"
+                   WidthRequest="128"
+                   HeightRequest="128"
+                   Aspect="AspectFit"
+                   HorizontalOptions="Center" />
+
+            <Image Source="logotipoclaro.png"
+                   HeightRequest="40"
+                   Aspect="AspectFit"
+                   HorizontalOptions="Center" />
+
+            <ActivityIndicator IsRunning="True"
+                               Color="{StaticResource PrimariaClara}"
+                               HeightRequest="20"
+                               Margin="0,6,0,0" />
+        </VerticalStackLayout>
+
+        <Label x:Name="Rodape"
+               Text="Seu controle financeiro, 100% offline"
+               Style="{StaticResource Subtitulo}"
+               FontSize="11"
+               Opacity="0"
+               HorizontalOptions="Center"
+               VerticalOptions="End"
+               Margin="0,0,0,36" />
+    </Grid>
+</ContentPage>

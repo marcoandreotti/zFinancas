@@ -13,6 +13,11 @@
             <!-- ============================ cabeçalho -->
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="2">
+                    <Image Source="simbolo.png"
+                           HeightRequest="30"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Start"
+                           Margin="0,0,0,6" />
                     <Label Text="{Binding Saudacao}" Style="{StaticResource TituloPagina}" />
                     <Label Text="{Binding DataTexto}" Style="{StaticResource Subtitulo}" />
                 </VerticalStackLayout>
