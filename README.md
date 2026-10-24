@@ -19,7 +19,7 @@ sem telemetria e sem depender de internet.
 | **Extrato** | conta + período, saldo anterior (só compensados), saldo linha a linha e destaque dos pendentes |
 | **Contas correntes** | CRUD com cor e ícone; menu `⋯` para editar, definir principal e **ativar/desativar** |
 | **Centros de custo** | CRUD com ícone (emoji), centro principal único |
-| **Usuários** | perfis ADM/USR, ativação, reset de senha e vínculo com contas |
+| **Usuários** | perfis ADM/USR e vínculo com contas; menu `⋯` para editar, redefinir senha e **ativar/desativar** |
 | **Sincronização** | exporta/importa pacote `.zfsync` com resolução de conflito |
 | **Configurações** | conta padrão, biometria, informações do aparelho e sair |
 

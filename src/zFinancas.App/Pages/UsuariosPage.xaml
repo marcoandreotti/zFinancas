@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -57,23 +57,13 @@
                                     <Label Text="{Binding Situacao}" FontSize="10" TextColor="{Binding CorSituacao}" />
                                 </VerticalStackLayout>
 
-                                <HorizontalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
-                                    <Button Text="Senha"
-                                            Style="{StaticResource BotaoTexto}"
-                                            FontSize="11"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UsuariosViewModel}}, Path=RedefinirSenhaCommand}"
-                                            CommandParameter="{Binding .}" />
-                                    <Button Text="Editar"
-                                            Style="{StaticResource BotaoTexto}"
-                                            FontSize="11"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UsuariosViewModel}}, Path=EditarCommand}"
-                                            CommandParameter="{Binding .}" />
-                                    <Button Text="Ativar/Desativar"
-                                            Style="{StaticResource BotaoTexto}"
-                                            FontSize="11"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UsuariosViewModel}}, Path=AlternarAtivoCommand}"
-                                            CommandParameter="{Binding .}" />
-                                </HorizontalStackLayout>
+                                <Button Grid.Column="2"
+                                        Text="⋯"
+                                        Style="{StaticResource BotaoTexto}"
+                                        FontSize="16"
+                                        VerticalOptions="Center"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UsuariosViewModel}}, Path=AcoesCommand}"
+                                        CommandParameter="{Binding .}" />
                             </Grid>
                         </Border>
                     </DataTemplate>
