@@ -17,19 +17,18 @@
                     <Label Text="{Binding DataTexto}" Style="{StaticResource Subtitulo}" />
                 </VerticalStackLayout>
 
-                <FlexLayout Grid.Column="1"
-                            Direction="Row"
-                            Wrap="Wrap"
-                            JustifyContent="End"
-                            AlignItems="Center"
-                            VerticalOptions="Center">
+                <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
                     <Button Text="{Binding RotuloFalar}"
                             Command="{Binding FalarCommand}"
                             Style="{StaticResource BotaoSecundario}"
-                            Margin="0,0,8,0" />
-                    <Button Text="{Binding RotuloNovoLancamento}"
-                            Command="{Binding NovoLancamentoCommand}" />
-                </FlexLayout>
+                            SemanticProperties.Description="Lançamento por voz" />
+
+                    <Button Text="+"
+                            FontSize="20"
+                            WidthRequest="46"
+                            Command="{Binding NovoLancamentoCommand}"
+                            SemanticProperties.Description="Novo lançamento" />
+                </HorizontalStackLayout>
             </Grid>
 
             <!-- ============================ saldo consolidado -->
