@@ -20,6 +20,8 @@
                 <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
                     <Button Text="{Binding RotuloFalar}"
                             Command="{Binding FalarCommand}"
+                            ImageSource="microfone.png"
+                            ContentLayout="Left,8"
                             Style="{StaticResource BotaoSecundario}"
                             SemanticProperties.Description="Lançamento por voz" />
 
