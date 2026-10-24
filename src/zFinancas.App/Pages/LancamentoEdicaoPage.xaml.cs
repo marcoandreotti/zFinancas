@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
 
@@ -7,12 +7,6 @@ namespace zFinancas.App.Pages;
 public partial class LancamentoEdicaoPage : ContentPage
 {
     private bool _aplicandoMascara;
-
-    /// <summary>
-    /// Alguns aparelhos recusam reescrever o texto do <c>EditText</c> enquanto ele processa a
-    /// digitação. Nesse caso passamos a formatar apenas ao sair do campo.
-    /// </summary>
-    private bool _formatarSomenteAoSair;
 
     public LancamentoEdicaoPage()
     {
@@ -33,35 +27,25 @@ public partial class LancamentoEdicaoPage : ContentPage
     }
 
     /// <summary>
-    /// Máscara de moeda do campo valor.
+    /// Campo de valor com máscara de moeda.
     /// <para>
-    /// A reescrita do texto é <b>postergada</b> para o próximo ciclo da UI: no Android, trocar
-    /// o texto dentro do próprio <c>TextChanged</c> (ou pelo binding) estoura
-    /// <c>IllegalArgumentException: end should be &lt; than charSequence length</c>.
+    /// Enquanto o campo está com foco, <b>não tocamos no texto nem no cursor</b>: no Android,
+    /// reescrever o <c>EditText</c> durante a digitação (por binding ou evento) estoura
+    /// <c>IllegalArgumentException: end should be &lt; than charSequence length</c>. O valor é
+    /// mascarado imediatamente no ViewModel (usado ao salvar) e o campo é formatado ao sair.
     /// </para>
     /// </summary>
     private void OnValorDigitado(object? sender, TextChangedEventArgs e)
     {
-        if (_aplicandoMascara || sender is not Entry campo)
+        if (_aplicandoMascara)
         {
             return;
         }
 
-        var mascarado = MascaraMoeda.Aplicar(e.NewTextValue);
-
-        ViewModel.ValorTexto = mascarado;
-
-        if (_formatarSomenteAoSair ||
-            e.NewTextValue is null ||
-            mascarado == e.NewTextValue)
-        {
-            return;
-        }
-
-        Dispatcher.Dispatch(() => AplicarTexto(campo, mascarado));
+        ViewModel.ValorTexto = MascaraMoeda.Aplicar(e.NewTextValue);
     }
 
-    /// <summary>Ao sair do campo, formata (caminho seguro, sem edição em andamento).</summary>
+    /// <summary>Formata o campo quando ele perde o foco (sem edição em andamento).</summary>
     private void OnValorDesfocado(object? sender, FocusEventArgs e)
     {
         if (sender is not Entry campo)
@@ -73,7 +57,7 @@ public partial class LancamentoEdicaoPage : ContentPage
 
         ViewModel.ValorTexto = mascarado;
 
-        if (mascarado != campo.Text)
+        if (!string.Equals(mascarado, campo.Text, StringComparison.Ordinal))
         {
             AplicarTexto(campo, mascarado);
         }
@@ -81,7 +65,7 @@ public partial class LancamentoEdicaoPage : ContentPage
 
     private void AplicarTexto(Entry campo, string texto)
     {
-        if (_aplicandoMascara)
+        if (_aplicandoMascara || campo.IsFocused)
         {
             return;
         }
@@ -91,17 +75,9 @@ public partial class LancamentoEdicaoPage : ContentPage
         try
         {
             campo.Text = texto;
-
-            // Só mexe no cursor quando o texto realmente assumiu o valor esperado.
-            if (campo.Text?.Length == texto.Length)
-            {
-                campo.CursorPosition = texto.Length;
-            }
         }
         catch (Exception ex)
         {
-            // Aparelho recusou a troca durante a digitação: formata só ao sair do campo.
-            _formatarSomenteAoSair = true;
             RegistroDeFalhas.Registrar(ex, "MascaraValor");
         }
         finally
@@ -113,6 +89,11 @@ public partial class LancamentoEdicaoPage : ContentPage
     /// <summary>Reflete no campo valores definidos pelo ViewModel (edição, voz).</summary>
     private void SincronizarCampoValor()
     {
+        if (CampoValor.IsFocused)
+        {
+            return;
+        }
+
         var texto = ViewModel.ValorTexto ?? string.Empty;
 
         if (string.Equals(CampoValor.Text, texto, StringComparison.Ordinal))
