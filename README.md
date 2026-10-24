@@ -21,6 +21,15 @@ sem telemetria e sem depender de internet.
 | Logotipo claro | login e abertura | `Resources/Images/logotipoclaro.png` |
 | Símbolo | cabeçalho do dashboard | `Resources/Images/simbolo.png` |
 
+> **Troquei a arte e o ícone não muda?** O `resizetizer` do MAUI guarda o resultado em
+> `obj\Debug\net9.0-android` e pode reaproveitar o ícone antigo. Limpe e reconstrua:
+>
+> ```powershell
+> .\build.ps1 -Target android -Clean
+> ```
+>
+> Depois reinstale (`adb install -r`) e reinicie o launcher do aparelho.
+
 A versão clara do logotipo existe porque o texto original é azul-marinho e desaparece no
 tema escuro: os pixels escuros foram remapeados para `#F4F7FF`, mantendo o símbolo colorido.
 
