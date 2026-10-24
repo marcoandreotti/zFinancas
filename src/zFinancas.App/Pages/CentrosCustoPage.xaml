@@ -37,7 +37,8 @@
 
                             <CollectionView ItemsSource="{Binding IconesOpcoes}"
                                             HeightRequest="56"
-                                            SelectionMode="None"
+                                            SelectionMode="Single"
+                                            SelectionChanged="OnIconeSelecionado"
                                             HorizontalScrollBarVisibility="Never"
                                             VerticalScrollBarVisibility="Never">
                                 <CollectionView.ItemsLayout>
@@ -51,9 +52,6 @@
                                                 BackgroundColor="{Binding Fundo}"
                                                 StrokeThickness="0"
                                                 StrokeShape="RoundRectangle 14">
-                                            <Border.GestureRecognizers>
-                                                <TapGestureRecognizer Tapped="OnIconeTapped" />
-                                            </Border.GestureRecognizers>
                                             <Label Text="{Binding Valor}"
                                                    FontSize="24"
                                                    HorizontalOptions="Center"

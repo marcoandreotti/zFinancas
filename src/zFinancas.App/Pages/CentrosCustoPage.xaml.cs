@@ -28,4 +28,14 @@ public partial class CentrosCustoPage : ContentPage
             _viewModel.DefinirIcone(opcao.Valor);
         }
     }
+    /// <summary>Seleção do ícone pela CollectionView (toque nativo confiável no Android).</summary>
+    private void OnIconeSelecionado(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is not ViewModels.IconeOpcao opcao)
+        {
+            return;
+        }
+
+        _viewModel.DefinirIcone(opcao.Valor);
+    }
 }
