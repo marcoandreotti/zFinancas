@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
@@ -17,14 +17,7 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-        // Android: libera vírgula E ponto no teclado numérico (o filtro nativo só aceita
-        // o separador do idioma do aparelho).
-#if ANDROID
-        Platforms.Android.TecladoNumerico.Configurar();
-#endif
-
         var builder = MauiApp.CreateBuilder();
-
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()

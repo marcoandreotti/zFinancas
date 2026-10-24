@@ -1,6 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"></application>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true">
+		<!--
+			Desativa o EmojiCompat (AndroidX Emoji2): o EmojiTextWatcher reprocessa o texto a
+			cada tecla e estoura "IllegalArgumentException: end should be < than charSequence
+			length" quando o campo tem o texto trocado por código (máscara de moeda).
+			Os emojis continuam sendo renderizados pela fonte do sistema.
+		-->
+		<provider
+			android:name="androidx.startup.InitializationProvider"
+			android:authorities="${applicationId}.androidx-startup"
+			android:exported="false"
+			tools:node="merge">
+			<meta-data
+				android:name="androidx.emoji2.text.EmojiCompatInitializer"
+				android:value="androidx.startup"
+				tools:node="remove" />
+		</provider>
+	</application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
 	<!-- Captura de voz do lançamento (SpeechToText) -->

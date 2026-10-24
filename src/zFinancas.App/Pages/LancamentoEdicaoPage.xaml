@@ -69,7 +69,6 @@
                             <Entry Grid.Column="1"
                                    x:Name="CampoValor"
                                    TextChanged="OnValorDigitado"
-                                   Unfocused="OnValorDesfocado"
                                    Keyboard="Numeric"
                                    Placeholder="0,00"
                                    FontSize="20"

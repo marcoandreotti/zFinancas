@@ -27,54 +27,35 @@ public partial class LancamentoEdicaoPage : ContentPage
     }
 
     /// <summary>
-    /// Campo de valor com máscara de moeda.
+    /// Máscara de moeda do campo valor, no padrão “desanexa → formata → reanexa”.
     /// <para>
-    /// Enquanto o campo está com foco, <b>não tocamos no texto nem no cursor</b>: no Android,
-    /// reescrever o <c>EditText</c> durante a digitação (por binding ou evento) estoura
-    /// <c>IllegalArgumentException: end should be &lt; than charSequence length</c>. O valor é
-    /// mascarado imediatamente no ViewModel (usado ao salvar) e o campo é formatado ao sair.
+    /// A troca do texto é <b>síncrona</b> e não mexe no cursor: no Android, reescrever o
+    /// <c>EditText</c> de forma assíncrona (ou reposicionar a seleção) estoura
+    /// <c>IllegalArgumentException: end should be &lt; than charSequence length</c>.
     /// </para>
     /// </summary>
     private void OnValorDigitado(object? sender, TextChangedEventArgs e)
     {
-        if (_aplicandoMascara)
+        if (_aplicandoMascara || sender is not Entry campo)
         {
             return;
         }
 
-        ViewModel.ValorTexto = MascaraMoeda.Aplicar(e.NewTextValue);
-    }
+        var mascarado = MascaraMoeda.Aplicar(e.NewTextValue);
 
-    /// <summary>Formata o campo quando ele perde o foco (sem edição em andamento).</summary>
-    private void OnValorDesfocado(object? sender, FocusEventArgs e)
-    {
-        if (sender is not Entry campo)
+        if (string.Equals(mascarado, e.NewTextValue, StringComparison.Ordinal))
         {
+            ViewModel.ValorTexto = mascarado;
             return;
         }
 
-        var mascarado = MascaraMoeda.Aplicar(campo.Text);
-
-        ViewModel.ValorTexto = mascarado;
-
-        if (!string.Equals(mascarado, campo.Text, StringComparison.Ordinal))
-        {
-            AplicarTexto(campo, mascarado);
-        }
-    }
-
-    private void AplicarTexto(Entry campo, string texto)
-    {
-        if (_aplicandoMascara || campo.IsFocused)
-        {
-            return;
-        }
-
+        // Desanexa o handler para não entrar em laço, troca o texto e reanexa.
         _aplicandoMascara = true;
 
         try
         {
-            campo.Text = texto;
+            campo.TextChanged -= OnValorDigitado;
+            campo.Text = mascarado;
         }
         catch (Exception ex)
         {
@@ -82,8 +63,21 @@ public partial class LancamentoEdicaoPage : ContentPage
         }
         finally
         {
+            campo.TextChanged += OnValorDigitado;
             _aplicandoMascara = false;
         }
+
+        // Cursor no fim depois que o texto assenta: sem isso o próximo dígito entra no
+        // começo do texto formatado. Mexer só na seleção não toca no texto.
+        Dispatcher.Dispatch(() =>
+        {
+            if (campo.Text?.Length == mascarado.Length)
+            {
+                campo.CursorPosition = mascarado.Length;
+            }
+        });
+
+        ViewModel.ValorTexto = mascarado;
     }
 
     /// <summary>Reflete no campo valores definidos pelo ViewModel (edição, voz).</summary>
@@ -101,7 +95,20 @@ public partial class LancamentoEdicaoPage : ContentPage
             return;
         }
 
-        AplicarTexto(CampoValor, texto);
+        _aplicandoMascara = true;
+
+        try
+        {
+            CampoValor.Text = texto;
+        }
+        catch (Exception ex)
+        {
+            RegistroDeFalhas.Registrar(ex, "MascaraValor");
+        }
+        finally
+        {
+            _aplicandoMascara = false;
+        }
     }
 
     private void AoMudarViewModel(object? sender, PropertyChangedEventArgs e)
