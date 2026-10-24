@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
@@ -18,7 +18,6 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
-
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()

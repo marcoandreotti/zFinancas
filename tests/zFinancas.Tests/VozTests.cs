@@ -164,4 +164,49 @@ public class InterpretadorDeVozTests
     {
         Assert.Equal("saude alimentacao", InterpretadorDeVoz.Normalizar("Saúde, alimentação!"));
     }
+
+
+    [Fact]
+    public void Frase_recebimento_com_moeda_falada_limpa_a_descricao()
+    {
+        var resultado = Interpretar("recebimento pagamento mil reias");
+
+        Assert.True(resultado.Sucesso);
+        var lancamento = resultado.Lancamento!;
+
+        Assert.False(lancamento.EhDespesa);
+        Assert.Equal(1000m, lancamento.ValorComSinal);
+        Assert.Equal("Pagamento", lancamento.Descricao);
+    }
+
+    [Fact]
+    public void Frase_despesa_com_moeda_falada_limpa_a_descricao()
+    {
+        var resultado = Interpretar("despesa pagamento mil reais");
+
+        Assert.True(resultado.Sucesso);
+        Assert.True(resultado.Lancamento!.EhDespesa);
+        Assert.Equal(-1000m, resultado.Lancamento.ValorComSinal);
+        Assert.Equal("Pagamento", resultado.Lancamento.Descricao);
+    }
+
+    [Fact]
+    public void Mil_reais_sem_digito_vale_mil()
+    {
+        var resultado = Interpretar("gastei mil reais no mercado");
+
+        Assert.True(resultado.Sucesso);
+        Assert.Equal(-1000m, resultado.Lancamento!.ValorComSinal);
+        Assert.Equal("Mercado", resultado.Lancamento.Descricao);
+    }
+
+    [Fact]
+    public void Letra_solta_nao_entra_na_descricao()
+    {
+        var resultado = Interpretar("recebi mil R$ de freelas");
+
+        Assert.True(resultado.Sucesso);
+        Assert.Equal(1000m, resultado.Lancamento!.ValorComSinal);
+        Assert.DoesNotContain(" r", resultado.Lancamento.Descricao, StringComparison.OrdinalIgnoreCase);
+    }
 }

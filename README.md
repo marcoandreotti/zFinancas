@@ -1,10 +1,39 @@
 # zFinancas
 
+<p align="center">
+  <img src="src/zFinancas.App/Resources/Images/logotipoclaro.png" alt="zFinancas" height="84" />
+</p>
+
 Controle financeiro pessoal **offline** em **.NET MAUI** para **Windows** e **Android**.
 Domínio testável, SQLite local e sincronização por arquivo entre PC e celular — sem nuvem,
 sem telemetria e sem depender de internet.
 
 ![Dashboard do zFinancas](docs/imagens/dashboard.png)
+
+
+## Identidade visual
+
+| Peça | Onde | Arquivo |
+| --- | --- | --- |
+| Ícone do app | launcher Android / atalho Windows | `Resources/AppIcon/appicon.png` (+ `appiconfg.png`) |
+| Splash do sistema | abertura fria | `Resources/Splash/splash.png` (fundo `#0B1020`) |
+| Abertura animada | primeiros 1,6 s (fade + escala) | `Pages/AberturaPage` + `simbolo.png` |
+| Logotipo claro | login e abertura | `Resources/Images/logotipoclaro.png` |
+| Símbolo | cabeçalho do dashboard | `Resources/Images/simbolo.png` |
+
+> **Troquei a arte e o ícone não muda?** O `resizetizer` do MAUI guarda o resultado em
+> `obj\Debug\net9.0-android` e pode reaproveitar o ícone antigo. Limpe e reconstrua:
+>
+> ```powershell
+> .\build.ps1 -Target android -Clean
+> ```
+>
+> Depois reinstale (`adb install -r`) e reinicie o launcher do aparelho.
+
+A versão clara do logotipo existe porque o texto original é azul-marinho e desaparece no
+tema escuro: os pixels escuros foram remapeados para `#F4F7FF`, mantendo o símbolo colorido.
+
+![Abertura](docs/imagens/abertura.png)
 
 ## O que já está pronto
 
@@ -271,6 +300,45 @@ conflito “última escrita vence”) e **12 testes do interpretador de voz**.
 - **Tema escuro fixo**: identidade visual igual nas duas plataformas.
 - **`AGRUPADOR` numérico é local do aparelho**; o agrupamento lógico entre aparelhos usa
   `AGRUPADORUUID`.
+
+## Fluxo de branches
+
+| Branch | Papel |
+| --- | --- |
+| `main` | linha **estável**: só recebe o que já foi testado (cada merge pode virar uma tag) |
+| `develop` | linha de **trabalho**: onde o desenvolvimento acontece e é testado |
+| `feature/nome-curto` | opcional, para uma mudança isolada que depois entra na `develop` |
+
+```powershell
+git switch develop            # trabalhar aqui
+git switch -c feature/voz-en     # mudança isolada (opcional)
+
+# ... commits ...
+git switch develop
+git merge feature/voz-en         # junta na develop
+
+# quando estiver validado:
+git switch main
+git merge --no-ff develop        # leva para a estável
+git tag -a v1.1 -m "v1.1"        # marca a versão (opcional)
+git push origin main develop --tags
+```
+
+Regra prática: `main` sempre compila e passa nos testes (`.\build.ps1 -Test`);
+`develop` pode estar em andamento.
+
+## Ajustes de celular (Android)
+
+O layout se adapta a telas estreitas:
+
+- **Extrato**: título sem quebra, `↻` para atualizar, contas em linha própria, resumo em 2×2 e
+  compensação em um ícone `✓`;
+- **Lançamentos**: título com tamanho reduzido no celular e compensação em `✓` na linha;
+- **Dashboard**: botões quebram linha quando não cabem ao lado do cumprimento;
+- **Centros de custo**: ícones em chips grandes (o `Picker` nativo deixava o emoji mínimo);
+- **Contas**: chips de cor grandes com anel branco no selecionado;
+- **Valor**: aceita `,` **e** `.` no campo (normaliza para vírgula com 2 casas), já que o
+  teclado numérico do celular pode não ter vírgula.
 
 ## Solução de problemas
 

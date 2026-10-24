@@ -28,4 +28,22 @@ public partial class ContasPage : ContentPage
             _viewModel.DefinirCor(cor.Hex);
         }
     }
+    /// <summary>
+    /// Seleção de cor pela CollectionView (toque nativo) — o TapGestureRecognizer em Border
+    /// não é confiável no Android.
+    /// </summary>
+    private void OnCorSelecionada(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is not ViewModels.CorOpcao cor)
+        {
+            return;
+        }
+
+        _viewModel.DefinirCor(cor.Hex);
+
+        if (sender is CollectionView lista)
+        {
+            lista.SelectedItem = null;
+        }
+    }
 }

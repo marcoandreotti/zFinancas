@@ -13,7 +13,7 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        var janela = new Window(Servicos.ServicoNavegacao.CriarCascaDeEntrada())
+        var janela = new Window(Servicos.ServicoNavegacao.CriarCascaDeAbertura())
         {
             Title = "zFinancas"
         };

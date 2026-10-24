@@ -38,6 +38,19 @@ public sealed class ServicoNavegacao
         return Task.CompletedTask;
     }
 
+    /// <summary>Casca inicial: abertura animada (sem barra de navegação).</summary>
+    public static Page CriarCascaDeAbertura()
+    {
+        var abertura = new Pages.AberturaPage();
+        NavigationPage.SetHasNavigationBar(abertura, false);
+
+        return new NavigationPage(abertura)
+        {
+            BarBackgroundColor = Paleta.Fundo,
+            BarTextColor = Paleta.Texto
+        };
+    }
+
     /// <summary>Casca inicial: apenas navegacao de entrada (sem menu lateral).</summary>
     public static Page CriarCascaDeEntrada()
     {

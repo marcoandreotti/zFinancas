@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text;
 using zFinancas.Core.Dominio.Entidades;
 
@@ -65,7 +65,13 @@ public sealed class InterpretadorDeVoz
     [
         "o", "a", "os", "as", "um", "uma", "uns", "umas", "de", "do", "da", "dos", "das",
         "no", "na", "nos", "nas", "em", "por", "para", "pra", "com", "e", "que", "meu", "minha",
-        "reais", "real", "conto", "contos", "pila", "pilas", "ai", "ah", "entao", "bem", "so",
+
+        // moeda (inclui grafias que o reconhecedor costuma devolver: "reias", "mil réis")
+        "reais", "real", "reias", "reias", "conto", "contos", "pila", "pilas", "mil", "milhao",
+        "milhoes", "brl", "rs", "r",
+
+        // muletas de fala
+        "ai", "ah", "entao", "bem", "so", "tipo", "meio", "cerca", "mais", "menos",
         "hoje", "ontem", "anteontem", "amanha", "agora"
     ];
 
@@ -305,6 +311,7 @@ public sealed class InterpretadorDeVoz
     {
         var restantes = tokens
             .Where(t => !tokensDoValor.Contains(t))
+            .Where(t => t.Length > 1)   // restos como "r" de "R$" ou letra solta
             .Where(t => !Ruido.Contains(t))
             .Where(t => !PalavrasDespesa.Contains(t) && !PalavrasRecebimento.Contains(t))
             .Where(t => !NumerosPorExtenso.ContainsKey(t) && t != "mil" && t != "que")

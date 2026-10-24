@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -13,6 +13,11 @@
             <!-- ============================ cabeçalho -->
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="2">
+                    <Image Source="simbolo.png"
+                           HeightRequest="30"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Start"
+                           Margin="0,0,0,6" />
                     <Label Text="{Binding Saudacao}" Style="{StaticResource TituloPagina}" />
                     <Label Text="{Binding DataTexto}" Style="{StaticResource Subtitulo}" />
                 </VerticalStackLayout>
@@ -20,9 +25,16 @@
                 <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
                     <Button Text="{Binding RotuloFalar}"
                             Command="{Binding FalarCommand}"
-                            Style="{StaticResource BotaoSecundario}" />
-                    <Button Text="+  Novo lançamento"
-                            Command="{Binding NovoLancamentoCommand}" />
+                            ImageSource="microfone.png"
+                            ContentLayout="Left,8"
+                            Style="{StaticResource BotaoSecundario}"
+                            SemanticProperties.Description="Lançamento por voz" />
+
+                    <Button Text="+"
+                            FontSize="20"
+                            WidthRequest="46"
+                            Command="{Binding NovoLancamentoCommand}"
+                            SemanticProperties.Description="Novo lançamento" />
                 </HorizontalStackLayout>
             </Grid>
 

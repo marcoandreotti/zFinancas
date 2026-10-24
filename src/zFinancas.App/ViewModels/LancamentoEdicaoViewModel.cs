@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
@@ -292,7 +292,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
 
             Descricao = lancamento.Descricao;
             EhDespesa = lancamento.Valor < 0m;
-            ValorTexto = Math.Abs(lancamento.Valor).ToString("N2", CultureInfo.GetCultureInfo("pt-BR"));
+            ValorTexto = MascaraMoeda.Formatar(lancamento.Valor);
             ContaSelecionada = Contas.FirstOrDefault(c => c.Id == lancamento.ContaCorrenteId);
             CentroSelecionado = Centros.FirstOrDefault(c => c.Id == lancamento.CentroCustoId);
             DataVencimento = lancamento.DataVencimento;
@@ -551,7 +551,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         _rascunhoDeVoz = null;
 
         EhDespesa = rascunho.EhDespesa;
-        ValorTexto = Math.Abs(rascunho.Valor).ToString("N2", CultureInfo.GetCultureInfo("pt-BR"));
+        ValorTexto = MascaraMoeda.Formatar(rascunho.Valor);
         Descricao = rascunho.Descricao;
         DataVencimento = rascunho.DataVencimento;
         DataLancamento = rascunho.DataVencimento;

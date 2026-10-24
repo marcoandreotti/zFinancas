@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -12,32 +12,38 @@
         <!-- ============================ filtros -->
         <VerticalStackLayout Grid.Row="0" Spacing="12">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                <VerticalStackLayout Spacing="2">
-                    <Label Text="Extrato de lançamentos" Style="{StaticResource TituloPagina}" />
-                    <Label Text="{Binding PeriodoTexto}" Style="{StaticResource Subtitulo}" />
-                </VerticalStackLayout>
+                <Label Text="Extrato de lançamentos"
+                       Style="{StaticResource TituloPagina}"
+                       LineBreakMode="TailTruncation"
+                       VerticalOptions="Center" />
 
                 <Button Grid.Column="1"
-                        Text="Atualizar"
+                        Text="↻"
+                        FontSize="18"
+                        WidthRequest="46"
                         Command="{Binding CarregarCommand}"
                         Style="{StaticResource BotaoSecundario}"
+                        SemanticProperties.Description="Atualizar"
                         VerticalOptions="Center" />
             </Grid>
 
-            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <VerticalStackLayout Spacing="10">
                 <Button Text="{Binding ResumoContas}"
                         Command="{Binding AbrirSelecaoContasCommand}"
                         Style="{StaticResource BotaoSecundario}"
-                        HorizontalOptions="Fill" />
+                        HorizontalOptions="Fill"
+                        LineBreakMode="TailTruncation" />
 
-                <Border Grid.Column="1" WidthRequest="150" Style="{StaticResource Campo}">
-                    <DatePicker Date="{Binding DataInicio}" Format="dd/MM/yyyy" />
-                </Border>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Border Style="{StaticResource Campo}">
+                        <DatePicker Date="{Binding DataInicio}" Format="dd/MM/yyyy" />
+                    </Border>
 
-                <Border Grid.Column="2" WidthRequest="150" Style="{StaticResource Campo}">
-                    <DatePicker Date="{Binding DataFim}" Format="dd/MM/yyyy" />
-                </Border>
-            </Grid>
+                    <Border Grid.Column="1" Style="{StaticResource Campo}">
+                        <DatePicker Date="{Binding DataFim}" Format="dd/MM/yyyy" />
+                    </Border>
+                </Grid>
+            </VerticalStackLayout>
 
             <HorizontalStackLayout Spacing="8">
                 <Button Text="Mês atual" Command="{Binding MesAtualCommand}" Style="{StaticResource BotaoTexto}" />
@@ -48,7 +54,7 @@
 
         <!-- ============================ resumo de saldos -->
         <Border Grid.Row="1" Style="{StaticResource CardElevado}">
-            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
                 <VerticalStackLayout Spacing="2">
                     <Label Text="SALDO ANTERIOR" Style="{StaticResource Rotulo}" />
                     <Label Text="{Binding SaldoAnteriorTexto}" Style="{StaticResource ValorMedio}" FontSize="15" />
@@ -61,13 +67,13 @@
                     <Label Text="projetado" FontSize="9" TextColor="{StaticResource TextoFraco}" />
                 </VerticalStackLayout>
 
-                <VerticalStackLayout Grid.Column="2" Spacing="2">
+                <VerticalStackLayout Grid.Row="1" Spacing="2">
                     <Label Text="COMPENSADO" Style="{StaticResource Rotulo}" />
                     <Label Text="{Binding SaldoCompensadoTexto}" Style="{StaticResource ValorPositivo}" FontSize="15" />
                     <Label Text="ao fim do período" FontSize="9" TextColor="{StaticResource TextoFraco}" />
                 </VerticalStackLayout>
 
-                <VerticalStackLayout Grid.Column="3" Spacing="2">
+                <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="2">
                     <Label Text="ENTRADAS / SAÍDAS" Style="{StaticResource Rotulo}" />
                     <HorizontalStackLayout Spacing="6">
                         <Label Text="{Binding EntradasTexto}" Style="{StaticResource ValorPositivo}" FontSize="13" />
@@ -136,7 +142,7 @@
                             </VerticalStackLayout>
 
                             <Button Grid.Column="3"
-                                    Text="Compensar"
+                                    Text="✓"
                                     IsVisible="{Binding Pendente}"
                                     Style="{StaticResource BotaoTexto}"
                                     FontSize="11"
@@ -291,4 +297,3 @@
     </Grid>
 
 </ContentPage>
-

@@ -208,9 +208,61 @@ public sealed class ContaCartaoVm
 
 /// <summary>Item do menu lateral.</summary>
 /// <summary>Amostra de cor para o seletor de contas.</summary>
-public sealed record CorOpcao(string Hex)
+/// <summary>Chip de cor do formulário de conta (com estado de selecionado).</summary>
+public sealed class CorOpcao : System.ComponentModel.INotifyPropertyChanged
 {
+    private bool _selecionada;
+
+    public CorOpcao(string hex) => Hex = hex;
+
+    public string Hex { get; }
+
     public Color Cor => Paleta.DeHex(Hex);
+
+    public bool Selecionada
+    {
+        get => _selecionada;
+        set
+        {
+            if (_selecionada == value) return;
+            _selecionada = value;
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Selecionada)));
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(CorBorda)));
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(EspessuraBorda)));
+        }
+    }
+
+    public Color CorBorda => Selecionada ? Colors.White : Colors.Transparent;
+
+    public double EspessuraBorda => Selecionada ? 3 : 0;
+
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+}
+
+/// <summary>Ícone do formulário de centro de custo (chip com estado de selecionado).</summary>
+public sealed class IconeOpcao : System.ComponentModel.INotifyPropertyChanged
+{
+    private bool _selecionado;
+
+    public IconeOpcao(string valor) => Valor = valor;
+
+    public string Valor { get; }
+
+    public bool Selecionado
+    {
+        get => _selecionado;
+        set
+        {
+            if (_selecionado == value) return;
+            _selecionado = value;
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Selecionado)));
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Fundo)));
+        }
+    }
+
+    public Color Fundo => Selecionado ? Paleta.Primaria : Paleta.SuperficieElevada;
+
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 }
 
 public sealed class ItemMenu

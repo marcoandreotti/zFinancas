@@ -98,7 +98,14 @@ public sealed class ContasViewModel : BaseViewModel
     /// <summary>Seleciona a cor pelo chip do formulário.</summary>
     public void DefinirCor(string? hex)
     {
-        if (!string.IsNullOrWhiteSpace(hex)) CorHex = hex;
+        if (string.IsNullOrWhiteSpace(hex)) return;
+
+        CorHex = hex;
+
+        foreach (var opcao in Cores)
+        {
+            opcao.Selecionada = string.Equals(opcao.Hex, hex, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     public bool Principal
@@ -117,7 +124,11 @@ public sealed class ContasViewModel : BaseViewModel
 
     public async Task CarregarAsync()
     {
-        await ExecutarAsync(async () =>
+        // Sem a guarda de "ocupado" do ExecutarAsync: o recarregamento é chamado também
+        // de dentro do fluxo de salvar (que já está ocupado) e precisa rodar assim mesmo.
+        Ocupado = true;
+
+        try
         {
             var contas = await _servico.ListarAsync(incluirInativas: true);
 
@@ -128,7 +139,22 @@ public sealed class ContasViewModel : BaseViewModel
             }
 
             OnPropertyChanged(nameof(SemItens));
-        }, "Não foi possível carregar as contas");
+
+            // mantém a sessão em dia (conta nova precisa aparecer nas seleções)
+            _sessao.AtualizarContas(await _servico.ListarAsync());
+        }
+        catch (Core.Dominio.Excecoes.DominioException ex)
+        {
+            await _dialogos.AlertaAsync("Contas correntes", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            await _dialogos.AlertaAsync("Contas correntes", ex.Message);
+        }
+        finally
+        {
+            Ocupado = false;
+        }
     }
 
     private void AbrirFormulario(ContaVm? conta)
@@ -137,6 +163,7 @@ public sealed class ContasViewModel : BaseViewModel
         Descricao = conta?.Descricao ?? string.Empty;
         Icone = conta?.Icone ?? "🏦";
         CorHex = conta?.CorHex ?? ContaCorrente.PaletaCores[0];
+        DefinirCor(CorHex);
         Principal = conta?.Principal ?? false;
         Ativa = conta?.Ativo ?? true;
 

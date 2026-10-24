@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -12,15 +12,16 @@
 
             <!-- ===================== voz -->
             <Border Style="{StaticResource Card}" Padding="14">
-                <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="10">
-                    <Label Text="🎤" FontSize="18" VerticalOptions="Center" />
-                    <Button Grid.Column="1"
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Button
                             Text="{Binding RotuloFalar}"
+                            ImageSource="microfone.png"
+                            ContentLayout="Left,8"
                             Command="{Binding FalarCommand}"
                             IsEnabled="{Binding NaoOcupado}"
                             Style="{StaticResource BotaoSecundario}" />
 
-                    <VerticalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                         <Label Text="Dite o lançamento" Style="{StaticResource Rotulo}" />
                         <Label Text="{Binding StatusVoz}"
                                IsVisible="{Binding TemStatusVoz}"
@@ -66,7 +67,8 @@
                                    TextColor="{StaticResource TextoSecundario}"
                                    Margin="2,0,8,0" />
                             <Entry Grid.Column="1"
-                                   Text="{Binding ValorTexto}"
+                                   x:Name="CampoValor"
+                                   TextChanged="OnValorDigitado"
                                    Keyboard="Numeric"
                                    Placeholder="0,00"
                                    FontSize="20"
@@ -75,6 +77,12 @@
                         </Grid>
                     </Border>
 
+
+
+                    <Label Text="Digite só números: 3250 → 32,50"
+                           Style="{StaticResource Subtitulo}"
+                           FontSize="10"
+                           Margin="0,-6,0,0" />
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                         <VerticalStackLayout Spacing="6">
                             <Label Text="CONTA CORRENTE" Style="{StaticResource Rotulo}" />

@@ -41,23 +41,28 @@
                                 </Border>
                             </VerticalStackLayout>
                         </Grid>
+                        <CollectionView ItemsSource="{Binding Cores}"
+                                        x:Name="ListaCores"
+                                        HeightRequest="52"
+                                        SelectionMode="Single"
+                                        SelectionChanged="OnCorSelecionada"
+                                        HorizontalScrollBarVisibility="Never"
+                                        VerticalScrollBarVisibility="Never">
+                            <CollectionView.ItemsLayout>
+                                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
+                            </CollectionView.ItemsLayout>
 
-                        <Label Text="COR" Style="{StaticResource Rotulo}" />
-                        <HorizontalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Cores}">
-                            <BindableLayout.ItemTemplate>
+                            <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="vm:CorOpcao">
-                                    <Border WidthRequest="30"
-                                            HeightRequest="30"
-                                            StrokeThickness="0"
+                                    <Border WidthRequest="38"
+                                            HeightRequest="38"
+                                            Stroke="{Binding CorBorda}"
+                                            StrokeThickness="{Binding EspessuraBorda}"
                                             BackgroundColor="{Binding Cor}"
-                                            StrokeShape="RoundRectangle 15">
-                                        <Border.GestureRecognizers>
-                                            <TapGestureRecognizer Tapped="OnCorTapped" />
-                                        </Border.GestureRecognizers>
-                                    </Border>
+                                            StrokeShape="RoundRectangle 19" />
                                 </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </HorizontalStackLayout>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
 
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                             <VerticalStackLayout Spacing="1" VerticalOptions="Center">
