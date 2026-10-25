@@ -77,8 +77,20 @@
                 </Grid>
             </Border>
 
+            <!-- ============================ base nova -->
+            <Border Style="{StaticResource CardElevado}" IsVisible="{Binding SemContas}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Nenhuma conta ainda" FontSize="16" FontFamily="OpenSansSemibold" />
+                    <Label Text="Comece criando a sua conta corrente (ou cartão). Depois cadastre um centro de custo e registre o primeiro lançamento."
+                           Style="{StaticResource Subtitulo}"
+                           FontSize="12" />
+                    <Button Text="Criar conta corrente"
+                            Command="{Binding CriarContaCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
             <!-- ============================ contas -->
-            <Grid ColumnDefinitions="*,Auto">
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding SemContas, Converter={StaticResource InverterBooleano}}">
                 <Label Text="Suas contas" Style="{StaticResource TituloSecao}" VerticalOptions="Center" />
                 <Button Grid.Column="1"
                         Text="Ver extrato"

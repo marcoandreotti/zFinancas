@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -52,6 +52,8 @@ public sealed class DashboardViewModel : BaseViewModel
         Titulo = "Dashboard";
 
         AtualizarCommand = new ComandoAssincrono(CarregarAsync);
+        CriarContaCommand = new ComandoAssincrono(
+            () => ServicosApp.Obter<ServicoNavegacao>().IrParaSecaoAsync(Secoes.Contas));
         NovoLancamentoCommand = new ComandoAssincrono(() => _navegacao.AbrirLancamentoAsync());
         VerExtratoCommand = new ComandoAssincrono(() => _navegacao.IrParaSecaoAsync(Secoes.Extrato));
         VerLancamentosCommand = new ComandoAssincrono(() => _navegacao.IrParaSecaoAsync(Secoes.Lancamentos));
@@ -69,6 +71,9 @@ public sealed class DashboardViewModel : BaseViewModel
 
     /// <summary>Microfone do dashboard: dita e abre o formulário já preenchido.</summary>
     public ICommand FalarCommand { get; }
+
+    /// <summary>Atalho do estado vazio: leva para o cadastro de contas.</summary>
+    public ICommand CriarContaCommand { get; }
 
     public string Saudacao
     {

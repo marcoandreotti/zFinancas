@@ -130,10 +130,18 @@ public sealed class CenarioTeste : IAsyncDisposable
     // ------------------------------------------------------------------ atalhos
 
     /// <summary>Cria o administrador e já autentica a sessão.</summary>
+    /// <summary>
+    /// Cria o ADM e, por conveniência dos testes, uma conta e um centro principais.
+    /// (O app real não semeia mais nada: a base nasce vazia, ver PrimeiroAcessoService.)
+    /// </summary>
     public async Task<Usuario> ConfigurarAdministradorAsync(string nome = "Marco", string senha = "senha123")
     {
         var resultado = await PrimeiroAcesso.ConfigurarAsync(new RequisicaoConfiguracaoInicial(nome, senha));
         await Autenticacao.EntrarAsync(resultado.Administrador.Id, senha);
+
+        await CriarContaAsync("Conta Principal", principal: true);
+        await CriarCentroAsync("Geral", principal: true);
+
         return resultado.Administrador;
     }
 

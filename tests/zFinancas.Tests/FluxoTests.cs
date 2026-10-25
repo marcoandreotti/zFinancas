@@ -8,7 +8,7 @@ namespace zFinancas.Tests;
 public class PrimeiroAcessoTests
 {
     [Fact]
-    public async Task Primeiro_acesso_cria_administrador_e_semeia_conta_e_centro()
+    public async Task Primeiro_acesso_cria_so_o_administrador()
     {
         await using var cenario = await CenarioTeste.CriarAsync();
 
@@ -20,9 +20,11 @@ public class PrimeiroAcessoTests
         Assert.True(resultado.Administrador.EhAdministrador);
         Assert.Equal("Marco", resultado.Administrador.Nome);
         Assert.True(resultado.Administrador.Ativo);
-        Assert.True(resultado.ContaPrincipal.Principal);
-        Assert.True(resultado.CentroPrincipal.Principal);
         Assert.Matches("^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$", resultado.CodigoRecuperacao);
+
+        // A base nasce vazia: o ADM cria as contas e centros que quiser.
+        Assert.Empty(await cenario.ContaRepositorio.ListarAsync(incluirInativas: true));
+        Assert.Empty(await cenario.CentroRepositorio.ListarAsync(incluirInativos: true));
 
         Assert.False(await cenario.PrimeiroAcesso.PrecisaConfigurarAsync());
 
