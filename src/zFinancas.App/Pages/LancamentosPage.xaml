@@ -120,9 +120,10 @@
                                        FontSize="14"
                                        TextColor="{Binding CorValor}"
                                        HorizontalTextAlignment="End" />
-                                <Label Text="{Binding RotuloParcela}"
-                                       FontSize="10"
-                                       TextColor="{StaticResource TextoFraco}"
+                                <Label Text="{Binding SaldoTexto}"
+                                       FontSize="11"
+                                       TextColor="{StaticResource TextoSecundario}"
+                                       IsVisible="{Binding TemSaldo}"
                                        HorizontalTextAlignment="End" />
                             </VerticalStackLayout>
 

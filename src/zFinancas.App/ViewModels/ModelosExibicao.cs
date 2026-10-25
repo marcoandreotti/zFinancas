@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Servicos;
@@ -139,11 +139,23 @@ public sealed class LancamentoVm
         ContaCorrente? conta = null,
         CentroCusto? centro = null,
         string? saldoTexto = null,
-        bool foraDoPeriodo = false)
+        bool foraDoPeriodo = false,
+        bool parcelaNoDetalhe = false)
     {
-        var detalhe = centro is null
-            ? lancamento.DataVencimento.ToString("dd/MM/yyyy")
-            : $"{lancamento.DataVencimento:dd/MM/yyyy} • {centro.Icone} {centro.Descricao}";
+        var partes = new List<string> { lancamento.DataVencimento.ToString("dd/MM/yyyy") };
+
+        // Na tela de Lançamentos a parcela entra no meio: data • 3/12 • centro.
+        if (parcelaNoDetalhe && lancamento.QuantidadeParcelas > 1)
+        {
+            partes.Add(lancamento.RotuloParcela);
+        }
+
+        if (centro is not null)
+        {
+            partes.Add($"{centro.Icone} {centro.Descricao}");
+        }
+
+        var detalhe = string.Join(" • ", partes);
 
         return new LancamentoVm
         {

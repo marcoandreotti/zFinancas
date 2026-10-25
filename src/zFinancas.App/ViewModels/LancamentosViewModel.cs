@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -176,13 +176,18 @@ public sealed class LancamentosViewModel : BaseViewModel
 
                 var contasPorId = contas.ToDictionary(c => c.Id);
 
+                // Saldo por linha igual ao extrato: acumulado dos compensados, por conta.
+                var saldos = CalcularSaldos(todos);
+
                 Itens.Clear();
                 foreach (var lancamento in filtrados.Take(300))
                 {
                     Itens.Add(LancamentoVm.Criar(
                         lancamento,
                         contasPorId.GetValueOrDefault(lancamento.ContaCorrenteId),
-                        centros.GetValueOrDefault(lancamento.CentroCustoId)));
+                        centros.GetValueOrDefault(lancamento.CentroCustoId),
+                        $"saldo {Formatador.Moeda(saldos.GetValueOrDefault(lancamento.Id))}",
+                        parcelaNoDetalhe: true));
                 }
 
                 TotalCompensadoTexto = Formatador.Moeda(filtrados.Where(l => l.Compensado).Sum(l => l.Valor));
@@ -202,6 +207,32 @@ public sealed class LancamentosViewModel : BaseViewModel
                 _ = CarregarAsync();
             }
         }
+    }
+
+    /// <summary>
+    /// Saldo acumulado de cada lançamento dentro da sua conta (só compensados),
+    /// na mesma regra do extrato — é o "saldo" mostrado na linha.
+    /// </summary>
+    private static Dictionary<long, decimal> CalcularSaldos(IEnumerable<Lancamento> lancamentos)
+    {
+        var saldos = new Dictionary<long, decimal>();
+
+        foreach (var grupo in lancamentos.GroupBy(l => l.ContaCorrenteId))
+        {
+            var saldo = 0m;
+
+            foreach (var lancamento in grupo.OrderBy(l => l.DataVencimento).ThenBy(l => l.Id))
+            {
+                if (lancamento.Compensado)
+                {
+                    saldo += lancamento.Valor;
+                }
+
+                saldos[lancamento.Id] = saldo;
+            }
+        }
+
+        return saldos;
     }
 
     // ------------------------------------------------------------- seleção de contas
