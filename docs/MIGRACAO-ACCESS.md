@@ -26,7 +26,7 @@ Saída em `.tmp\migracao`:
 | --- | --- | --- |
 | `Banco` + `ContaCorrente` | conta corrente | descrição vira `"<Banco> <número/conta>"` (ex.: `NU Bank MA-4024682-7`), porque o modelo novo tem uma descrição só |
 | `ContaCorrente.padrao` | `Principal` | a marcada como padrão vira a conta principal |
-| `ContaCorrente.exibir` | `Ativo` | conta que tem lançamentos fica ativa mesmo com `exibir = false` (senão o histórico ficaria órfão) |
+| `ContaCorrente.exibir` | `Ativo` | todas as contas são importadas; só ficam **habilitadas** as que tinham `exibir` ativo (o Extrato lista as inativas também, para o histórico não sumir) |
 | `CentroDeCusto` | centro de custo | nome normalizado (`DIVERSOS` → `Diversos`) e ícone escolhido pelo significado do nome |
 | `CentroDeCusto.padrao` | `Principal` | |
 | `CentroDeCusto.image` | — | as imagens do Access não são importadas; o app usa emoji |
@@ -39,8 +39,8 @@ Saída em `.tmp\migracao`:
 | --- | --- |
 | `historico` | `Descricao` (limpa, com correção de acentos do Access) |
 | `valor` | mantido **com sinal** (negativo = despesa) |
-| `dataLancamento` / `dataVencimento` | direto |
-| `compensado` / `dataCompensado` | `DataCompensado` só quando `compensado = true` |
+| `dataCompensado` | é a data que vale: quando compensado, `DataVencimento` e `DataLancamento` recebem a data da compensação (é ela que ordena a lista e alimenta o saldo no app antigo) |
+| `dataVencimento` | usada só para o que **não** foi compensado |
 | `parcela` / `totalParcelas` | `Parcela` / `QuantidadeParcelas` |
 | `agrupador` | vira `Agrupador` + um `AgrupadorUuid` por série (quitação e exclusão de parcelas continuam funcionando depois de sincronizar) |
 

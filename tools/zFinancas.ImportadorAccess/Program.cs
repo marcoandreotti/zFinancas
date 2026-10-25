@@ -82,8 +82,8 @@ foreach (var conta in contasAccess.OrderBy(c => c.contaID))
     {
         Descricao = descricao,
         Principal = conta.padrao,
-        // "exibir" no Access era usado como conta encerrada; mantemos ativa se tiver histórico.
-        Ativo = conta.exibir || lancamentosAccess.Any(l => l.contaID == conta.contaID),
+        // "exibir" no Access = conta habilitada. As demais entram no histórico, mas inativas.
+        Ativo = conta.exibir,
         CorHex = ContaCorrente.PaletaCores[cor++ % ContaCorrente.PaletaCores.Length],
         Icone = IconeDoBanco(banco),
         Ordem = conta.contaID,
@@ -210,7 +210,11 @@ foreach (var l in lancamentosAccess.OrderBy(l => l.lancamentoID))
     var total = Math.Max(1, (int)l.totalParcelas);
     var parcela = Math.Clamp(l.parcela <= 0 ? 1 : l.parcela, 1, total);
 
-    var vencimento = l.dataVencimento ?? l.dataLancamento ?? DateTime.Today;
+    // No app antigo a data que manda é a da COMPENSAÇÃO (é ela que ordena a lista e
+    // alimenta o saldo). Para o que ainda não foi compensado, fica o vencimento.
+    var vencimentoOriginal = l.dataVencimento ?? l.dataLancamento ?? DateTime.Today;
+    var dataCompensado = l.dataCompensado ?? vencimentoOriginal;
+    var dataBase = l.compensado ? dataCompensado : vencimentoOriginal;
 
     var entidade = new Lancamento
     {
@@ -218,10 +222,10 @@ foreach (var l in lancamentosAccess.OrderBy(l => l.lancamentoID))
         CentroCustoId = centroId,
         Descricao = descricao,
         Valor = (decimal)Math.Round(l.valor, 2),
-        DataLancamento = l.dataLancamento ?? vencimento,
-        DataVencimento = vencimento,
+        DataLancamento = l.compensado ? dataCompensado : (l.dataLancamento ?? dataBase),
+        DataVencimento = dataBase,
         Compensado = l.compensado,
-        DataCompensado = l.compensado ? (l.dataCompensado ?? vencimento) : null,
+        DataCompensado = l.compensado ? dataCompensado : null,
         Parcela = parcela,
         QuantidadeParcelas = total,
         Agrupador = l.agrupador,
