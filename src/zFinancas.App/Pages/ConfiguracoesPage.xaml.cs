@@ -1,4 +1,4 @@
-﻿using zFinancas.App.Servicos;
+using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
 
 namespace zFinancas.App.Pages;
@@ -25,7 +25,7 @@ public partial class ConfiguracoesPage : ContentPage
         await _viewModel.CarregarAsync();
         SincronizarSwitch();
 
-#if ANDROID
+#if ANDROID && DEBUG
         Android.Util.Log.Info("zFinancas.Bio", $"Carregado: disponivel={_viewModel.BiometriaDisponivel} habilitada={_viewModel.BiometriaHabilitada} switch={SwitchBiometria.IsToggled} ativo={SwitchBiometria.IsEnabled}");
 #endif
     }
@@ -50,7 +50,7 @@ public partial class ConfiguracoesPage : ContentPage
 
     private async void OnBiometriaToggled(object? sender, ToggledEventArgs e)
     {
-#if ANDROID
+#if ANDROID && DEBUG
         Android.Util.Log.Info("zFinancas.Bio", $"Toggled valor={e.Value} sincronizando={_sincronizando}");
 #endif
 

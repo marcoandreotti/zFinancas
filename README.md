@@ -35,21 +35,37 @@ tema escuro: os pixels escuros foram remapeados para `#F4F7FF`, mantendo o símb
 
 ![Abertura](docs/imagens/abertura.png)
 
+## Detalhes que valem saber
+
+**Biometria (Android).** Exige `USE_BIOMETRIC` no manifest; o prompt é o nativo
+(`BiometricPrompt`) com botão “Cancelar” — sem ele o Android recusa construir o diálogo.
+Depois de ativada em Configurações, a digital é pedida automaticamente ao abrir o login.
+
+**Campo de valor.** Máscara de moeda: os dígitos entram como centavos (`3250` → `32,50`).
+A escrita no `EditText` é feita no `TextChanged` com o handler desconectado e o cursor
+reposicionado depois — sem isso, o AndroidX Emoji2 estoura
+`end should be < than charSequence length` ao digitar.
+
+**Sincronização.** Nenhum registro é apagado por “não existir do outro lado”: a mesclagem é
+por UUID, com `ATUALIZADOEM` decidindo empates e lápides propagando exclusões. Bases criadas
+separadamente que geraram a mesma conta/centro/usuário (nomes iguais, UUIDs diferentes) são
+**unificadas** na primeira importação, com aviso na tela.
+
 ## O que já está pronto
 
 | Tela | O que faz |
 | --- | --- |
-| **Login** | seleção de usuário, senha, dica de senha e entrada por biometria (celular) |
+| **Login** | seleção de usuário, senha, dica de senha e **biometria** (digital/rosto, pedida automaticamente) |
 | **Primeiro acesso** | cria o usuário ADM, semeia conta e centro de custo principais e entrega o código de recuperação |
 | **Dashboard** | carrossel de contas, saldo compensado / a compensar / vencido, entradas e saídas e últimos 7 dias |
 | **Lançamentos** | filtros por contas/pendência/busca, **Compensar** direto na linha (data escolhida), descompensar, excluir uma ou várias parcelas e quitar parcelas escolhidas |
-| **Lançamento por voz** | toque no microfone e fale: “gastei 32,50 no mercado ontem” — o formulário abre preenchido |
-| **Novo lançamento** | despesa ou recebimento, recorrência (semanal, quinzenal, mensal, anual) com parcelas e agrupador |
+| **Lançamento por voz** | toque no microfone e fale: “gastei 32,50 no mercado ontem” — o formulário abre preenchido (descrição limpa de “mil”, “reais”, “R$”) |
+| **Novo lançamento** | despesa ou recebimento, recorrência (semanal, quinzenal, mensal, anual) com parcelas e agrupador; valor com **máscara de moeda** (digite 3250 → 32,50) |
 | **Extrato** | conta + período, saldo anterior (só compensados), saldo linha a linha e destaque dos pendentes |
 | **Contas correntes** | CRUD com cor e ícone; menu `⋯` para editar, definir principal e **ativar/desativar** |
 | **Centros de custo** | CRUD com ícone (emoji), centro principal único |
 | **Usuários** | perfis ADM/USR e vínculo com contas; menu `⋯` para editar, redefinir senha e **ativar/desativar** |
-| **Sincronização** | exporta/importa pacote `.zfsync` com resolução de conflito |
+| **Sincronização** | exporta (diálogo nativo “Salvar como”) e importa pacote `.zfsync`, com resolução de conflito e unificação de registros homônimos |
 | **Configurações** | conta padrão, biometria, informações do aparelho e sair |
 
 ## Estrutura
@@ -59,7 +75,7 @@ zFinancas.sln
 ├── src/zFinancas.Core      domínio + aplicação (sem dependências externas)
 ├── src/zFinancas.Data      SQLite: schema versionado, repositórios, JSON
 ├── src/zFinancas.App       .NET MAUI (Windows + Android): telas, view models, serviços
-├── tests/zFinancas.Tests   40 testes (domínio, serviços e integração com SQLite)
+├── tests/zFinancas.Tests   64 testes (domínio, serviços, voz e sincronização em duas pontas)
 ├── tools/zFinancas.Demo    gera banco de demonstração
 └── tools/zFinancas.TestRunner  runner de testes sem vstest
 ```

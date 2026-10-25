@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -268,7 +268,7 @@ public sealed class LoginViewModel : BaseViewModel
 
         var resultado = await _biometria.AutenticarAsync($"Entrar como {UsuarioSelecionado?.Nome ?? "usuário"}");
 
-#if ANDROID
+#if ANDROID && DEBUG
         Android.Util.Log.Info("zFinancas.Bio", $"Login por biometria: {resultado}");
 #endif
 

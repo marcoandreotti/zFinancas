@@ -5,12 +5,19 @@ A sincronização troca **um arquivo** (`.zfsync`, JSON legível) entre os apare
 
 ## Como usar
 
-1. **No aparelho de origem**: `Sincronização → Exportar pacote de sincronização`.
-   O arquivo é gravado em `<AppData>/Sincronizacao/zfinancas-AAAAMMDD-HHmm.zfsync` e o
-   compartilhamento nativo do sistema é aberto quando disponível.
-2. Transfira o arquivo (cabo, e-mail, drive pessoal, rede local…).
-3. **No aparelho de destino**: `Sincronização → Escolher arquivo e importar`.
+1. **No aparelho de origem**: `Sincronização -> Exportar pacote`.
+
+   | Plataforma | O que acontece |
+   | --- | --- |
+   | **Windows** | abre o diálogo nativo **"Salvar como"** (nome e filtro `.zfsync` já preenchidos); você escolhe a pasta |
+   | **Android** | abre o **"Salvar como"** do sistema (Storage Access Framework) - sem permissão de armazenamento |
+
+   Cancelar não grava nada.
+2. Transfira o arquivo (cabo, e-mail, Drive pessoal, rede local...).
+3. **No aparelho de destino**: `Sincronização -> Escolher arquivo e importar`.
 4. Repita no sentido inverso para trazer as alterações do outro lado.
+
+> A pasta do executável **não** é usada: o app nunca precisa de escrita onde foi instalado.
 
 Pode importar o mesmo arquivo quantas vezes quiser: a operação é idempotente.
 
@@ -90,6 +97,18 @@ Esses três casos estão cobertos por teste automatizado em
   e ele fica no aparelho.
 - Trate o arquivo como documento sensível: quem tiver acesso ao pacote pode tentar quebrar
   hashes fracos fora do app. Transfira por canal confiável e apague cópias temporárias.
+
+## Bases criadas em separado
+
+Se os dois aparelhos foram configurados do zero, cada um criou a sua "Conta Principal" (e
+talvez o mesmo centro de custo ou usuário) com **UUIDs diferentes**. Como DESCRICAO/NOME
+são únicos, a importação trata nomes iguais como a **mesma entidade**:
+
+- mantém o registro local e **adota o UUID remoto** (a partir daí os dois se reconhecem);
+- liga os lançamentos do outro aparelho nesse registro;
+- mostra o aviso *"...existia nos dois aparelhos: unificado"* na tela de sincronização.
+
+Sem isso, a importação falhava com SQLite Error 19: UNIQUE constraint failed.
 
 ## Limitações conhecidas
 

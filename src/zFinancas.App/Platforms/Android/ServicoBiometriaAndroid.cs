@@ -1,4 +1,4 @@
-using Android.Content;
+﻿using Android.Content;
 using Android.Hardware.Biometrics;
 using Android.OS;
 using AndroidX.Core.Content;
