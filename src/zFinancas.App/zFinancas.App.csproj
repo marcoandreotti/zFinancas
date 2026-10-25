@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- App zFinancas é .NET MAUI (Windows desktop + Android).
        Arquitetura mínima em três camadas:
