@@ -42,6 +42,12 @@ primeiro acesso (útil para demonstrações e testes).
 3. Apaga zfinancas.db, zfinancas.db-wal e zfinancas.db-shm.
 4. Recria o esquema vazio e volta para a tela de primeiro acesso.
 
+### Alternativa sem entrar no app
+
+O publish (`.\build.ps1 -Publish`) gera `zfinancas-zerado.db` — o banco **só com o esquema**,
+sem nenhum dado. Com o app fechado, substitua `zfinancas.db` por esse arquivo e apague
+`zfinancas.db-wal` e `zfinancas.db-shm`. Ao abrir, o app cai no primeiro acesso.
+
 > A limpeza de %TEMP% **não** tem relação com o banco: lá ficam só arquivos temporários do
 > instalador.
 

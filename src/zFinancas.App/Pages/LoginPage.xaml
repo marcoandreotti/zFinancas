@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -111,7 +111,6 @@
                                 Command="{Binding PrimeiroAcessoCommand}"
                                 Style="{StaticResource BotaoTexto}" />
                     </HorizontalStackLayout>
-
                 </VerticalStackLayout>
 
                 <Label Grid.Row="1"

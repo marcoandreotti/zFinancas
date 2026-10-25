@@ -115,6 +115,11 @@ if ($Publish) {
 
     Get-ChildItem $destino -Filter '*.pdb' -ErrorAction SilentlyContinue | Remove-Item -Force
 
+    # Banco de fábrica (só o esquema): fica junto do executável e é útil para voltar ao
+    # estado inicial numa instalação existente.
+    $bancoZerado = Join-Path $destino 'zfinancas-zerado.db'
+    Invoke-DotNet @('run', '--project', (Join-Path $root 'tools\zFinancas.Demo\zFinancas.Demo.csproj'), '-c', 'Release', '-v:q', '--', $bancoZerado, '--zerado')
+
     if (Test-Path $pacote) { Remove-Item $pacote -Force }
     Compress-Archive -Path (Join-Path $destino '*') -DestinationPath $pacote
 

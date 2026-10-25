@@ -32,6 +32,22 @@ Basta descompactar `zFinancas-win-x64.zip` em qualquer pasta e executar
 > Se o app não conseguir gravar em algum lugar (por exemplo, rodando de uma pasta sem
 > permissão), ele abre o banco em uma pasta alternativa e informa isso em Configurações.
 
+## Banco de fábrica (zfinancas-zerado.db)
+
+O `.\build.ps1 -Publish` também gera `zfinancas-zerado.db` na pasta publicada: é o banco
+**só com o esquema** (nenhum usuário, conta ou lançamento), já no formato que o app espera.
+
+Para que serve:
+
+- **testar o primeiro acesso** sem apagar dados seus: copie o arquivo para uma pasta e rode
+  o app apontando para ele (`` = "D:\teste\zfinancas.db"`);
+- **voltar ao estado de fábrica** numa instalação existente: feche o app, substitua
+  `zfinancas.db` (e apague `-wal`/`-shm`) pelo arquivo zerado;
+- uma **instalação nova** já nasce vazia sozinha — o arquivo é só conveniência.
+
+Dentro do app, o caminho mais simples continua sendo
+`Configurações → BACKUP → Começar do zero` (com cópia de segurança automática).
+
 ## 3. Instalador (Inno Setup)
 
 1. Instale o [Inno Setup 6 ou 7](https://jrsoftware.org/isdl.php).

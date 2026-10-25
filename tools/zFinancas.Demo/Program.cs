@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Aplicacao;
+using zFinancas.Core.Aplicacao;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Aplicacao.Servicos;
 using zFinancas.Core.Dominio.Enums;
@@ -9,10 +9,12 @@ using zFinancas.Data.Repositorios;
 
 // ---------------------------------------------------------------------------
 // Cria um banco de demonstração do zFinancas.
-// Uso:  dotnet run --project tools/zFinancas.Demo -- [caminho-do-banco]
+// Uso:  dotnet run --project tools/zFinancas.Demo -- [caminho-do-banco] [--zerado]
 // Depois abra o app definindo:  ZFINANCAS_DB=<caminho>
+//   --zerado gera apenas o esquema (banco de fábrica, sem dados).
 // ---------------------------------------------------------------------------
 
+var somenteEsquema = args.Any(a => a.Equals("--zerado", StringComparison.OrdinalIgnoreCase));
 var argumento = args.FirstOrDefault(a => !a.StartsWith("-", StringComparison.Ordinal));
 var caminho = argumento is not null
     ? Path.GetFullPath(argumento)
@@ -26,9 +28,19 @@ foreach (var sufixo in new[] { string.Empty, "-wal", "-shm" })
     if (File.Exists(arquivo)) File.Delete(arquivo);
 }
 
+
 Console.WriteLine($"Criando banco de demonstração em: {caminho}");
 
 var contexto = new ContextoBanco(caminho);
+
+// Banco de fábrica: apenas o esquema, sem dados.
+if (somenteEsquema)
+{
+    await new MigradorBanco(contexto).AplicarAsync();
+    await contexto.DisposeAsync();
+    Console.WriteLine($"Banco zerado (somente esquema): {caminho}");
+    return;
+}
 var relogio = new RelogioSistema();
 var hasher = new SenhaHasher(60_000);
 var sessao = new SessaoAtual();

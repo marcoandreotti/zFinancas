@@ -65,6 +65,7 @@ public sealed class LoginViewModel : BaseViewModel
     public ICommand RecuperarSenhaCommand { get; }
     public ICommand PrimeiroAcessoCommand { get; }
 
+
     public Usuario? UsuarioSelecionado
     {
         get => _usuarioSelecionado;
@@ -292,7 +293,6 @@ public sealed class LoginViewModel : BaseViewModel
         }, "Não foi possível entrar");
     }
 }
-
 
 
 
