@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Enums;
@@ -100,12 +100,13 @@ public sealed class UsuarioRepositorio : RepositorioBase, IUsuarioRepositorio
             UPDATE USUARIO SET
                 NOME = $nome, SENHA = $senha, DICA_SENHA = $dica, CODIGO_RECUPERACAO = $codigo,
                 PERFIL = $perfil, ATIVO = $ativo, DATACADASTRO = $cadastro, ULTIMOACESSO = $acesso,
-                ATUALIZADOEM = $atualizado, EXCLUIDO = $excluido
+                UUID = $uuid, ATUALIZADOEM = $atualizado, EXCLUIDO = $excluido
             WHERE ID = $id;
             """,
             c =>
             {
                 c.Parameters.AddWithValue("$id", usuario.Id);
+                c.Parameters.AddWithValue("$uuid", usuario.Uuid);
                 c.Parameters.AddWithValue("$nome", usuario.Nome);
                 c.Parameters.AddWithValue("$senha", usuario.SenhaHash);
                 c.Parameters.AddWithValue("$dica", Texto(usuario.DicaSenha));

@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Data.Infra;
@@ -73,12 +73,13 @@ public sealed class ContaCorrenteRepositorio : RepositorioBase, IContaCorrenteRe
             """
             UPDATE CONTACORRENTE SET
                 DESCRICAO = $descricao, PRINCIPAL = $principal, ATIVO = $ativo, CORHEX = $cor,
-                ICONE = $icone, ORDEM = $ordem, ATUALIZADOEM = $atualizado, EXCLUIDO = $excluido
+                ICONE = $icone, ORDEM = $ordem, ATUALIZADOEM = $atualizado, EXCLUIDO = $excluido, UUID = $uuid
             WHERE ID = $id;
             """,
             c =>
             {
                 c.Parameters.AddWithValue("$id", conta.Id);
+                c.Parameters.AddWithValue("$uuid", conta.Uuid);
                 c.Parameters.AddWithValue("$descricao", conta.Descricao);
                 c.Parameters.AddWithValue("$principal", conta.Principal ? 1 : 0);
                 c.Parameters.AddWithValue("$ativo", conta.Ativo ? 1 : 0);
