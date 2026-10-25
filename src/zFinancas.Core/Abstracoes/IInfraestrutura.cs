@@ -20,6 +20,12 @@ public interface IArmazenamentoCompartilhado
     /// <summary>Pasta onde os pacotes são gravados hoje (escolhida pelo usuário ou a do app).</summary>
     string PastaAtual { get; }
 
+    /// <summary>Salva um arquivo binário (backup do banco) pelo diálogo nativo; null = cancelado.</summary>
+    Task<string?> SalvarBinarioAsync(string nomeArquivo, byte[] conteudo, CancellationToken ct = default);
+
+    /// <summary>Abre o seletor e devolve o conteúdo binário do arquivo escolhido (null = cancelado).</summary>
+    Task<byte[]?> EscolherArquivoBinarioAsync(string extensao, CancellationToken ct = default);
+
     /// <summary>Grava o conteúdo numa pasta específica e devolve o caminho final.</summary>
     Task<string> SalvarEmAsync(string pasta, string nomeArquivo, string conteudo, CancellationToken ct = default);
 

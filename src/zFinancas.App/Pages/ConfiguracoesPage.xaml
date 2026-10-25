@@ -65,6 +65,26 @@
                     </Grid>
                 </Grid>
             </Border>
+            <!-- ===== backup -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="BACKUP" Style="{StaticResource Rotulo}" />
+                    <Label Text="Cópia completa do banco (contas, lançamentos, usuários e senhas). Guarde em local seguro."
+                           Style="{StaticResource Subtitulo}"
+                           FontSize="11" />
+                    <Label Text="{Binding DataUltimoBackup}"
+                           Style="{StaticResource Subtitulo}"
+                           FontSize="11" />
+
+                    <Button Text="Criar backup"
+                            Command="{Binding CriarBackupCommand}" />
+
+                    <Button Text="Restaurar backup"
+                            Command="{Binding RestaurarBackupCommand}"
+                            Style="{StaticResource BotaoSecundario}" />
+                </VerticalStackLayout>
+            </Border>
+
 
             <!-- ===== sobre -->
             <Border Style="{StaticResource Card}">

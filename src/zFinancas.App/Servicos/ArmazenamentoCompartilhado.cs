@@ -168,6 +168,59 @@ public sealed class ArmazenamentoCompartilhado : IArmazenamentoCompartilhado
             "Não consegui gravar o pacote. Use “Pasta dos pacotes” para escolher uma pasta com permissão de escrita.");
     }
 
+    /// <summary>Salva um arquivo binário (backup) pelo diálogo nativo. Null = cancelado.</summary>
+    public async Task<string?> SalvarBinarioAsync(string nomeArquivo, byte[] conteudo, CancellationToken ct = default)
+    {
+        const string tipoMime = "application/octet-stream";
+
+#if ANDROID
+        return await Plataformas.SalvarArquivoAndroid
+            .SalvarAsync(nomeArquivo, conteudo, tipoMime, ct)
+            .ConfigureAwait(false);
+#elif WINDOWS
+        await using var fluxo = new MemoryStream(conteudo);
+
+        var resultado = await CommunityToolkit.Maui.Storage.FileSaver.Default
+            .SaveAsync(nomeArquivo, fluxo, ct)
+            .ConfigureAwait(false);
+
+        if (resultado.IsSuccessful)
+        {
+            return resultado.FilePath;
+        }
+
+        if (resultado.Exception is not null)
+        {
+            RegistroDeFalhas.Registrar(resultado.Exception, "FileSaverBackup");
+            throw new DominioException("Não foi possível abrir o diálogo de salvar o backup.");
+        }
+
+        return null;
+#else
+        return await Task.FromResult<string?>(null);
+#endif
+    }
+
+    /// <summary>Abre o seletor e devolve os bytes do arquivo escolhido (null = cancelado).</summary>
+    public async Task<byte[]?> EscolherArquivoBinarioAsync(string extensao, CancellationToken ct = default)
+    {
+        var resultado = await FilePicker.Default.PickAsync(new PickOptions
+        {
+            PickerTitle = "Selecione o backup do zFinancas"
+        }).ConfigureAwait(false);
+
+        if (resultado is null)
+        {
+            return null;
+        }
+
+        await using var origem = await resultado.OpenReadAsync().ConfigureAwait(false);
+        using var memoria = new MemoryStream();
+        await origem.CopyToAsync(memoria, ct).ConfigureAwait(false);
+
+        return memoria.ToArray();
+    }
+
     public async Task<ArquivoTexto?> EscolherArquivoTextoAsync(string extensao, CancellationToken ct = default)
     {
         var resultado = await FilePicker.Default.PickAsync(new PickOptions

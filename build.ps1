@@ -10,6 +10,7 @@
 #   .\build.ps1 -Test                # roda a suíte de testes
 #   .\build.ps1 -Demo -Run           # cria banco de demonstração e abre o app nele
 #   .\build.ps1 -Run                 # abre o app com o banco real do usuário
+#   .\build.ps1 -Publish             # publica Release win-x64 + gera o ZIP de distribuição
 param(
     [ValidateSet('windows', 'android', 'all', 'none')]
     [string]$Target = 'windows',
@@ -17,6 +18,7 @@ param(
     [switch]$Demo,
     [switch]$Run,
     [switch]$Clean,
+    [switch]$Publish,
     [string]$Configuration = 'Debug'
 )
 
@@ -88,6 +90,39 @@ if ($Test) {
     # (não consegue abrir o handle do processo pai). Em uma máquina normal,
     # "dotnet test tests\zFinancas.Tests" roda exatamente a mesma suíte.
     Invoke-DotNet @('run', '--project', $runnerProject, '-c', $Configuration, '-v:q')
+}
+
+if ($Publish) {
+    # Publicação self-contained (não precisa de .NET instalado) e desempacotada:
+    # WindowsPackageType=None evita MSIX, então roda em Program Files com Inno/MSI.
+    $destino = Join-Path $root '.tmp\publicacao\win-x64'
+    $pacote = Join-Path $root '.tmp\publicacao\zFinancas-win-x64.zip'
+
+    Remove-Item $destino -Recurse -Force -ErrorAction SilentlyContinue
+    New-Item -ItemType Directory -Force -Path $destino | Out-Null
+
+    # RuntimeIdentifierOverride (e não -r) porque o projeto é multi-target: passar -r faria o
+    # restore tentar runtime packs de outras plataformas (erro NU1102 com Mono.win-x64).
+    Invoke-DotNet @(
+        'publish', $appProject,
+        '-f', 'net9.0-windows10.0.19041.0',
+        '-c', 'Release',
+        '-p:WindowsPackageType=None',
+        '-p:WindowsAppSDKSelfContained=true',
+        '-p:RuntimeIdentifierOverride=win-x64',
+        '-o', $destino
+    )
+
+    Get-ChildItem $destino -Filter '*.pdb' -ErrorAction SilentlyContinue | Remove-Item -Force
+
+    if (Test-Path $pacote) { Remove-Item $pacote -Force }
+    Compress-Archive -Path (Join-Path $destino '*') -DestinationPath $pacote
+
+    $tamanho = [math]::Round((Get-Item $pacote).Length / 1MB, 1)
+    Write-Host ""
+    Write-Host "> publicacao: $destino" -ForegroundColor Green
+    Write-Host "> pacote ZIP: $pacote ($tamanho MB)" -ForegroundColor Green
+    Write-Host "> instalador: use instalador\zFinancas.iss (Inno Setup) apontando para essa pasta" -ForegroundColor DarkGray
 }
 
 if ($Run) {

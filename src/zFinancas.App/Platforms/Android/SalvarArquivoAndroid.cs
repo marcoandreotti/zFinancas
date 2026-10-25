@@ -16,9 +16,18 @@ public static class SalvarArquivoAndroid
 
     private static TaskCompletionSource<string?>? _pendente;
 
-    public static async Task<string?> SalvarAsync(
+    /// <summary>Atalho para conteúdo de texto (pacote de sincronização).</summary>
+    public static Task<string?> SalvarAsync(
         string nomeArquivo,
         string conteudo,
+        string tipoMime,
+        CancellationToken ct)
+        => SalvarAsync(nomeArquivo, new UTF8Encoding(false).GetBytes(conteudo), tipoMime, ct);
+
+    /// <summary>Grava bytes (usado também pelo backup do banco).</summary>
+    public static async Task<string?> SalvarAsync(
+        string nomeArquivo,
+        byte[] conteudo,
         string tipoMime,
         CancellationToken ct)
     {
@@ -59,8 +68,8 @@ public static class SalvarArquivoAndroid
                 return null;
             }
 
-            await using var escritor = new StreamWriter(fluxo, new UTF8Encoding(false));
-            await escritor.WriteAsync(conteudo).ConfigureAwait(false);
+            await fluxo.WriteAsync(conteudo, ct).ConfigureAwait(false);
+            await fluxo.FlushAsync(ct).ConfigureAwait(false);
 
             return uri;
         }

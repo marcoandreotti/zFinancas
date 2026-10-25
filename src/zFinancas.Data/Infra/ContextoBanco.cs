@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using zFinancas.Core.Dominio.Excecoes;
 
 namespace zFinancas.Data.Infra;
@@ -150,6 +150,30 @@ public sealed class ContextoBanco : IAsyncDisposable
         }
 
         return comando;
+    }
+
+    /// <summary>
+    /// Fecha a conexão aberta sem descartar o contexto: a próxima operação reabre.
+    /// Usado na restauração de backup, quando o arquivo do banco é substituído.
+    /// </summary>
+    public async Task FecharConexaoAsync()
+    {
+        using (await EntrarAsync().ConfigureAwait(false))
+        {
+            // O bloqueio garante que nenhuma operação esteja usando a conexão agora.
+        }
+
+        if (_transacao is not null)
+        {
+            await _transacao.DisposeAsync().ConfigureAwait(false);
+            _transacao = null;
+        }
+
+        if (_conexao is not null)
+        {
+            await _conexao.DisposeAsync().ConfigureAwait(false);
+            _conexao = null;
+        }
     }
 
     public async ValueTask DisposeAsync()
