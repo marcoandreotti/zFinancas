@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -68,6 +68,7 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
         EscolherPastaBancoCommand = new ComandoAssincrono(() => _pastaDados.EscolherPastaAsync());
         CriarBackupCommand = new ComandoAssincrono(CriarBackupAsync);
         RestaurarBackupCommand = new ComandoAssincrono(RestaurarBackupAsync);
+        ZerarBancoCommand = new ComandoAssincrono(ZerarBancoAsync);
     }
 
     public ObservableCollection<ContaCorrente> Contas { get; } = [];
@@ -82,6 +83,9 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
     public ICommand CriarBackupCommand { get; }
 
     public ICommand RestaurarBackupCommand { get; }
+
+    /// <summary>Apaga tudo e volta ao primeiro acesso (uso em testes/demonstrações).</summary>
+    public ICommand ZerarBancoCommand { get; }
 
     /// <summary>Quando foi gerado o último backup neste aparelho.</summary>
     public string DataUltimoBackup
@@ -299,6 +303,48 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
         {
             await _dialogos.AlertaAsync("Restaurar backup", ex.Message);
         }
+    }
+
+    private async Task ZerarBancoAsync()
+    {
+        var primeiraConfirmacao = await _dialogos.ConfirmarAsync(
+            "Começar do zero",
+            "Isso APAGA todos os dados deste aparelho: contas, centros de custo, usuários e lançamentos.\n\n" +
+            "Uma cópia de segurança é guardada na pasta do banco antes de apagar.\n\nDeseja continuar?",
+            "Continuar",
+            "Cancelar");
+
+        if (!primeiraConfirmacao)
+        {
+            return;
+        }
+
+        var digitado = await _dialogos.PerguntarAsync(
+            "Confirmação final",
+            "Digite ZERAR para confirmar que os dados serão apagados.",
+            string.Empty,
+            "ZERAR");
+
+        if (!string.Equals(digitado?.Trim(), "ZERAR", StringComparison.OrdinalIgnoreCase))
+        {
+            await _dialogos.AlertaAsync("Começar do zero", "Nada foi apagado.");
+            return;
+        }
+
+        await ExecutarAsync(async () =>
+        {
+            var seguranca = await _backup.ZerarAsync();
+
+            _inicializacao.Reiniciar();
+            _autenticacao.Sair();
+
+            await _dialogos.AlertaAsync(
+                "Banco zerado",
+                "Os dados foram apagados e você voltará para o primeiro acesso.\n\n" +
+                $"Cópia do banco anterior:\n{seguranca}");
+
+            await _navegacao.AbrirLoginAsync();
+        }, "Não foi possível zerar o banco");
     }
 
     private async Task SairAsync()

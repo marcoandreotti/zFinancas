@@ -31,6 +31,20 @@ Nome sugerido: `zfinancas-backup-AAAAMMDD-HHmm.db`.
 5. Fecha a conexão, troca o arquivo, apaga `-wal`/`-shm` antigos e reinicia a inicialização.
 6. O app volta para a tela de entrada.
 
+## Começar do zero
+
+Configurações → BACKUP → Começar do zero apaga o banco deste aparelho e volta para o
+primeiro acesso (útil para demonstrações e testes).
+
+1. Pede **confirmação dupla**: um aviso e depois digitar ZERAR.
+2. Guarda uma cópia do banco atual na pasta do banco:
+   zfinancas-antes-de-zerar-AAAAMMDD-HHmmss.db (é restaurável pelo próprio app).
+3. Apaga zfinancas.db, zfinancas.db-wal e zfinancas.db-shm.
+4. Recria o esquema vazio e volta para a tela de primeiro acesso.
+
+> A limpeza de %TEMP% **não** tem relação com o banco: lá ficam só arquivos temporários do
+> instalador.
+
 ## Onde os arquivos ficam
 
 - **Banco**: pasta mostrada em `Configurações → BANCO DE DADOS` (por padrão em `%LOCALAPPDATA%`).

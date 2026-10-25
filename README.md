@@ -66,7 +66,7 @@ separadamente que geraram a mesma conta/centro/usuário (nomes iguais, UUIDs dif
 | **Centros de custo** | CRUD com ícone (emoji), centro principal único |
 | **Usuários** | perfis ADM/USR e vínculo com contas; menu `⋯` para editar, redefinir senha e **ativar/desativar** |
 | **Sincronização** | exporta (diálogo nativo “Salvar como”) e importa pacote `.zfsync`, com resolução de conflito e unificação de registros homônimos |
-| **Configurações** | conta padrão, biometria, **backup/restauração**, informações do aparelho e sair |
+| **Configurações** | conta padrão, biometria, **backup/restauração**, **começar do zero**, informações do aparelho e sair |
 
 ## Backup e instalação
 
@@ -86,7 +86,7 @@ zFinancas.sln
 ├── src/zFinancas.Core      domínio + aplicação (sem dependências externas)
 ├── src/zFinancas.Data      SQLite: schema versionado, repositórios, JSON
 ├── src/zFinancas.App       .NET MAUI (Windows + Android): telas, view models, serviços
-├── tests/zFinancas.Tests   68 testes (domínio, serviços, voz e sincronização em duas pontas)
+├── tests/zFinancas.Tests   70 testes (domínio, serviços, voz e sincronização em duas pontas)
 ├── tools/zFinancas.Demo    gera banco de demonstração
 └── tools/zFinancas.TestRunner  runner de testes sem vstest
 ```

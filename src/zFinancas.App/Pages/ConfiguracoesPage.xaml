@@ -82,6 +82,13 @@
                     <Button Text="Restaurar backup"
                             Command="{Binding RestaurarBackupCommand}"
                             Style="{StaticResource BotaoSecundario}" />
+                    <Button Text="Começar do zero"
+                            Command="{Binding ZerarBancoCommand}"
+                            Style="{StaticResource BotaoSecundario}"
+                            TextColor="{StaticResource Negativo}" />
+                    <Label Text="Apaga todos os dados deste aparelho e volta ao primeiro acesso (guarda uma cópia antes)."
+                           Style="{StaticResource Subtitulo}"
+                           FontSize="10" />
                 </VerticalStackLayout>
             </Border>
 

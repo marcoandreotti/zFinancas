@@ -113,6 +113,51 @@ public sealed class ServicoBackupBanco
         return seguranca;
     }
 
+    /// <summary>
+    /// Apaga o banco atual (e os restos -wal/-shm) e recria o esquema vazio.
+    /// Antes de apagar, guarda uma cópia de segurança na pasta do banco; o app volta para
+    /// o primeiro acesso na próxima tela.
+    /// </summary>
+    public async Task<string> ZerarAsync(CancellationToken ct = default)
+    {
+        var caminho = _contexto.CaminhoArquivo;
+        var pasta = Path.GetDirectoryName(caminho) ?? ".";
+
+        // Cópia de segurança: o usuário pode restaurar este arquivo se mudar de ideia.
+        var seguranca = CaminhoUnico(pasta, $"zfinancas-antes-de-zerar-{DateTime.Now:yyyyMMdd-HHmmss}");
+
+        try
+        {
+            await using (var comando = await _contexto.CriarComandoAsync(
+                $"VACUUM INTO '{seguranca.Replace("'", "''")}';", ct).ConfigureAwait(false))
+            {
+                await comando.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is SqliteException)
+        {
+            throw new DominioException($"Não foi possível guardar a cópia de segurança antes de zerar: {ex.Message}", ex);
+        }
+
+        await _contexto.FecharConexaoAsync().ConfigureAwait(false);
+        SqliteConnection.ClearAllPools();
+
+        foreach (var sufixo in new[] { string.Empty, "-wal", "-shm" })
+        {
+            var alvo = caminho + sufixo;
+
+            if (File.Exists(alvo))
+            {
+                File.Delete(alvo);
+            }
+        }
+
+        // Recria o esquema para o app já poder abrir o primeiro acesso.
+        await new Repositorios.MigradorBanco(_contexto).AplicarAsync(ct).ConfigureAwait(false);
+
+        return seguranca;
+    }
+
     /// <summary>Valida cabeçalho, integridade e versão do esquema. Null = pode restaurar.</summary>
     private async Task<string?> ValidarAsync(byte[] conteudo, CancellationToken ct)
     {
@@ -168,6 +213,21 @@ public sealed class ServicoBackupBanco
     /// Remove o temporário tolerando o lock momentâneo do SQLite (o arquivo não é do usuário;
     /// deixá-lo no %TEMP% é inofensivo).
     /// </summary>
+    /// <summary>Nome livre na pasta (acrescenta "-2", "-3"… quando o arquivo já existe).</summary>
+    private static string CaminhoUnico(string pasta, string baseNome)
+    {
+        var caminho = Path.Combine(pasta, $"{baseNome}.db");
+        var contador = 1;
+
+        while (File.Exists(caminho))
+        {
+            contador++;
+            caminho = Path.Combine(pasta, $"{baseNome}-{contador}.db");
+        }
+
+        return caminho;
+    }
+
     private string PastaDoBanco()
         => Path.GetDirectoryName(_contexto.CaminhoArquivo) ?? Directory.GetCurrentDirectory();
 
