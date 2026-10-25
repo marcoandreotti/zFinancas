@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -164,14 +164,6 @@ public sealed class LoginViewModel : BaseViewModel
 #endif
 
 
-            // Com biometria configurada, já pede a digital ao abrir a tela: o usuário não
-            // precisa tocar em nada para entrar.
-            if (MostrarBiometria && !_biometriaSolicitada)
-            {
-                _biometriaSolicitada = true;
-                await EntrarComBiometriaAsync();
-            }
-
 #if DEBUG
             // Atalho de desenvolvimento: ZFINANCAS_AUTOLOGIN="Marco" entra direto,
             // útil para gerar telas de demonstração e depurar. Nunca existe em Release.
@@ -211,7 +203,16 @@ public sealed class LoginViewModel : BaseViewModel
             }
 #endif
         });
+        // Fora do ExecutarAsync: o login por biometria abre o próprio ExecutarAsync e, se
+        // chamado de dentro do carregamento (Ocupado = true), era descartado em silêncio —
+        // a digital era reconhecida mas ninguém entrava.
+        if (MostrarBiometria && !_biometriaSolicitada && !Ocupado)
+        {
+            _biometriaSolicitada = true;
+            await EntrarComBiometriaAsync();
+        }
     }
+
 
     private async Task ConfigurarBiometriaAsync()
     {
@@ -266,6 +267,10 @@ public sealed class LoginViewModel : BaseViewModel
         }
 
         var resultado = await _biometria.AutenticarAsync($"Entrar como {UsuarioSelecionado?.Nome ?? "usuário"}");
+
+#if ANDROID
+        Android.Util.Log.Info("zFinancas.Bio", $"Login por biometria: {resultado}");
+#endif
 
         if (resultado != ResultadoBiometria.Sucesso)
         {
