@@ -24,6 +24,11 @@ public sealed class LancamentosViewModel : BaseViewModel
     private IReadOnlyList<long> _idsContas = [];
     private string _resumoContas = "Todas as contas";
     private bool _aplicandoSelecao;
+    /// <summary>Quantos dias antes de hoje a lista começa (valor inicial da data de corte).</summary>
+    private const int DiasDeCorte = 4;
+
+    private DateTime _dataCorte = DateTime.Today.AddDays(-DiasDeCorte);
+
     private bool _carregando;
     private bool _recarregarPendente;
     private string _busca = string.Empty;
@@ -87,6 +92,22 @@ public sealed class LancamentosViewModel : BaseViewModel
     {
         get => _resumoContas;
         private set => SetProperty(ref _resumoContas, value);
+    }
+
+    /// <summary>
+    /// Data de corte da lista: carrega os lançamentos a partir dela.
+    /// Dá para voltar no tempo quando aparecem parcelas de lançamentos antigos.
+    /// </summary>
+    public DateTime DataCorte
+    {
+        get => _dataCorte;
+        set
+        {
+            if (SetProperty(ref _dataCorte, value.Date) && !_carregando)
+            {
+                _ = CarregarAsync();
+            }
+        }
     }
 
     public string Busca
@@ -166,7 +187,13 @@ public sealed class LancamentosViewModel : BaseViewModel
                     todos.AddRange(await _lancamentos.ListarAsync(contaId));
                 }
 
+                // Data de corte: a lista começa alguns dias antes de hoje (e vai até o
+                // futuro, mostrando o que está programado). O saldo anterior soma só o que
+                // foi compensado ANTES do corte — pela data da compensação, não do vencimento.
+                var corte = DataCorte.Date;
+
                 var filtrados = todos
+                    .Where(l => l.DataVencimento.Date >= corte)
                     .Where(l => !SomentePendentes || l.Pendente)
                     .Where(l => string.IsNullOrWhiteSpace(Busca)
                                 || l.Descricao.Contains(Busca, StringComparison.CurrentCultureIgnoreCase))
@@ -176,8 +203,9 @@ public sealed class LancamentosViewModel : BaseViewModel
 
                 var contasPorId = contas.ToDictionary(c => c.Id);
 
-                // Saldo por linha igual ao extrato: acumulado dos compensados, por conta.
-                var saldos = CalcularSaldos(todos);
+                // Saldo por linha: parte do compensado antes do corte e recebe o que foi
+                // compensado dentro da janela (mesma regra do extrato).
+                var saldos = CalcularSaldos(todos, corte);
 
                 Itens.Clear();
                 foreach (var lancamento in filtrados)
@@ -192,7 +220,8 @@ public sealed class LancamentosViewModel : BaseViewModel
 
                 TotalCompensadoTexto = Formatador.Moeda(filtrados.Where(l => l.Compensado).Sum(l => l.Valor));
                 TotalPendenteTexto = Formatador.Moeda(filtrados.Where(l => !l.Compensado).Sum(l => l.Valor));
-                QuantidadeTexto = filtrados.Count == 1 ? "1 lançamento" : $"{filtrados.Count} lançamentos";
+                QuantidadeTexto = (filtrados.Count == 1 ? "1 lançamento" : $"{filtrados.Count} lançamentos")
+                    + $" · desde {Formatador.Data(corte)}";
 
                 OnPropertyChanged(nameof(SemItens));
             }, "Não foi possível carregar os lançamentos");
@@ -210,20 +239,23 @@ public sealed class LancamentosViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// Saldo acumulado de cada lançamento dentro da sua conta (só compensados),
-    /// na mesma regra do extrato — é o "saldo" mostrado na linha.
+    /// Saldo acumulado de cada lançamento dentro da sua conta, com a mesma regra do extrato:
+    /// o saldo anterior soma o que foi compensado ANTES do corte e cada linha recebe o valor
+    /// quando a compensação caiu dentro da janela.
     /// </summary>
-    private static Dictionary<long, decimal> CalcularSaldos(IEnumerable<Lancamento> lancamentos)
+    private static Dictionary<long, decimal> CalcularSaldos(IEnumerable<Lancamento> lancamentos, DateTime corte)
     {
         var saldos = new Dictionary<long, decimal>();
 
         foreach (var grupo in lancamentos.GroupBy(l => l.ContaCorrenteId))
         {
-            var saldo = 0m;
+            var saldo = grupo
+                .Where(l => l.Compensado && DataDaCompensacao(l).Date < corte.Date)
+                .Sum(l => l.Valor);
 
             foreach (var lancamento in grupo.OrderBy(l => l.DataVencimento).ThenBy(l => l.Id))
             {
-                if (lancamento.Compensado)
+                if (lancamento.Compensado && DataDaCompensacao(lancamento).Date >= corte.Date)
                 {
                     saldo += lancamento.Valor;
                 }
@@ -234,6 +266,10 @@ public sealed class LancamentosViewModel : BaseViewModel
 
         return saldos;
     }
+
+    /// <summary>Data em que o dinheiro se moveu (compensação), com o vencimento como reserva.</summary>
+    private static DateTime DataDaCompensacao(Lancamento lancamento)
+        => lancamento.DataCompensado ?? lancamento.DataVencimento;
 
     // ------------------------------------------------------------- seleção de contas
 

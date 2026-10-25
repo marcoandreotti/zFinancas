@@ -44,6 +44,17 @@
                 </HorizontalStackLayout>
             </Grid>
 
+            <!-- data de corte: a lista começa aqui (dá para voltar quando entrar parcela antiga) -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <Label Text="A partir de"
+                       Style="{StaticResource Rotulo}"
+                       VerticalOptions="Center" />
+
+                <Border Grid.Column="1" Style="{StaticResource Campo}">
+                    <DatePicker Date="{Binding DataCorte}" Format="dd/MM/yyyy" />
+                </Border>
+            </Grid>
+
             <Border Style="{StaticResource Card}" Padding="16,12">
                 <Grid ColumnDefinitions="*,Auto,*,Auto" ColumnSpacing="12">
                     <VerticalStackLayout Spacing="1">
