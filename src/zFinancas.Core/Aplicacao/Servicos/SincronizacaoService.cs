@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Entidades;
@@ -156,6 +156,18 @@ public sealed class SincronizacaoService
     /// Abre o “Salvar como” do sistema e devolve o caminho escolhido
     /// (ou null quando o usuário cancela).
     /// </summary>
+    /// <summary>Exporta para uma pasta específica (escolhida pelo usuário na tela).</summary>
+    public async Task<string> ExportarParaAsync(string pasta, IArmazenamentoCompartilhado armazenamento, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(armazenamento);
+
+        var pacote = await MontarPacoteAsync(ct).ConfigureAwait(false);
+        var json = _serializador.Serializar(pacote);
+        var nomeArquivo = $"zfinancas-{pacote.GeradoEmUtc.ToLocalTime():yyyyMMdd-HHmm}.zfsync";
+
+        return await armazenamento.SalvarEmAsync(pasta, nomeArquivo, json, ct).ConfigureAwait(false);
+    }
+
     public async Task<string?> ExportarAsync(IArmazenamentoCompartilhado armazenamento, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(armazenamento);

@@ -89,11 +89,29 @@ public sealed class ArmazenamentoCompartilhado : IArmazenamentoCompartilhado
 
 #if ANDROID
         return Plataformas.SalvarArquivoAndroid.SalvarAsync(nomeArquivo, conteudo, tipoMime, ct);
-#elif WINDOWS
-        return Plataformas.SalvarArquivoWindows.SalvarAsync(nomeArquivo, conteudo, tipoMime, ct);
 #else
+        // Desktop: a pasta é escolhida no modal da própria tela de sincronização.
         return Task.FromResult<string?>(null);
 #endif
+    }
+
+    /// <summary>Grava o pacote numa pasta específica (escolhida na tela).</summary>
+    public async Task<string> SalvarEmAsync(string pasta, string nomeArquivo, string conteudo, CancellationToken ct = default)
+    {
+        try
+        {
+            Directory.CreateDirectory(pasta);
+
+            var caminho = Path.Combine(pasta, nomeArquivo);
+            await File.WriteAllTextAsync(caminho, conteudo, ct).ConfigureAwait(false);
+
+            return caminho;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            RegistroDeFalhas.Registrar(ex, "SalvarPacoteEm");
+            throw new DominioException($"Não consegui gravar em '{pasta}'. Escolha outra pasta.");
+        }
     }
 
     /// <summary>Grava o pacote; se a pasta escolhida falhar, cai para a pasta do banco.</summary>

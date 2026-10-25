@@ -20,6 +20,9 @@ public interface IArmazenamentoCompartilhado
     /// <summary>Pasta onde os pacotes são gravados hoje (escolhida pelo usuário ou a do app).</summary>
     string PastaAtual { get; }
 
+    /// <summary>Grava o conteúdo numa pasta específica e devolve o caminho final.</summary>
+    Task<string> SalvarEmAsync(string pasta, string nomeArquivo, string conteudo, CancellationToken ct = default);
+
     /// <summary>Pede uma pasta ao usuário; devolve null se ele cancelar.</summary>
     Task<string?> EscolherPastaAsync(CancellationToken ct = default);
 
