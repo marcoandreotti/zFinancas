@@ -1,93 +1,187 @@
 ﻿using Android.Content;
+using Android.Hardware.Biometrics;
 using Android.OS;
 using AndroidX.Core.Content;
 using Microsoft.Maui.ApplicationModel;
 using zFinancas.App.Servicos;
 
-// Implementacao Android da biometria usando BiometricPrompt nativo (API 28+).
-// Sem plugins de terceiros: o app e offline e mantem a superficie de dependencias minima.
+// Biometria no Android com o BiometricPrompt nativo (API 28+).
+// Sem plugins de terceiros: o app é offline e mantém a superfície de dependências mínima.
+// A permissão android.permission.USE_BIOMETRIC é obrigatória — sem ela CanAuthenticate()
+// nunca retorna sucesso e o prompt falha.
 namespace zFinancas.App.Plataformas;
 
 public sealed class ServicoBiometriaAndroid : IServicoBiometria
 {
+    private const string Tag = "zFinancas.Biometria";
+
+    /// <summary>BIOMETRIC_WEAK: aceita digital e reconhecimento facial (sem PIN do aparelho).</summary>
+    private const int BiometriaFraca = 0x00FF;
+
+    private static readonly TimeSpan TempoLimite = TimeSpan.FromMinutes(2);
+
     public Task<bool> DisponivelAsync()
     {
         try
         {
-            if (Build.VERSION.SdkInt < BuildVersionCodes.Q)
+            if (Build.VERSION.SdkInt < BuildVersionCodes.P)
             {
                 return Task.FromResult(false);
             }
 
             var contexto = Android.App.Application.Context;
-            var gerenciador = contexto.GetSystemService(Context.BiometricService)
-                as Android.Hardware.Biometrics.BiometricManager;
+            var gerenciador = contexto.GetSystemService(Context.BiometricService) as BiometricManager;
 
-            var codigo = gerenciador is null ? -1 : (int)gerenciador.CanAuthenticate();
-            return Task.FromResult(codigo == (int)Android.Hardware.Biometrics.BiometricCode.Success);
+            if (gerenciador is null)
+            {
+                return Task.FromResult(false);
+            }
+
+            var codigo = gerenciador.CanAuthenticate();
+
+#if DEBUG
+            Android.Util.Log.Info(Tag, $"CanAuthenticate = {codigo}");
+#endif
+
+            return Task.FromResult(codigo == BiometricCode.Success);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            RegistroDeFalhas.Registrar(ex, "BiometriaDisponivel");
             return Task.FromResult(false);
         }
     }
 
-    public async Task<bool> AutenticarAsync(string motivo)
+    public async Task<ResultadoBiometria> AutenticarAsync(string motivo)
     {
         if (Build.VERSION.SdkInt < BuildVersionCodes.P)
         {
-            return false;
+            return ResultadoBiometria.Indisponivel;
         }
 
         var atividade = Platform.CurrentActivity;
         if (atividade is null)
         {
-            return false;
+            return ResultadoBiometria.Indisponivel;
         }
 
-        var conclusao = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var executor = ContextCompat.GetMainExecutor(atividade);
+        var conclusao = new TaskCompletionSource<ResultadoBiometria>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var prompt = new Android.Hardware.Biometrics.BiometricPrompt.Builder(atividade)
-            .SetTitle("zFinancas")
-            .SetSubtitle(motivo)
-            .SetDescription("Use sua digital ou reconhecimento facial para entrar.")
-            .Build();
+        var sinal = new CancellationSignal();
 
-        using var sinal = new CancellationSignal();
+        try
+        {
+            var executor = ContextCompat.GetMainExecutor(atividade);
 
-        prompt.Authenticate(
-            null,
-            sinal,
-            executor,
-            new RetornoBiometrico(conclusao));
+            var construtor = new BiometricPrompt.Builder(atividade)
+                .SetTitle("zFinancas")
+                .SetSubtitle(motivo)
+                .SetDescription("Use sua digital ou reconhecimento facial");
 
-        // Garante retorno caso o dialogo seja descartado sem callback.
-        return await conclusao.Task.WaitAsync(TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+            // Obrigatório quando não se permite a senha do aparelho: sem um botão negativo
+            // nomeado, Builder.Build() lança "Negative text must be set and non-empty".
+            construtor.SetNegativeButton("Cancelar", executor, new BotaoCancelar(conclusao));
+
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+            {
+                construtor.SetConfirmationRequired(false);
+            }
+
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
+            {
+                construtor.SetAllowedAuthenticators(BiometriaFraca);
+            }
+
+            // Sobrecarga de 3 argumentos (sem CryptoObject): passar "null" como primeiro
+            // argumento casaria com Authenticate(CryptoObject, ...) e o Android lançaria
+            // "Must supply a crypto object".
+            var prompt = construtor.Build();
+
+            prompt.Authenticate(sinal, executor, new RetornoBiometrico(conclusao));
+
+            using var limite = new CancellationTokenSource(TempoLimite);
+
+            using var registro = limite.Token.Register(() =>
+            {
+                try
+                {
+                    sinal.Cancel();
+                }
+                catch (Exception ex)
+                {
+                    RegistroDeFalhas.Registrar(ex, "BiometriaCancelar");
+                }
+
+                conclusao.TrySetResult(ResultadoBiometria.Cancelado);
+            });
+
+            return await conclusao.Task.ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            RegistroDeFalhas.Registrar(ex, "BiometriaAutenticar");
+            return ResultadoBiometria.Indisponivel;
+        }
+        finally
+        {
+            sinal.Dispose();
+        }
     }
 
-    private sealed class RetornoBiometrico : Android.Hardware.Biometrics.BiometricPrompt.AuthenticationCallback
+    /// <summary>Botão “Cancelar” do diálogo do sistema.</summary>
+    private sealed class BotaoCancelar : Java.Lang.Object, Android.Content.IDialogInterfaceOnClickListener
     {
-        private readonly TaskCompletionSource<bool> _conclusao;
+        private readonly TaskCompletionSource<ResultadoBiometria> _conclusao;
 
-        public RetornoBiometrico(TaskCompletionSource<bool> conclusao)
-        {
-            _conclusao = conclusao;
-        }
+        public BotaoCancelar(TaskCompletionSource<ResultadoBiometria> conclusao) => _conclusao = conclusao;
 
-        public override void OnAuthenticationSucceeded(Android.Hardware.Biometrics.BiometricPrompt.AuthenticationResult resultado)
-            => _conclusao.TrySetResult(true);
+        public void OnClick(Android.Content.IDialogInterface? dialogo, int which)
+            => _conclusao.TrySetResult(ResultadoBiometria.Cancelado);
+    }
+
+    private sealed class RetornoBiometrico : BiometricPrompt.AuthenticationCallback
+    {
+        private readonly TaskCompletionSource<ResultadoBiometria> _conclusao;
+
+        public RetornoBiometrico(TaskCompletionSource<ResultadoBiometria> conclusao) => _conclusao = conclusao;
+
+        public override void OnAuthenticationSucceeded(BiometricPrompt.AuthenticationResult resultado)
+            => _conclusao.TrySetResult(ResultadoBiometria.Sucesso);
 
         public override void OnAuthenticationFailed()
         {
-            // Leitura nao reconhecida: o sistema permite tentar novamente, entao nao finaliza.
+            // Leitura não reconhecida: o sistema deixa tentar de novo, então não finaliza.
+#if DEBUG
+            Android.Util.Log.Info(Tag, "Tentativa não reconhecida");
+#endif
         }
 
-        public override void OnAuthenticationError(
-            Android.Hardware.Biometrics.BiometricErrorCode codigoErro,
-            Java.Lang.ICharSequence? mensagem)
-            => _conclusao.TrySetResult(false);
+        /// <summary>
+        /// Códigos de erro do BiometricPrompt (valores estáveis da plataforma; o enum do
+        /// binding muda de nome entre versões, então comparamos por número).
+        /// </summary>
+        private const int ErroCancelado = 5;
+        private const int ErroLockout = 7;
+        private const int ErroPermanente = 9;
+        private const int ErroUsuarioCancelou = 10;
+        private const int ErroSemBiometria = 11;
+        private const int ErroSemHardware = 12;
+        private const int ErroBotaoNegativo = 13;
+
+        public override void OnAuthenticationError(BiometricErrorCode codigoErro, Java.Lang.ICharSequence? mensagem)
+        {
+#if DEBUG
+            Android.Util.Log.Info(Tag, $"Erro {(int)codigoErro}: {mensagem}");
+#endif
+
+            _conclusao.TrySetResult((int)codigoErro switch
+            {
+                ErroCancelado or ErroUsuarioCancelou or ErroBotaoNegativo => ResultadoBiometria.Cancelado,
+                ErroSemBiometria or ErroSemHardware => ResultadoBiometria.Indisponivel,
+                ErroLockout or ErroPermanente => ResultadoBiometria.Falhou,
+                _ => ResultadoBiometria.Falhou
+            });
+        }
     }
 }
-
-

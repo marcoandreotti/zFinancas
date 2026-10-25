@@ -15,6 +15,9 @@ public sealed class LoginViewModel : BaseViewModel
     private readonly ServicoInicializacao _inicializacao;
     private readonly ServicoPreferencias _preferencias;
     private readonly IServicoBiometria _biometria;
+
+    /// <summary>A biometria é pedida uma vez por abertura da tela de login.</summary>
+    private bool _biometriaSolicitada;
     private readonly ServicoNavegacao _navegacao;
     private readonly ServicoDialogos _dialogos;
     private readonly IInfoDispositivo _dispositivo;
@@ -145,6 +148,23 @@ public sealed class LoginViewModel : BaseViewModel
             await ConfigurarBiometriaAsync();
 
 #if DEBUG
+            // Atalho de desenvolvimento no aparelho: se existir "autologin.txt" na pasta de
+            // dados, entra com o usuário selecionado sem senha. Usado para depurar telas
+            // internas via adb (nunca existe em Release).
+            var atalho = Path.Combine(FileSystem.AppDataDirectory, "autologin.txt");
+            if (File.Exists(atalho) && UsuarioSelecionado is not null && !_biometriaSolicitada)
+            {
+                _biometriaSolicitada = true;
+                System.Diagnostics.Debug.WriteLine("zFinancas: autologin de desenvolvimento");
+
+                await _autenticacao.EntrarComBiometriaAsync(UsuarioSelecionado.Id);
+                await _navegacao.AbrirAplicacaoAsync();
+                return;
+            }
+#endif
+
+
+#if DEBUG
             // Atalho de desenvolvimento: ZFINANCAS_AUTOLOGIN="Marco" entra direto,
             // útil para gerar telas de demonstração e depurar. Nunca existe em Release.
             var autoLogin = Environment.GetEnvironmentVariable("ZFINANCAS_AUTOLOGIN");
@@ -183,12 +203,28 @@ public sealed class LoginViewModel : BaseViewModel
             }
 #endif
         });
+        // Fora do ExecutarAsync: o login por biometria abre o próprio ExecutarAsync e, se
+        // chamado de dentro do carregamento (Ocupado = true), era descartado em silêncio —
+        // a digital era reconhecida mas ninguém entrava.
+        if (MostrarBiometria && !_biometriaSolicitada && !Ocupado)
+        {
+            _biometriaSolicitada = true;
+            await EntrarComBiometriaAsync();
+        }
     }
+
 
     private async Task ConfigurarBiometriaAsync()
     {
+        // Disponibilidade primeiro: é barato e evita consultar o usuário à toa.
+        if (!await _biometria.DisponivelAsync())
+        {
+            MostrarBiometria = false;
+            return;
+        }
+
         var usuarioBiometriaId = await _preferencias.ObterUsuarioComBiometriaAsync();
-        if (usuarioBiometriaId is null || !await _biometria.DisponivelAsync())
+        if (usuarioBiometriaId is null)
         {
             MostrarBiometria = false;
             return;
@@ -230,10 +266,21 @@ public sealed class LoginViewModel : BaseViewModel
             return;
         }
 
-        var autenticado = await _biometria.AutenticarAsync($"Entrar como {UsuarioSelecionado?.Nome ?? "usuário"}");
-        if (!autenticado)
+        var resultado = await _biometria.AutenticarAsync($"Entrar como {UsuarioSelecionado?.Nome ?? "usuário"}");
+
+#if ANDROID && DEBUG
+        Android.Util.Log.Info("zFinancas.Bio", $"Login por biometria: {resultado}");
+#endif
+
+        if (resultado != ResultadoBiometria.Sucesso)
         {
-            Mensagem = "Biometria não reconhecida. Use a senha.";
+            Mensagem = resultado switch
+            {
+                ResultadoBiometria.Cancelado => "Entrada por biometria cancelada.",
+                ResultadoBiometria.Indisponivel => "Biometria indisponível neste aparelho. Use a senha.",
+                _ => "Biometria não reconhecida. Use a senha."
+            };
+
             return;
         }
 

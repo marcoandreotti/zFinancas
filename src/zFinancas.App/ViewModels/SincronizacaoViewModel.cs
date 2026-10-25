@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -14,6 +14,8 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     private readonly SincronizacaoService _sincronizacao;
     private readonly IArmazenamentoCompartilhado _armazenamento;
     private readonly IInfoDispositivo _dispositivo;
+    private readonly ServicoDialogos _dialogos;
+
 
     private string _dispositivoId = string.Empty;
     private string _ultimaSincronizacao = string.Empty;
@@ -23,11 +25,13 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     public SincronizacaoViewModel(
         SincronizacaoService sincronizacao,
         IArmazenamentoCompartilhado armazenamento,
-        IInfoDispositivo dispositivo)
+        IInfoDispositivo dispositivo,
+        ServicoDialogos dialogos)
     {
         _sincronizacao = sincronizacao;
         _armazenamento = armazenamento;
         _dispositivo = dispositivo;
+        _dialogos = dialogos;
 
         Titulo = "Sincronização";
 
@@ -92,7 +96,16 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     {
         await ExecutarAsync(async () =>
         {
-            var caminho = await _sincronizacao.ExportarECompartilharAsync(_armazenamento);
+
+            var caminho = await _sincronizacao.ExportarAsync(_armazenamento);
+
+            if (caminho is null)
+            {
+                Resultado = "Exportação cancelada.";
+                TemResultado = true;
+                return;
+            }
+
             var pacote = await _sincronizacao.MontarPacoteAsync();
 
             Resultado =
@@ -100,7 +113,7 @@ public sealed class SincronizacaoViewModel : BaseViewModel
                 $"Arquivo: {caminho}";
             TemResultado = true;
 
-            await ServicosApp.Obter<ServicoDialogos>().AlertaAsync(
+            await _dialogos.AlertaAsync(
                 "Pacote exportado",
                 $"{pacote.TotalRegistros} registros exportados.\n\n{caminho}");
         }, "Não foi possível exportar");

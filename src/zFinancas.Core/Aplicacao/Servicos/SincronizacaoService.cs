@@ -152,7 +152,12 @@ public sealed class SincronizacaoService
         return _serializador.Serializar(pacote);
     }
 
-    public async Task<string> ExportarECompartilharAsync(IArmazenamentoCompartilhado armazenamento, CancellationToken ct = default)
+    /// <summary>
+    /// Abre o “Salvar como” do sistema e devolve o caminho escolhido
+    /// (ou null quando o usuário cancela).
+    /// </summary>
+    /// <summary>Exporta para uma pasta específica (escolhida pelo usuário na tela).</summary>
+    public async Task<string> ExportarParaAsync(string pasta, IArmazenamentoCompartilhado armazenamento, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(armazenamento);
 
@@ -160,11 +165,22 @@ public sealed class SincronizacaoService
         var json = _serializador.Serializar(pacote);
         var nomeArquivo = $"zfinancas-{pacote.GeradoEmUtc.ToLocalTime():yyyyMMdd-HHmm}.zfsync";
 
-        await armazenamento.CompartilharTextoAsync(nomeArquivo, json, "Pacote de sincronização do zFinancas", ct)
-            .ConfigureAwait(false);
-
-        return nomeArquivo;
+        return await armazenamento.SalvarEmAsync(pasta, nomeArquivo, json, ct).ConfigureAwait(false);
     }
+
+    public async Task<string?> ExportarAsync(IArmazenamentoCompartilhado armazenamento, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(armazenamento);
+
+        var pacote = await MontarPacoteAsync(ct).ConfigureAwait(false);
+        var json = _serializador.Serializar(pacote);
+        var nomeArquivo = $"zfinancas-{pacote.GeradoEmUtc.ToLocalTime():yyyyMMdd-HHmm}.zfsync";
+
+        return await armazenamento
+            .SalvarTextoAsync(nomeArquivo, json, "Pacote de sincronização do zFinancas", ct)
+            .ConfigureAwait(false);
+    }
+
 
     // ------------------------------------------------------------------ importação
 
@@ -240,6 +256,26 @@ public sealed class SincronizacaoService
 
                 if (remoto.Excluido) continue;
 
+                // Bases criadas separadamente geram o mesmo nome com UUIDs diferentes
+                // (ex.: "Conta Principal" nos dois aparelhos). Como DESCRICAO e unica,
+                // unificamos: mantemos a conta local e adotamos o UUID remoto, para que
+                // as proximas sincronizacoes ja se reconheçam sem aviso.
+                var homonima = contasLocais.Values.FirstOrDefault(c =>
+                    !c.Excluido && string.Equals(c.Descricao, remoto.Descricao, StringComparison.OrdinalIgnoreCase));
+
+                if (homonima is not null)
+                {
+                    homonima.Uuid = remoto.Uuid;
+                    homonima.AtualizadoEm = remoto.AtualizadoEm;
+
+                    await _contas.SalvarAsync(homonima, token).ConfigureAwait(false);
+
+                    contaIdPorUuid[remoto.Uuid] = homonima.Id;
+                    contasAtualizadas++;
+                    avisos.Add($"Conta \"{remoto.Descricao}\" existia nos dois aparelhos: unificada.");
+                    continue;
+                }
+
                 var nova = new ContaCorrente
                 {
                     Uuid = remoto.Uuid,
@@ -283,6 +319,22 @@ public sealed class SincronizacaoService
 
                 if (remoto.Excluido) continue;
 
+                var homonimo = centrosLocais.Values.FirstOrDefault(c =>
+                    !c.Excluido && string.Equals(c.Descricao, remoto.Descricao, StringComparison.OrdinalIgnoreCase));
+
+                if (homonimo is not null)
+                {
+                    homonimo.Uuid = remoto.Uuid;
+                    homonimo.AtualizadoEm = remoto.AtualizadoEm;
+
+                    await _centrosDeCusto.SalvarAsync(homonimo, token).ConfigureAwait(false);
+
+                    centroIdPorUuid[remoto.Uuid] = homonimo.Id;
+                    centrosAtualizados++;
+                    avisos.Add($"Centro de custo \"{remoto.Descricao}\" existia nos dois aparelhos: unificado.");
+                    continue;
+                }
+
                 var novo = new CentroCusto
                 {
                     Uuid = remoto.Uuid,
@@ -325,6 +377,22 @@ public sealed class SincronizacaoService
                 }
 
                 if (remoto.Excluido) continue;
+
+                var homonimo = usuariosLocais.Values.FirstOrDefault(u =>
+                    !u.Excluido && string.Equals(u.Nome, remoto.Nome, StringComparison.OrdinalIgnoreCase));
+
+                if (homonimo is not null)
+                {
+                    homonimo.Uuid = remoto.Uuid;
+                    homonimo.AtualizadoEm = remoto.AtualizadoEm;
+
+                    await _usuarios.SalvarAsync(homonimo, token).ConfigureAwait(false);
+
+                    usuarioIdPorUuid[remoto.Uuid] = homonimo.Id;
+                    usuariosAtualizados++;
+                    avisos.Add($"Usuario \"{remoto.Nome}\" existia nos dois aparelhos: unificado (senha local mantida).");
+                    continue;
+                }
 
                 var novo = new Usuario
                 {

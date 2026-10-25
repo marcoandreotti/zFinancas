@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Data.Infra;
@@ -71,12 +71,13 @@ public sealed class CentroCustoRepositorio : RepositorioBase, ICentroCustoReposi
             """
             UPDATE CENTRODECUSTO SET
                 DESCRICAO = $descricao, PRINCIPAL = $principal, ICONE = $icone, ATIVO = $ativo,
-                ATUALIZADOEM = $atualizado, EXCLUIDO = $excluido
+                UUID = $uuid, ATUALIZADOEM = $atualizado, EXCLUIDO = $excluido
             WHERE ID = $id;
             """,
             c =>
             {
                 c.Parameters.AddWithValue("$id", centroCusto.Id);
+                c.Parameters.AddWithValue("$uuid", centroCusto.Uuid);
                 c.Parameters.AddWithValue("$descricao", centroCusto.Descricao);
                 c.Parameters.AddWithValue("$principal", centroCusto.Principal ? 1 : 0);
                 c.Parameters.AddWithValue("$icone", centroCusto.Icone);
