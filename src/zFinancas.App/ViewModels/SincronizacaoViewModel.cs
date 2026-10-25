@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -14,6 +14,7 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     private readonly SincronizacaoService _sincronizacao;
     private readonly IArmazenamentoCompartilhado _armazenamento;
     private readonly IInfoDispositivo _dispositivo;
+    private readonly ServicoDialogos _dialogos;
 
     private string _dispositivoId = string.Empty;
     private string _ultimaSincronizacao = string.Empty;
@@ -23,16 +24,19 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     public SincronizacaoViewModel(
         SincronizacaoService sincronizacao,
         IArmazenamentoCompartilhado armazenamento,
-        IInfoDispositivo dispositivo)
+        IInfoDispositivo dispositivo,
+        ServicoDialogos dialogos)
     {
         _sincronizacao = sincronizacao;
         _armazenamento = armazenamento;
         _dispositivo = dispositivo;
+        _dialogos = dialogos;
 
         Titulo = "Sincronização";
 
         CarregarCommand = new ComandoAssincrono(CarregarAsync);
         ExportarCommand = new ComandoAssincrono(ExportarAsync);
+        EscolherPastaCommand = new ComandoAssincrono(EscolherPastaAsync);
         ImportarCommand = new ComandoAssincrono(ImportarAsync);
     }
 
@@ -40,6 +44,12 @@ public sealed class SincronizacaoViewModel : BaseViewModel
 
     public ICommand CarregarCommand { get; }
     public ICommand ExportarCommand { get; }
+
+    /// <summary>Permite gravar os pacotes fora da pasta privada do app.</summary>
+    public ICommand EscolherPastaCommand { get; }
+
+    /// <summary>Pasta onde o pacote será gravado (mostrada na tela).</summary>
+    public string PastaPacotes => _armazenamento.PastaAtual;
     public ICommand ImportarCommand { get; }
 
     public string DispositivoId
@@ -104,6 +114,32 @@ public sealed class SincronizacaoViewModel : BaseViewModel
                 "Pacote exportado",
                 $"{pacote.TotalRegistros} registros exportados.\n\n{caminho}");
         }, "Não foi possível exportar");
+    }
+
+    private async Task EscolherPastaAsync()
+    {
+        try
+        {
+            var pasta = await _armazenamento.EscolherPastaAsync();
+
+            if (pasta is null)
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(PastaPacotes));
+
+            await _dialogos.AlertaAsync(
+                "Pasta dos pacotes",
+                $"Os próximos pacotes serão gravados em:\n{pasta}");
+        }
+        catch (Exception ex)
+        {
+            RegistroDeFalhas.Registrar(ex, "EscolherPastaPacotes");
+            await _dialogos.AlertaAsync(
+                "Não foi possível usar esta pasta",
+                "Escolha uma pasta com permissão de escrita (por exemplo, Documentos).");
+        }
     }
 
     private async Task ImportarAsync()
