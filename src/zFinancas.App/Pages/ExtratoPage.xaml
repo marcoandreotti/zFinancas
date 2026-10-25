@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -18,9 +18,9 @@
                        VerticalOptions="Center" />
 
                 <Button Grid.Column="1"
-                        Text="↻"
-                        FontSize="18"
-                        WidthRequest="46"
+                        Text="Atualizar"
+                        FontSize="13"
+                        Padding="14,10"
                         Command="{Binding CarregarCommand}"
                         Style="{StaticResource BotaoSecundario}"
                         SemanticProperties.Description="Atualizar"

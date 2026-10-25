@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -33,9 +33,7 @@ public sealed class LancamentosViewModel : BaseViewModel
     private bool _recarregarPendente;
     private string _busca = string.Empty;
     private bool _somentePendentes;
-    private string _totalCompensadoTexto = "R$ 0,00";
-    private string _totalPendenteTexto = "R$ 0,00";
-    private string _quantidadeTexto = "0 lançamentos";
+    private string _saldoAnteriorTexto = "R$ 0,00";
 
     public LancamentosViewModel(
         LancamentoService lancamentos,
@@ -134,22 +132,10 @@ public sealed class LancamentosViewModel : BaseViewModel
         }
     }
 
-    public string TotalCompensadoTexto
+    public string SaldoAnteriorTexto
     {
-        get => _totalCompensadoTexto;
-        private set => SetProperty(ref _totalCompensadoTexto, value);
-    }
-
-    public string TotalPendenteTexto
-    {
-        get => _totalPendenteTexto;
-        private set => SetProperty(ref _totalPendenteTexto, value);
-    }
-
-    public string QuantidadeTexto
-    {
-        get => _quantidadeTexto;
-        private set => SetProperty(ref _quantidadeTexto, value);
+        get => _saldoAnteriorTexto;
+        private set => SetProperty(ref _saldoAnteriorTexto, value);
     }
 
     public bool SemItens => Itens.Count == 0;
@@ -218,10 +204,10 @@ public sealed class LancamentosViewModel : BaseViewModel
                         parcelaNoDetalhe: true));
                 }
 
-                TotalCompensadoTexto = Formatador.Moeda(filtrados.Where(l => l.Compensado).Sum(l => l.Valor));
-                TotalPendenteTexto = Formatador.Moeda(filtrados.Where(l => !l.Compensado).Sum(l => l.Valor));
-                QuantidadeTexto = (filtrados.Count == 1 ? "1 lançamento" : $"{filtrados.Count} lançamentos")
-                    + $" · desde {Formatador.Data(corte)}";
+                // No lugar dos totais, o saldo de partida da lista (compensado antes do corte).
+                SaldoAnteriorTexto = Formatador.Moeda(saldos.Count > 0
+                    ? CalcularSaldoAnterior(todos, corte)
+                    : 0m);
 
                 OnPropertyChanged(nameof(SemItens));
             }, "Não foi possível carregar os lançamentos");
@@ -239,33 +225,34 @@ public sealed class LancamentosViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// Saldo acumulado de cada lançamento dentro da sua conta, com a mesma regra do extrato:
-    /// o saldo anterior soma o que foi compensado ANTES do corte e cada linha recebe o valor
-    /// quando a compensação caiu dentro da janela.
+    /// Saldo acumulado de cada lançamento, com a mesma regra do extrato consolidado:
+    /// parte do que foi compensado ANTES do corte e cada linha recebe o valor quando a
+    /// compensação caiu dentro da janela. Contas marcadas são somadas (igual ao extrato).
     /// </summary>
     private static Dictionary<long, decimal> CalcularSaldos(IEnumerable<Lancamento> lancamentos, DateTime corte)
     {
-        var saldos = new Dictionary<long, decimal>();
+        var todos = lancamentos as IReadOnlyCollection<Lancamento> ?? lancamentos.ToList();
+        var saldos = new Dictionary<long, decimal>(todos.Count);
+        var saldo = CalcularSaldoAnterior(todos, corte);
 
-        foreach (var grupo in lancamentos.GroupBy(l => l.ContaCorrenteId))
+        foreach (var lancamento in todos.OrderBy(l => l.DataVencimento).ThenBy(l => l.Id))
         {
-            var saldo = grupo
-                .Where(l => l.Compensado && DataDaCompensacao(l).Date < corte.Date)
-                .Sum(l => l.Valor);
-
-            foreach (var lancamento in grupo.OrderBy(l => l.DataVencimento).ThenBy(l => l.Id))
+            if (lancamento.Compensado && DataDaCompensacao(lancamento).Date >= corte.Date)
             {
-                if (lancamento.Compensado && DataDaCompensacao(lancamento).Date >= corte.Date)
-                {
-                    saldo += lancamento.Valor;
-                }
-
-                saldos[lancamento.Id] = saldo;
+                saldo += lancamento.Valor;
             }
+
+            saldos[lancamento.Id] = saldo;
         }
 
         return saldos;
     }
+
+    /// <summary>Saldo de partida da lista: compensados com compensação anterior ao corte.</summary>
+    private static decimal CalcularSaldoAnterior(IEnumerable<Lancamento> lancamentos, DateTime corte)
+        => lancamentos
+            .Where(l => l.Compensado && DataDaCompensacao(l).Date < corte.Date)
+            .Sum(l => l.Valor);
 
     /// <summary>Data em que o dinheiro se moveu (compensação), com o vencimento como reserva.</summary>
     private static DateTime DataDaCompensacao(Lancamento lancamento)

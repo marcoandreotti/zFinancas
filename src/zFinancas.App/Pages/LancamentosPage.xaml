@@ -13,13 +13,11 @@
         <VerticalStackLayout Grid.Row="0" Spacing="12">
 
             <Grid ColumnDefinitions="*,Auto">
-                <VerticalStackLayout Spacing="2">
-                    <Label Text="Lançamentos"
-                           Style="{StaticResource TituloPagina}"
-                           FontSize="{OnIdiom Phone=24, Desktop=30}"
-                           LineBreakMode="TailTruncation" />
-                    <Label Text="{Binding QuantidadeTexto}" Style="{StaticResource Subtitulo}" />
-                </VerticalStackLayout>
+                <Label Text="Lançamentos"
+                       Style="{StaticResource TituloPagina}"
+                       FontSize="{OnIdiom Phone=24, Desktop=30}"
+                       LineBreakMode="TailTruncation"
+                       VerticalOptions="Center" />
 
                 <Button Grid.Column="1"
                         Text="+  Novo"
@@ -27,7 +25,7 @@
                         VerticalOptions="Center" />
             </Grid>
 
-            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                 <Border Style="{StaticResource Campo}">
                     <Entry Text="{Binding Busca}" Placeholder="Buscar por descrição…" />
                 </Border>
@@ -36,39 +34,38 @@
                         Text="{Binding ResumoContas}"
                         Command="{Binding AbrirSelecaoContasCommand}"
                         Style="{StaticResource BotaoSecundario}"
-                        WidthRequest="210" />
-
-                <HorizontalStackLayout Grid.Column="2" Spacing="6" VerticalOptions="Center">
-                    <Label Text="Só pendentes" Style="{StaticResource Rotulo}" VerticalOptions="Center" />
-                    <Switch IsToggled="{Binding SomentePendentes}" VerticalOptions="Center" />
-                </HorizontalStackLayout>
+                        Padding="12,10"
+                        WidthRequest="152" />
             </Grid>
 
-            <!-- data de corte: a lista começa aqui (dá para voltar quando entrar parcela antiga) -->
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                <Label Text="A partir de"
+            <!-- filtro + data de corte (a lista começa aqui; dá para voltar quando entrar parcela antiga) -->
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="10">
+                <Label Text="Só pendentes"
                        Style="{StaticResource Rotulo}"
                        VerticalOptions="Center" />
 
-                <Border Grid.Column="1" Style="{StaticResource Campo}">
+                <Switch Grid.Column="1"
+                        IsToggled="{Binding SomentePendentes}"
+                        VerticalOptions="Center" />
+
+                <Label Grid.Column="2"
+                       Text="A partir de"
+                       Style="{StaticResource Rotulo}"
+                       VerticalOptions="Center" />
+
+                <Border Grid.Column="3" Style="{StaticResource Campo}">
                     <DatePicker Date="{Binding DataCorte}" Format="dd/MM/yyyy" />
                 </Border>
             </Grid>
 
             <Border Style="{StaticResource Card}" Padding="16,12">
-                <Grid ColumnDefinitions="*,Auto,*,Auto" ColumnSpacing="12">
-                    <VerticalStackLayout Spacing="1">
-                        <Label Text="COMPENSADO" Style="{StaticResource Rotulo}" />
-                        <Label Text="{Binding TotalCompensadoTexto}" Style="{StaticResource ValorPositivo}" FontSize="15" />
-                    </VerticalStackLayout>
-
-                    <BoxView Grid.Column="1" WidthRequest="1" Color="{StaticResource BordaSuave}" />
-
-                    <VerticalStackLayout Grid.Column="2" Spacing="1">
-                        <Label Text="A COMPENSAR" Style="{StaticResource Rotulo}" />
-                        <Label Text="{Binding TotalPendenteTexto}" Style="{StaticResource ValorNegativo}" FontSize="15" />
-                    </VerticalStackLayout>
-                </Grid>
+                <VerticalStackLayout Spacing="1">
+                    <Label Text="SALDO ANTERIOR" Style="{StaticResource Rotulo}" />
+                    <Label Text="{Binding SaldoAnteriorTexto}"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="18"
+                           TextColor="{StaticResource Texto}" />
+                </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>
 
