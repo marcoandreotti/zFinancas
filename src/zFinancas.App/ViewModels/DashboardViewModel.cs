@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -24,6 +24,7 @@ public sealed class DashboardViewModel : BaseViewModel
     private string _saudacao = string.Empty;
     private string _dataTexto = string.Empty;
     private string _totalTexto = "R$ 0,00";
+    private string _projetadoTexto = "R$ 0,00";
     private string _compensadoTexto = "R$ 0,00";
     private string _pendenteTexto = "R$ 0,00";
     private string _vencidoTexto = "R$ 0,00";
@@ -93,6 +94,12 @@ public sealed class DashboardViewModel : BaseViewModel
         private set => SetProperty(ref _totalTexto, value);
     }
 
+    public string ProjetadoTexto
+    {
+        get => _projetadoTexto;
+        private set => SetProperty(ref _projetadoTexto, value);
+    }
+
     public string CompensadoTexto
     {
         get => _compensadoTexto;
@@ -145,7 +152,10 @@ public sealed class DashboardViewModel : BaseViewModel
             Saudacao = $"{Formatador.Saudacao()}, {PrimeiroNome(_sessao.Usuario?.Nome)}";
             DataTexto = DateTime.Now.ToString("dddd, dd 'de' MMMM", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
 
-            TotalTexto = Formatador.Moeda(resumo.Total.Total);
+            // O número grande é o dinheiro que está na conta (compensado);
+            // a projeção (com pendentes) fica no card ao lado.
+            TotalTexto = Formatador.Moeda(resumo.Total.Compensado);
+            ProjetadoTexto = Formatador.Moeda(resumo.Total.Total);
             CompensadoTexto = Formatador.Moeda(resumo.Total.Compensado);
             PendenteTexto = Formatador.Moeda(resumo.Total.NaoCompensado);
             VencidoTexto = Formatador.Moeda(resumo.Total.NaoCompensadoVencido);

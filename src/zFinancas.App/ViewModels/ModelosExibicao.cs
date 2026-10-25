@@ -187,6 +187,7 @@ public sealed class ContaCartaoVm
     public required string Icone { get; init; }
     public required string CompensadoTexto { get; init; }
     public required string PendenteTexto { get; init; }
+    public required string VencidoTexto { get; init; }
     public required string TotalTexto { get; init; }
     public required bool Principal { get; init; }
 
@@ -204,6 +205,7 @@ public sealed class ContaCartaoVm
             Icone = resumo.Icone,
             CompensadoTexto = Formatador.Moeda(resumo.Saldo.Compensado),
             PendenteTexto = Formatador.Moeda(resumo.Saldo.NaoCompensado),
+            VencidoTexto = Formatador.Moeda(resumo.Saldo.NaoCompensadoVencido),
             TotalTexto = Formatador.Moeda(resumo.Saldo.Total),
             Principal = resumo.Principal,
             Gradiente = new LinearGradientBrush(

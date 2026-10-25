@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -177,7 +177,7 @@ public sealed class ExtratoViewModel : BaseViewModel
 
         try
         {
-            var contas = await _contas.ListarAsync(incluirInativas: true);
+            var contas = await _contas.ListarAsync();
 
             if (!_carregouContas)
             {
@@ -262,7 +262,7 @@ public sealed class ExtratoViewModel : BaseViewModel
 
     private async Task AbrirSelecaoContasAsync()
     {
-        var contas = await _contas.ListarAsync(incluirInativas: true);
+        var contas = await _contas.ListarAsync();
 
         if (contas.Count == 0)
         {

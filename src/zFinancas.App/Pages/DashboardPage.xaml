@@ -45,7 +45,7 @@
                 </Border.StrokeShape>
 
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="14">
-                    <Label Text="SALDO TOTAL (TODAS AS CONTAS)"
+                    <Label Text="SALDO EM CONTA (TODAS AS CONTAS)"
                            FontSize="11"
                            CharacterSpacing="1.2"
                            TextColor="{StaticResource PrimariaClara}" />
@@ -60,8 +60,8 @@
 
                     <Grid Grid.Row="3" ColumnDefinitions="*,*,*" ColumnSpacing="10">
                         <VerticalStackLayout Spacing="2">
-                            <Label Text="Compensado" FontSize="11" TextColor="{StaticResource PrimariaClara}" />
-                            <Label Text="{Binding CompensadoTexto}" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{StaticResource Branco}" />
+                            <Label Text="Projetado" FontSize="11" TextColor="{StaticResource PrimariaClara}" />
+                            <Label Text="{Binding ProjetadoTexto}" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{StaticResource Branco}" />
                         </VerticalStackLayout>
 
                         <VerticalStackLayout Grid.Column="1" Spacing="2">
@@ -141,21 +141,21 @@
                                 </Grid>
 
                                 <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" Spacing="0">
-                                    <Label Text="{Binding TotalTexto}"
+                                    <Label Text="{Binding CompensadoTexto}"
                                            FontFamily="OpenSansSemibold"
                                            FontSize="26"
                                            TextColor="{StaticResource Branco}" />
-                                    <Label Text="saldo total" FontSize="11" TextColor="#CCFFFFFF" />
+                                    <Label Text="saldo em conta" FontSize="11" TextColor="#CCFFFFFF" />
                                 </VerticalStackLayout>
 
                                 <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
                                     <VerticalStackLayout Spacing="1">
-                                        <Label Text="Compensado" FontSize="10" TextColor="#B3FFFFFF" />
-                                        <Label Text="{Binding CompensadoTexto}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Branco}" />
-                                    </VerticalStackLayout>
-                                    <VerticalStackLayout Grid.Column="1" Spacing="1">
                                         <Label Text="A compensar" FontSize="10" TextColor="#B3FFFFFF" />
                                         <Label Text="{Binding PendenteTexto}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Branco}" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                        <Label Text="Vencido" FontSize="10" TextColor="#B3FFFFFF" />
+                                        <Label Text="{Binding VencidoTexto}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Branco}" />
                                     </VerticalStackLayout>
                                 </Grid>
                             </Grid>

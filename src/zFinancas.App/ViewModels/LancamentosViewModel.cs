@@ -150,7 +150,7 @@ public sealed class LancamentosViewModel : BaseViewModel
         {
             await ExecutarAsync(async () =>
             {
-                var contas = await _contas.ListarAsync(incluirInativas: true);
+                var contas = await _contas.ListarAsync();
                 var centros = (await _centros.ListarAsync(incluirInativos: true)).ToDictionary(c => c.Id);
 
                 // Contas marcadas no painel (vazio = todas as permitidas ao usuário).
@@ -170,8 +170,8 @@ public sealed class LancamentosViewModel : BaseViewModel
                     .Where(l => !SomentePendentes || l.Pendente)
                     .Where(l => string.IsNullOrWhiteSpace(Busca)
                                 || l.Descricao.Contains(Busca, StringComparison.CurrentCultureIgnoreCase))
-                    .OrderByDescending(l => l.DataVencimento)
-                    .ThenByDescending(l => l.Id)
+                    .OrderBy(l => l.DataVencimento)
+                    .ThenBy(l => l.Id)
                     .ToList();
 
                 var contasPorId = contas.ToDictionary(c => c.Id);
@@ -180,7 +180,7 @@ public sealed class LancamentosViewModel : BaseViewModel
                 var saldos = CalcularSaldos(todos);
 
                 Itens.Clear();
-                foreach (var lancamento in filtrados.Take(300))
+                foreach (var lancamento in filtrados)
                 {
                     Itens.Add(LancamentoVm.Criar(
                         lancamento,
@@ -239,7 +239,7 @@ public sealed class LancamentosViewModel : BaseViewModel
 
     private async Task AbrirSelecaoContasAsync()
     {
-        var contas = await _contas.ListarAsync(incluirInativas: true);
+        var contas = await _contas.ListarAsync();
 
         if (contas.Count == 0)
         {
