@@ -34,12 +34,18 @@ Basta descompactar `zFinancas-win-x64.zip` em qualquer pasta e executar
 
 ## 3. Instalador (Inno Setup)
 
-1. Instale o [Inno Setup 6](https://jrsoftware.org/isdl.php).
+1. Instale o [Inno Setup 6 ou 7](https://jrsoftware.org/isdl.php).
 2. Compile o script:
 
 ```powershell
+# Inno Setup 6
 & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" instalador\zFinancas.iss
+
+# Inno Setup 7
+& "C:\Program Files\Inno Setup 7\ISCC.exe" instalador\zFinancas.iss
 ```
+
+> `SetupIconFile` exige **.ico** (não .png): o arquivo usado é `instalador\zFinancas.ico`.
 
 3. O instalador sai em `instalador\saida\zFinancas-Setup-1.0.0.exe`.
 

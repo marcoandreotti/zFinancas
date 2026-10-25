@@ -1,11 +1,12 @@
-; ---------------------------------------------------------------------------
+﻿; ---------------------------------------------------------------------------
 ; Instalador do zFinancas (Inno Setup 6)
 ;
 ; Como gerar:
 ;   1. .\build.ps1 -Publish        (cria .tmp\publicacao\win-x64 com o app)
-;   2. Instale o Inno Setup 6: https://jrsoftware.org/isdl.php
+;   2. Instale o Inno Setup 6 ou 7: https://jrsoftware.org/isdl.php
 ;   3. Compile este script:
 ;        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" instalador\zFinancas.iss
+;        (ou "C:\Program Files\Inno Setup 7\ISCC.exe" no Inno 7)
 ;
 ; Resultado: instalador\saida\zFinancas-Setup-<versao>.exe
 ;
@@ -42,7 +43,7 @@ PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 UninstallDisplayName={#NomeApp}
 ; Ícone do instalador (gerado pelo resizetizer no build)
-SetupIconFile=..\src\zFinancas.App\Resources\AppIcon\appicon.png
+SetupIconFile=zFinancas.ico
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
