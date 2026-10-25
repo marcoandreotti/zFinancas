@@ -117,6 +117,9 @@ Pré-requisitos: **.NET SDK 9** (o `global.json` fixa 9.0.305) e workloads
 
 # publica o app para distribuição (self-contained + ZIP)
 .\build.ps1 -Publish
+
+# se o Windows bloquear scripts (política AllSigned), use:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Publish
 ```
 
 Ou direto com `dotnet`:
