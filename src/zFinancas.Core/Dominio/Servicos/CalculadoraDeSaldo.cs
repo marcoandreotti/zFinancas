@@ -17,11 +17,23 @@ public sealed record LancamentoExtrato
 {
     public required Lancamento Lancamento { get; init; }
 
-    /// <summary>Saldo acumulado após esta linha (inclui não compensados, isto é, projetado).</summary>
+    /// <summary>
+    /// Saldo real acumulado após esta linha: só lançamentos compensados dentro do período
+    /// movem o valor (é o "saldo de verdade", o mesmo que o banco mostra).
+    /// </summary>
     public required decimal SaldoApos { get; init; }
 
-    /// <summary>Saldo acumulado considerando apenas lançamentos compensados.</summary>
-    public required decimal SaldoCompensadoApos { get; init; }
+    /// <summary>Saldo acumulado incluindo tudo que ainda vai acontecer (projeção).</summary>
+    public required decimal SaldoProjetadoApos { get; init; }
+
+    /// <summary>Saldo acumulado considerando apenas lançamentos compensados (igual a <see cref="SaldoApos"/>).</summary>
+    public decimal SaldoCompensadoApos => SaldoApos;
+
+    /// <summary>
+    /// Verdadeiro quando este lançamento altera o saldo dentro do período
+    /// (compensado com data de compensação a partir do início).
+    /// </summary>
+    public required bool AfetaSaldo { get; init; }
 
     /// <summary>Verdadeiro para lançamento não compensado anterior ao período (exibido destacado).</summary>
     public required bool ForaDoPeriodo { get; init; }
@@ -46,11 +58,11 @@ public sealed record ExtratoConta
 
     public required IReadOnlyList<LancamentoExtrato> Itens { get; init; }
 
-    /// <summary>Saldo após a última linha do extrato (projetado, inclui pendentes).</summary>
-    public decimal SaldoFinal => Itens.Count > 0 ? Itens[^1].SaldoApos : SaldoAnterior;
+    /// <summary>Saldo projetado após a última linha (inclui pendentes e futuros).</summary>
+    public decimal SaldoFinal => Itens.Count > 0 ? Itens[^1].SaldoProjetadoApos : SaldoAnterior;
 
-    /// <summary>Saldo compensado ao final do período.</summary>
-    public decimal SaldoCompensadoFinal => Itens.Count > 0 ? Itens[^1].SaldoCompensadoApos : SaldoAnterior;
+    /// <summary>Saldo real (compensado) ao final do período.</summary>
+    public decimal SaldoCompensadoFinal => Itens.Count > 0 ? Itens[^1].SaldoApos : SaldoAnterior;
 
     public decimal TotalEntradas => Itens.Where(i => i.Valor > 0m).Sum(i => i.Valor);
 
@@ -106,9 +118,10 @@ public sealed class CalculadoraDeSaldo
 
         var todos = lancamentosDaConta.OrderBy(l => l.DataVencimento).ThenBy(l => l.Id).ToList();
 
-        // Saldo inicial: somente compensados, com data de compensação anterior ao período.
+        // Saldo inicial: somente compensados, pela DATA DE COMPENSAÇÃO anterior ao período
+        // (é o dinheiro que já estava na conta; usar o vencimento fazia o saldo divergir).
         var saldoAnterior = todos
-            .Where(l => l.Compensado && l.DataVencimento.Date < inicio.Date)
+            .Where(l => l.Compensado && DataDaCompensacao(l).Date < inicio.Date)
             .Sum(l => l.Valor);
 
         var selecionados = todos
@@ -117,21 +130,31 @@ public sealed class CalculadoraDeSaldo
 
         var itens = new List<LancamentoExtrato>(selecionados.Count);
         var saldo = saldoAnterior;
-        var saldoCompensado = saldoAnterior;
+        var projetado = saldoAnterior;
 
         foreach (var lancamento in selecionados)
         {
-            saldo += lancamento.Valor;
-            if (lancamento.Compensado)
+            // Compensado dentro do período = dinheiro que entrou/saiu de fato.
+            var compensadoAntes = lancamento.Compensado && DataDaCompensacao(lancamento).Date < inicio.Date;
+            var afetaSaldo = lancamento.Compensado && !compensadoAntes;
+
+            if (afetaSaldo)
             {
-                saldoCompensado += lancamento.Valor;
+                saldo += lancamento.Valor;
+            }
+
+            // O projetado parte do saldo anterior: quem já estava lá não entra de novo.
+            if (!compensadoAntes)
+            {
+                projetado += lancamento.Valor;
             }
 
             itens.Add(new LancamentoExtrato
             {
                 Lancamento = lancamento,
                 SaldoApos = saldo,
-                SaldoCompensadoApos = saldoCompensado,
+                SaldoProjetadoApos = projetado,
+                AfetaSaldo = afetaSaldo,
                 ForaDoPeriodo = lancamento.DataVencimento.Date < inicio.Date
             });
         }
@@ -145,6 +168,10 @@ public sealed class CalculadoraDeSaldo
             Itens = itens
         };
     }
+
+    /// <summary>Data em que o dinheiro se moveu (compensação); cai no vencimento se faltar.</summary>
+    private static DateTime DataDaCompensacao(Lancamento lancamento)
+        => lancamento.DataCompensado ?? lancamento.DataVencimento;
 
     private static bool EstaNoPeriodo(Lancamento lancamento, DateTime inicio, DateTime fim)
         => lancamento.DataVencimento.Date >= inicio.Date && lancamento.DataVencimento.Date <= fim.Date;

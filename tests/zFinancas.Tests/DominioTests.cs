@@ -148,6 +148,33 @@ public class CalculadoraDeSaldoTests
     }
 
     [Fact]
+    public void Saldo_segue_a_data_de_compensacao_e_nao_o_vencimento()
+    {
+        var salario = CriarLancamento(1000m, new DateTime(2026, 1, 5), compensado: true, compensadoEm: new DateTime(2026, 1, 5));
+
+        // Vencimento dentro do período, mas compensado ANTES: já está no saldo anterior.
+        var pagoAntes = CriarLancamento(-100m, new DateTime(2026, 3, 3), compensado: true, compensadoEm: new DateTime(2026, 2, 10));
+
+        // Vencimento dentro do período e compensado DENTRO: move o saldo.
+        var pagoNoPeriodo = CriarLancamento(-50m, new DateTime(2026, 3, 20), compensado: true, compensadoEm: new DateTime(2026, 3, 21));
+
+        var extrato = _calculadora.GerarExtrato(
+            1, [salario, pagoAntes, pagoNoPeriodo],
+            new DateTime(2026, 3, 1), new DateTime(2026, 3, 31), new DateTime(2026, 3, 31));
+
+        Assert.Equal(900m, extrato.SaldoAnterior);   // 1000 - 100 (compensados antes de 01/03)
+
+        var linhaAntes = extrato.Itens.Single(i => i.Valor == pagoAntes.Valor);
+        Assert.False(linhaAntes.AfetaSaldo);
+        Assert.Equal(900m, linhaAntes.SaldoApos);
+
+        var linhaPeriodo = extrato.Itens.Single(i => i.Valor == pagoNoPeriodo.Valor);
+        Assert.True(linhaPeriodo.AfetaSaldo);
+        Assert.Equal(850m, extrato.SaldoCompensadoFinal);
+        Assert.Equal(850m, extrato.SaldoFinal);
+    }
+
+    [Fact]
     public void Saldo_anterior_do_extrato_ignora_nao_compensados()
     {
         var lancamentos = new[]
@@ -163,16 +190,19 @@ public class CalculadoraDeSaldoTests
         Assert.Equal(800m, extrato.SaldoAnterior);
         Assert.Equal(2, extrato.Itens.Count);
 
-        // O pendente anterior ao período aparece destacado...
+        // O pendente anterior ao período aparece destacado, mas NÃO move o saldo real
+        // (só compensação muda dinheiro); o projetado é que sente o efeito.
         var pendente = extrato.Itens[0];
         Assert.True(pendente.ForaDoPeriodo);
         Assert.True(pendente.Pendente);
-        Assert.Equal(650m, pendente.SaldoApos);
-        Assert.Equal(800m, pendente.SaldoCompensadoApos);
+        Assert.False(pendente.AfetaSaldo);
+        Assert.Equal(800m, pendente.SaldoApos);
+        Assert.Equal(650m, pendente.SaldoProjetadoApos);
 
-        // ...e o saldo segue linha a linha.
-        Assert.Equal(950m, extrato.Itens[1].SaldoApos);
-        Assert.Equal(1100m, extrato.Itens[1].SaldoCompensadoApos);
+        // O compensado dentro do período move o saldo real.
+        Assert.True(extrato.Itens[1].AfetaSaldo);
+        Assert.Equal(1100m, extrato.Itens[1].SaldoApos);
+        Assert.Equal(1100m, extrato.SaldoCompensadoFinal);
         Assert.Equal(950m, extrato.SaldoFinal);
         Assert.Equal(300m, extrato.TotalEntradas);
         Assert.Equal(-150m, extrato.TotalSaidas);

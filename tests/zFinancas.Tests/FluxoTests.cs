@@ -308,8 +308,11 @@ public class ExtratoEDashboardTests
         Assert.True(extrato.Itens[0].ForaDoPeriodo);
         Assert.True(extrato.Itens[0].Pendente);
         Assert.Equal(-150m, extrato.Itens[0].Valor);
-        Assert.Equal(650m, extrato.Itens[0].SaldoApos);
+        Assert.False(extrato.Itens[0].AfetaSaldo);
+        Assert.Equal(800m, extrato.Itens[0].SaldoApos);
+        Assert.Equal(650m, extrato.Itens[0].SaldoProjetadoApos);
         Assert.Equal(950m, extrato.SaldoFinal);
+        Assert.Equal(1100m, extrato.SaldoCompensadoFinal);
     }
 
     [Fact]
