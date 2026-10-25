@@ -15,6 +15,9 @@ public sealed class LoginViewModel : BaseViewModel
     private readonly ServicoInicializacao _inicializacao;
     private readonly ServicoPreferencias _preferencias;
     private readonly IServicoBiometria _biometria;
+
+    /// <summary>A biometria é pedida uma vez por abertura da tela de login.</summary>
+    private bool _biometriaSolicitada;
     private readonly ServicoNavegacao _navegacao;
     private readonly ServicoDialogos _dialogos;
     private readonly IInfoDispositivo _dispositivo;
@@ -143,6 +146,31 @@ public sealed class LoginViewModel : BaseViewModel
             UsuarioSelecionado = Usuarios.FirstOrDefault(u => u.Id == ultimoId) ?? Usuarios.FirstOrDefault();
 
             await ConfigurarBiometriaAsync();
+
+#if DEBUG
+            // Atalho de desenvolvimento no aparelho: se existir "autologin.txt" na pasta de
+            // dados, entra com o usuário selecionado sem senha. Usado para depurar telas
+            // internas via adb (nunca existe em Release).
+            var atalho = Path.Combine(FileSystem.AppDataDirectory, "autologin.txt");
+            if (File.Exists(atalho) && UsuarioSelecionado is not null && !_biometriaSolicitada)
+            {
+                _biometriaSolicitada = true;
+                System.Diagnostics.Debug.WriteLine("zFinancas: autologin de desenvolvimento");
+
+                await _autenticacao.EntrarComBiometriaAsync(UsuarioSelecionado.Id);
+                await _navegacao.AbrirAplicacaoAsync();
+                return;
+            }
+#endif
+
+
+            // Com biometria configurada, já pede a digital ao abrir a tela: o usuário não
+            // precisa tocar em nada para entrar.
+            if (MostrarBiometria && !_biometriaSolicitada)
+            {
+                _biometriaSolicitada = true;
+                await EntrarComBiometriaAsync();
+            }
 
 #if DEBUG
             // Atalho de desenvolvimento: ZFINANCAS_AUTOLOGIN="Marco" entra direto,

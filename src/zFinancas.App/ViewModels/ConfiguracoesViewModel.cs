@@ -53,7 +53,7 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
         Titulo = "Configurações";
 
         CarregarCommand = new ComandoAssincrono(CarregarAsync);
-        AlternarBiometriaCommand = new ComandoAssincrono(AlternarBiometriaAsync);
+        AlternarBiometriaCommand = new ComandoAssincrono<bool>(AlternarBiometriaAsync);
         SairCommand = new ComandoAssincrono(SairAsync);
         EscolherPastaBancoCommand = new ComandoAssincrono(() => _pastaDados.EscolherPastaAsync());
     }
@@ -154,15 +154,24 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
         }, "Não foi possível carregar as configurações");
     }
 
-    private async Task AlternarBiometriaAsync()
+    /// <summary>
+    /// Liga/desliga a entrada por biometria para o usuário atual.
+    /// Recebe o estado desejado (o do switch), em vez de alternar o atual: assim um
+    /// estado que não pôde ser salvo não deixa o switch fora de sincronia.
+    /// </summary>
+    public async Task AlternarBiometriaAsync(bool ativar)
     {
+        System.Diagnostics.Debug.WriteLine($"zFinancas: alternar biometria para {ativar}");
+
         if (!BiometriaDisponivel)
         {
+            BiometriaHabilitada = false;
+            MensagemBiometria = "Biometria indisponível neste aparelho.";
             await _dialogos.AlertaAsync("Biometria", "Este aparelho não oferece biometria disponível.");
             return;
         }
 
-        if (BiometriaHabilitada)
+        if (!ativar)
         {
             await _preferencias.DesabilitarBiometriaAsync();
             BiometriaHabilitada = false;
@@ -174,18 +183,22 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
 
         if (resultado != ResultadoBiometria.Sucesso)
         {
-            var aviso = resultado switch
+            MensagemBiometria = resultado switch
             {
                 ResultadoBiometria.Cancelado => "Ativação cancelada.",
                 ResultadoBiometria.Indisponivel => "Biometria indisponível neste aparelho.",
                 _ => "Biometria não reconhecida. Tente novamente."
             };
 
-            MensagemBiometria = aviso;
+            BiometriaHabilitada = false;
             return;
         }
 
-        if (_sessao.Usuario is null) return;
+        if (_sessao.Usuario is null)
+        {
+            BiometriaHabilitada = false;
+            return;
+        }
 
         await _preferencias.HabilitarBiometriaAsync(_sessao.Usuario.Id);
         BiometriaHabilitada = true;

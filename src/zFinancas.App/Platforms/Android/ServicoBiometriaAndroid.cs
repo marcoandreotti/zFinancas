@@ -72,10 +72,16 @@ public sealed class ServicoBiometriaAndroid : IServicoBiometria
 
         try
         {
+            var executor = ContextCompat.GetMainExecutor(atividade);
+
             var construtor = new BiometricPrompt.Builder(atividade)
                 .SetTitle("zFinancas")
                 .SetSubtitle(motivo)
-                .SetDescription("Use sua digital ou reconhecimento facial.");
+                .SetDescription("Use sua digital ou reconhecimento facial");
+
+            // Obrigatório quando não se permite a senha do aparelho: sem um botão negativo
+            // nomeado, Builder.Build() lança "Negative text must be set and non-empty".
+            construtor.SetNegativeButton("Cancelar", executor, new BotaoCancelar(conclusao));
 
             if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
             {
@@ -87,9 +93,12 @@ public sealed class ServicoBiometriaAndroid : IServicoBiometria
                 construtor.SetAllowedAuthenticators(BiometriaFraca);
             }
 
-            var executor = ContextCompat.GetMainExecutor(atividade);
+            // Sobrecarga de 3 argumentos (sem CryptoObject): passar "null" como primeiro
+            // argumento casaria com Authenticate(CryptoObject, ...) e o Android lançaria
+            // "Must supply a crypto object".
+            var prompt = construtor.Build();
 
-            construtor.Build().Authenticate(null, sinal, executor, new RetornoBiometrico(conclusao));
+            prompt.Authenticate(sinal, executor, new RetornoBiometrico(conclusao));
 
             using var limite = new CancellationTokenSource(TempoLimite);
 
@@ -118,6 +127,17 @@ public sealed class ServicoBiometriaAndroid : IServicoBiometria
         {
             sinal.Dispose();
         }
+    }
+
+    /// <summary>Botão “Cancelar” do diálogo do sistema.</summary>
+    private sealed class BotaoCancelar : Java.Lang.Object, Android.Content.IDialogInterfaceOnClickListener
+    {
+        private readonly TaskCompletionSource<ResultadoBiometria> _conclusao;
+
+        public BotaoCancelar(TaskCompletionSource<ResultadoBiometria> conclusao) => _conclusao = conclusao;
+
+        public void OnClick(Android.Content.IDialogInterface? dialogo, int which)
+            => _conclusao.TrySetResult(ResultadoBiometria.Cancelado);
     }
 
     private sealed class RetornoBiometrico : BiometricPrompt.AuthenticationCallback
