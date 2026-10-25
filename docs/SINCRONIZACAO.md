@@ -55,6 +55,32 @@ então quitação e exclusão de futuras continuam corretas depois de sincroniza
 `USUARIOCONTACORRENTE` ganhou `ATUALIZADOEM` e `EXCLUIDO`. Assim, “desvinculei a conta X do
 usuário Y” viaja como lápide e não é desfeita pelo próximo pacote.
 
+### Cenários práticos (duas pontas)
+
+**Cada aparelho cria lançamentos diferentes.** Nada se perde: o pacote é a base inteira, então
+“não existe do outro lado” **nunca** significa “foi excluído”.
+
+| Passo | PC | Celular |
+| --- | --- | --- |
+| estado inicial | lançamento `A` | lançamento `B` |
+| importa pacote do PC | — | recebe `A`, mantém `B` |
+| importa pacote do celular | recebe `B`, mantém `A` | — |
+| resultado | `A` + `B` | `A` + `B` |
+
+São dois pacotes (um de cada lado) para ficar 100% convergente.
+
+**O mesmo lançamento alterado nos dois lados.** Vence o `ATUALIZADOEM` mais recente —
+a versão inteira do registro, não campo a campo.
+
+**Exclusão de um lado.** Viaja como lápide (`EXCLUIDO = 1`) e apaga no outro. Se o outro lado
+tiver editado depois da exclusão, a edição vence e o registro **volta** (a exclusão é antiga).
+
+**Mesmo lançamento digitado nos dois aparelhos** (duas compras iguais, por exemplo): são UUIDs
+diferentes, então ficam **os dois** — não há deduplicação automática.
+
+Esses três casos estão cobertos por teste automatizado em
+`tests/zFinancas.Tests/SincronizacaoDuasPontasTests.cs`.
+
 ## Segurança e privacidade
 
 - O pacote contém os **hashes** de senha (nunca senhas em texto claro), para que o mesmo
