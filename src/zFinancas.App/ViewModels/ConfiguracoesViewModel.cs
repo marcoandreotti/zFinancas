@@ -170,10 +170,18 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
             return;
         }
 
-        var autorizado = await _biometria.AutenticarAsync("Confirme sua biometria para ativar a entrada rápida");
-        if (!autorizado)
+        var resultado = await _biometria.AutenticarAsync("Confirme sua biometria para ativar a entrada rápida");
+
+        if (resultado != ResultadoBiometria.Sucesso)
         {
-            await _dialogos.AlertaAsync("Biometria", "Não foi possível confirmar sua biometria.");
+            var aviso = resultado switch
+            {
+                ResultadoBiometria.Cancelado => "Ativação cancelada.",
+                ResultadoBiometria.Indisponivel => "Biometria indisponível neste aparelho.",
+                _ => "Biometria não reconhecida. Tente novamente."
+            };
+
+            MensagemBiometria = aviso;
             return;
         }
 

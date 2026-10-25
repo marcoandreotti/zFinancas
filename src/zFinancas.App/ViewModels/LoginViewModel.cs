@@ -187,8 +187,15 @@ public sealed class LoginViewModel : BaseViewModel
 
     private async Task ConfigurarBiometriaAsync()
     {
+        // Disponibilidade primeiro: é barato e evita consultar o usuário à toa.
+        if (!await _biometria.DisponivelAsync())
+        {
+            MostrarBiometria = false;
+            return;
+        }
+
         var usuarioBiometriaId = await _preferencias.ObterUsuarioComBiometriaAsync();
-        if (usuarioBiometriaId is null || !await _biometria.DisponivelAsync())
+        if (usuarioBiometriaId is null)
         {
             MostrarBiometria = false;
             return;
@@ -230,10 +237,17 @@ public sealed class LoginViewModel : BaseViewModel
             return;
         }
 
-        var autenticado = await _biometria.AutenticarAsync($"Entrar como {UsuarioSelecionado?.Nome ?? "usuário"}");
-        if (!autenticado)
+        var resultado = await _biometria.AutenticarAsync($"Entrar como {UsuarioSelecionado?.Nome ?? "usuário"}");
+
+        if (resultado != ResultadoBiometria.Sucesso)
         {
-            Mensagem = "Biometria não reconhecida. Use a senha.";
+            Mensagem = resultado switch
+            {
+                ResultadoBiometria.Cancelado => "Entrada por biometria cancelada.",
+                ResultadoBiometria.Indisponivel => "Biometria indisponível neste aparelho. Use a senha.",
+                _ => "Biometria não reconhecida. Use a senha."
+            };
+
             return;
         }
 

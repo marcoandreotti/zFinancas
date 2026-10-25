@@ -93,7 +93,7 @@
                                     Command="{Binding EntrarCommand}"
                                     Margin="0,6,0,0" />
 
-                            <Button Text="🔒  Entrar com biometria"
+                            <Button Text="Entrar com biometria"
                                     Command="{Binding BiometriaCommand}"
                                     IsVisible="{Binding MostrarBiometria}"
                                     Style="{StaticResource BotaoSecundario}" />
