@@ -300,5 +300,3 @@ public sealed record UsuarioVm(long Id, string Nome, string PerfilDescricao, str
     public Color CorSituacao => Ativo ? Paleta.Positivo : Paleta.Negativo;
     public double Opacidade => Ativo ? 1 : 0.55;
 }
-/// <summary>Pasta oferecida no modal de exportação do pacote de sincronização.</summary>
-public sealed record DestinoExportacao(string Nome, string Pasta);

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -16,7 +16,6 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     private readonly IInfoDispositivo _dispositivo;
     private readonly ServicoDialogos _dialogos;
 
-    private bool _mostrarDestinos;
 
     private string _dispositivoId = string.Empty;
     private string _ultimaSincronizacao = string.Empty;
@@ -38,8 +37,6 @@ public sealed class SincronizacaoViewModel : BaseViewModel
 
         CarregarCommand = new ComandoAssincrono(CarregarAsync);
         ExportarCommand = new ComandoAssincrono(ExportarAsync);
-        ExportarParaCommand = new ComandoAssincrono<DestinoExportacao>(ExportarParaAsync);
-        CancelarDestinosCommand = new Comando(() => MostrarDestinos = false);
         ImportarCommand = new ComandoAssincrono(ImportarAsync);
     }
 
@@ -47,19 +44,6 @@ public sealed class SincronizacaoViewModel : BaseViewModel
 
     public ICommand CarregarCommand { get; }
     public ICommand ExportarCommand { get; }
-
-    /// <summary>Pastas oferecidas no modal de exportação (desktop).</summary>
-    public ObservableCollection<DestinoExportacao> Destinos { get; } = [];
-
-    /// <summary>Controla o modal de escolha da pasta.</summary>
-    public bool MostrarDestinos
-    {
-        get => _mostrarDestinos;
-        private set => SetProperty(ref _mostrarDestinos, value);
-    }
-
-    public ICommand ExportarParaCommand { get; }
-    public ICommand CancelarDestinosCommand { get; }
     public ICommand ImportarCommand { get; }
 
     public string DispositivoId
@@ -112,12 +96,6 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     {
         await ExecutarAsync(async () =>
         {
-#if WINDOWS
-            // Desktop: escolhe a pasta no modal da própria tela.
-            MontarDestinos();
-            MostrarDestinos = true;
-            return;
-#endif
 
             var caminho = await _sincronizacao.ExportarAsync(_armazenamento);
 
@@ -128,58 +106,6 @@ public sealed class SincronizacaoViewModel : BaseViewModel
                 return;
             }
 
-            var pacote = await _sincronizacao.MontarPacoteAsync();
-
-            Resultado =
-                $"Pacote exportado com {pacote.TotalRegistros} registro(s).\n" +
-                $"Arquivo: {caminho}";
-            TemResultado = true;
-
-            await _dialogos.AlertaAsync(
-                "Pacote exportado",
-                $"{pacote.TotalRegistros} registros exportados.\n\n{caminho}");
-        }, "Não foi possível exportar");
-    }
-
-    /// <summary>Pastas comuns do Windows, sem depender de diálogo do sistema.</summary>
-    private void MontarDestinos()
-    {
-        Destinos.Clear();
-
-        void Adicionar(string nome, Environment.SpecialFolder pasta)
-        {
-            var caminho = Environment.GetFolderPath(pasta);
-
-            if (!string.IsNullOrWhiteSpace(caminho))
-            {
-                Destinos.Add(new DestinoExportacao(nome, caminho));
-            }
-        }
-
-        Adicionar("Downloads", Environment.SpecialFolder.UserProfile);
-        Adicionar("Documentos", Environment.SpecialFolder.MyDocuments);
-        Adicionar("Área de Trabalho", Environment.SpecialFolder.Desktop);
-
-        if (Destinos.Count > 0 && Destinos[0].Nome == "Downloads")
-        {
-            Destinos[0] = new DestinoExportacao("Downloads", Path.Combine(Destinos[0].Pasta, "Downloads"));
-        }
-
-        Destinos.Add(new DestinoExportacao("Pasta do zFinancas", _armazenamento.PastaAtual));
-    }
-
-    private async Task ExportarParaAsync(DestinoExportacao destino)
-    {
-        if (destino is null)
-        {
-            return;
-        }
-
-        MostrarDestinos = false;
-
-        await ExecutarAsync(async () =>
-        {
-            var caminho = await _sincronizacao.ExportarParaAsync(destino.Pasta, _armazenamento);
             var pacote = await _sincronizacao.MontarPacoteAsync();
 
             Resultado =

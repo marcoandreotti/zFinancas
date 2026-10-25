@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Storage;
+﻿using System.Text;
+using CommunityToolkit.Maui.Storage;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Excecoes;
 
@@ -83,15 +84,38 @@ public sealed class ArmazenamentoCompartilhado : IArmazenamentoCompartilhado
         return await GravarAsync(nomeArquivo, conteudo, ct).ConfigureAwait(false);
     }
 
-    private static Task<string?> SalvarNoSistemaAsync(string nomeArquivo, string conteudo, CancellationToken ct)
+    private static async Task<string?> SalvarNoSistemaAsync(string nomeArquivo, string conteudo, CancellationToken ct)
     {
         const string tipoMime = "application/octet-stream";
 
 #if ANDROID
-        return Plataformas.SalvarArquivoAndroid.SalvarAsync(nomeArquivo, conteudo, tipoMime, ct);
+        return await Plataformas.SalvarArquivoAndroid
+            .SalvarAsync(nomeArquivo, conteudo, tipoMime, ct)
+            .ConfigureAwait(false);
+#elif WINDOWS
+        // Diálogo nativo “Salvar como” do CommunityToolkit: o usuário escolhe pasta e nome.
+        await using var fluxo = new MemoryStream(new UTF8Encoding(false).GetBytes(conteudo));
+
+        var resultado = await CommunityToolkit.Maui.Storage.FileSaver.Default
+            .SaveAsync(nomeArquivo, fluxo, ct)
+            .ConfigureAwait(false);
+
+        if (resultado.IsSuccessful)
+        {
+            return resultado.FilePath;
+        }
+
+        if (resultado.Exception is not null)
+        {
+            RegistroDeFalhas.Registrar(resultado.Exception, "FileSaver");
+            throw new DominioException(
+                "Não foi possível abrir o diálogo de salvar. Tente novamente ou use a pasta do zFinancas.");
+        }
+
+        // Sem exceção = o usuário cancelou.
+        return null;
 #else
-        // Desktop: a pasta é escolhida no modal da própria tela de sincronização.
-        return Task.FromResult<string?>(null);
+        return null;
 #endif
     }
 

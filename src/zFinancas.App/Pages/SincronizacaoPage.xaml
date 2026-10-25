@@ -7,7 +7,6 @@
              Title=""
              Background="{StaticResource GradienteFundo}">
 
-    <Grid>
     <ScrollView>
         <VerticalStackLayout Padding="24,16,24,32" Spacing="16" MaximumWidthRequest="820">
 
@@ -82,38 +81,5 @@
 
         </VerticalStackLayout>
     </ScrollView>
-
-    <!-- modal: escolher onde gravar o pacote (desktop) -->
-    <Grid IsVisible="{Binding MostrarDestinos}" BackgroundColor="#CC05070E">
-        <Border Style="{StaticResource CardElevado}"
-                VerticalOptions="Center"
-                HorizontalOptions="Center"
-                MaximumWidthRequest="460"
-                Margin="20"
-                Padding="18">
-            <VerticalStackLayout Spacing="12">
-                <Label Text="SALVAR PACOTE EM" Style="{StaticResource Rotulo}" />
-                <Label Text="Escolha a pasta que fica mais fácil de acessar no outro aparelho."
-                       Style="{StaticResource Subtitulo}"
-                       FontSize="11" />
-
-                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Destinos}">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="vm:DestinoExportacao">
-                            <Button Text="{Binding Nome}"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ExportarParaCommand}"
-                                    CommandParameter="{Binding .}"
-                                    Style="{StaticResource BotaoSecundario}" />
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </VerticalStackLayout>
-
-                <Button Text="Cancelar"
-                        Command="{Binding CancelarDestinosCommand}"
-                        Style="{StaticResource BotaoSecundario}" />
-            </VerticalStackLayout>
-        </Border>
-    </Grid>
-    </Grid>
 </ContentPage>
 
