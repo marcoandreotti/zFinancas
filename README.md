@@ -79,6 +79,17 @@ separadamente que geraram a mesma conta/centro/usuário (nomes iguais, UUIDs dif
 - **Instalador Windows**: `instalador\zFinancas.iss` (Inno Setup 6) — passo a passo em
   [instalador/LEIA-ME.md](instalador/LEIA-ME.md).
 
+## Trouxe dados de outro app?
+
+O zFinancas importa a base do antigo "finanças" (Access .mdb):
+
+```powershell
+.\scripts\importar-access.ps1 -Mdb "C:\caminho\Financas.mdb"
+```
+
+Gera um banco pronto e um .zfsync para o celular. Regras de conversão em
+[docs/MIGRACAO-ACCESS.md](docs/MIGRACAO-ACCESS.md).
+
 ## Estrutura
 
 ```
@@ -87,6 +98,7 @@ zFinancas.sln
 ├── src/zFinancas.Data      SQLite: schema versionado, repositórios, JSON
 ├── src/zFinancas.App       .NET MAUI (Windows + Android): telas, view models, serviços
 ├── tests/zFinancas.Tests   70 testes (domínio, serviços, voz e sincronização em duas pontas)
+├── tools/zFinancas.ImportadorAccess  converte a base antiga do Access
 ├── tools/zFinancas.Demo    gera banco de demonstração
 └── tools/zFinancas.TestRunner  runner de testes sem vstest
 ```
