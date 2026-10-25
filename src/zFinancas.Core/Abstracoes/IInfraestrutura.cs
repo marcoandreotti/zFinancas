@@ -15,7 +15,7 @@ public interface ISerializadorJson
 public interface IArmazenamentoCompartilhado
 {
     /// <summary>Compartilha um arquivo de texto com o seletor nativo do sistema; devolve o caminho gravado.</summary>
-    Task<string> CompartilharTextoAsync(string nomeArquivo, string conteudo, string titulo, CancellationToken ct = default);
+    Task<string?> SalvarTextoAsync(string nomeArquivo, string conteudo, string titulo, CancellationToken ct = default);
 
     /// <summary>Pasta onde os pacotes são gravados hoje (escolhida pelo usuário ou a do app).</summary>
     string PastaAtual { get; }

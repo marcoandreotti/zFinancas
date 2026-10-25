@@ -1,4 +1,4 @@
-using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Storage;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Excecoes;
 
@@ -61,28 +61,39 @@ public sealed class ArmazenamentoCompartilhado : IArmazenamentoCompartilhado
     /// <summary>Volta a usar a pasta padrão (junto do banco).</summary>
     public void UsarPastaPadrao() => Preferences.Default.Remove(ChavePastaPacotes);
 
-    public async Task<string> CompartilharTextoAsync(
+    /// <summary>
+    /// Abre o “Salvar como” do sistema no clique de exportar e grava onde o usuário escolher.
+    /// Devolve null quando ele cancela.
+    /// </summary>
+    public async Task<string?> SalvarTextoAsync(
         string nomeArquivo,
         string conteudo,
         string titulo,
         CancellationToken ct = default)
     {
-        var caminho = await GravarAsync(nomeArquivo, conteudo, ct).ConfigureAwait(false);
+        var caminho = await SalvarNoSistemaAsync(nomeArquivo, conteudo, ct).ConfigureAwait(false);
 
-        try
+        if (caminho is not null)
         {
-            await Share.Default.RequestAsync(new ShareFileRequest
-            {
-                Title = titulo,
-                File = new ShareFile(caminho)
-            }).ConfigureAwait(false);
-        }
-        catch (Exception)
-        {
-            // Compartilhar é opcional: o arquivo já está salvo e o caminho é exibido na tela.
+            return caminho;
         }
 
-        return caminho;
+        // Sem seletor (ou cancelado em plataforma sem picker): grava na pasta do app,
+        // garantindo que o pacote exista.
+        return await GravarAsync(nomeArquivo, conteudo, ct).ConfigureAwait(false);
+    }
+
+    private static Task<string?> SalvarNoSistemaAsync(string nomeArquivo, string conteudo, CancellationToken ct)
+    {
+        const string tipoMime = "application/octet-stream";
+
+#if ANDROID
+        return Plataformas.SalvarArquivoAndroid.SalvarAsync(nomeArquivo, conteudo, tipoMime, ct);
+#elif WINDOWS
+        return Plataformas.SalvarArquivoWindows.SalvarAsync(nomeArquivo, conteudo, tipoMime, ct);
+#else
+        return Task.FromResult<string?>(null);
+#endif
     }
 
     /// <summary>Grava o pacote; se a pasta escolhida falhar, cai para a pasta do banco.</summary>

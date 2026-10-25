@@ -152,7 +152,11 @@ public sealed class SincronizacaoService
         return _serializador.Serializar(pacote);
     }
 
-    public async Task<string> ExportarECompartilharAsync(IArmazenamentoCompartilhado armazenamento, CancellationToken ct = default)
+    /// <summary>
+    /// Abre o “Salvar como” do sistema e devolve o caminho escolhido
+    /// (ou null quando o usuário cancela).
+    /// </summary>
+    public async Task<string?> ExportarAsync(IArmazenamentoCompartilhado armazenamento, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(armazenamento);
 
@@ -160,11 +164,11 @@ public sealed class SincronizacaoService
         var json = _serializador.Serializar(pacote);
         var nomeArquivo = $"zfinancas-{pacote.GeradoEmUtc.ToLocalTime():yyyyMMdd-HHmm}.zfsync";
 
-        await armazenamento.CompartilharTextoAsync(nomeArquivo, json, "Pacote de sincronização do zFinancas", ct)
+        return await armazenamento
+            .SalvarTextoAsync(nomeArquivo, json, "Pacote de sincronização do zFinancas", ct)
             .ConfigureAwait(false);
-
-        return nomeArquivo;
     }
+
 
     // ------------------------------------------------------------------ importação
 

@@ -53,13 +53,6 @@
                     <Label Text="Gera um arquivo .zfsync com contas, centros de custo, usuários, vínculos e lançamentos."
                            Style="{StaticResource Subtitulo}" />
                     <Button Text="Exportar pacote de sincronização" Command="{Binding ExportarCommand}" />
-                    <Label Text="{Binding PastaPacotes}"
-                           Style="{StaticResource Subtitulo}"
-                           FontSize="10" />
-
-                    <Button Text="Pasta dos pacotes"
-                            Command="{Binding EscolherPastaCommand}"
-                            Style="{StaticResource BotaoSecundario}" />
                 </VerticalStackLayout>
             </Border>
 

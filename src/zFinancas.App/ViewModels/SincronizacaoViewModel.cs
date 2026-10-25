@@ -36,7 +36,6 @@ public sealed class SincronizacaoViewModel : BaseViewModel
 
         CarregarCommand = new ComandoAssincrono(CarregarAsync);
         ExportarCommand = new ComandoAssincrono(ExportarAsync);
-        EscolherPastaCommand = new ComandoAssincrono(EscolherPastaAsync);
         ImportarCommand = new ComandoAssincrono(ImportarAsync);
     }
 
@@ -44,12 +43,6 @@ public sealed class SincronizacaoViewModel : BaseViewModel
 
     public ICommand CarregarCommand { get; }
     public ICommand ExportarCommand { get; }
-
-    /// <summary>Permite gravar os pacotes fora da pasta privada do app.</summary>
-    public ICommand EscolherPastaCommand { get; }
-
-    /// <summary>Pasta onde o pacote será gravado (mostrada na tela).</summary>
-    public string PastaPacotes => _armazenamento.PastaAtual;
     public ICommand ImportarCommand { get; }
 
     public string DispositivoId
@@ -102,7 +95,15 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     {
         await ExecutarAsync(async () =>
         {
-            var caminho = await _sincronizacao.ExportarECompartilharAsync(_armazenamento);
+            var caminho = await _sincronizacao.ExportarAsync(_armazenamento);
+
+            if (caminho is null)
+            {
+                Resultado = "Exportação cancelada.";
+                TemResultado = true;
+                return;
+            }
+
             var pacote = await _sincronizacao.MontarPacoteAsync();
 
             Resultado =
@@ -110,36 +111,10 @@ public sealed class SincronizacaoViewModel : BaseViewModel
                 $"Arquivo: {caminho}";
             TemResultado = true;
 
-            await ServicosApp.Obter<ServicoDialogos>().AlertaAsync(
+            await _dialogos.AlertaAsync(
                 "Pacote exportado",
                 $"{pacote.TotalRegistros} registros exportados.\n\n{caminho}");
         }, "Não foi possível exportar");
-    }
-
-    private async Task EscolherPastaAsync()
-    {
-        try
-        {
-            var pasta = await _armazenamento.EscolherPastaAsync();
-
-            if (pasta is null)
-            {
-                return;
-            }
-
-            OnPropertyChanged(nameof(PastaPacotes));
-
-            await _dialogos.AlertaAsync(
-                "Pasta dos pacotes",
-                $"Os próximos pacotes serão gravados em:\n{pasta}");
-        }
-        catch (Exception ex)
-        {
-            RegistroDeFalhas.Registrar(ex, "EscolherPastaPacotes");
-            await _dialogos.AlertaAsync(
-                "Não foi possível usar esta pasta",
-                "Escolha uma pasta com permissão de escrita (por exemplo, Documentos).");
-        }
     }
 
     private async Task ImportarAsync()
