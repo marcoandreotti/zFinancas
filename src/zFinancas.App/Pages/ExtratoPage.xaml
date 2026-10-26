@@ -165,11 +165,11 @@
 
     <!-- carregando: o cálculo do período passa por todo o histórico da conta -->
     <Grid Grid.Row="2"
-          IsVisible="{Binding Carregando}"
+          IsVisible="{Binding MostrarCarregando}"
           BackgroundColor="#D905080F">
       <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
-        <ActivityIndicator IsRunning="{Binding Carregando}"
-                           IsVisible="{Binding Carregando}"
+        <ActivityIndicator IsRunning="{Binding MostrarCarregando}"
+                           IsVisible="{Binding MostrarCarregando}"
                            Color="{StaticResource Primaria}"
                            HeightRequest="34"
                            WidthRequest="34" />

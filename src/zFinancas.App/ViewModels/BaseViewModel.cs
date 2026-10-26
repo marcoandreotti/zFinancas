@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
@@ -7,8 +7,13 @@ namespace zFinancas.App.ViewModels;
 /// <summary>Base de view model: notificação de propriedades + estado de ocupado.</summary>
 public abstract class BaseViewModel : INotifyPropertyChanged
 {
+    /// <summary>Tempo mínimo de espera antes de exibir o indicador (evita o "pisca").</summary>
+    private const int AtrasoDoIndicador = 300;
+
     private bool _ocupado;
     private string _titulo = string.Empty;
+    private bool _mostrarCarregando;
+    private CancellationTokenSource? _atrasoIndicador;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -27,11 +32,60 @@ public abstract class BaseViewModel : INotifyPropertyChanged
             if (SetProperty(ref _ocupado, value))
             {
                 OnPropertyChanged(nameof(NaoOcupado));
+                AtualizarIndicador(value);
             }
         }
     }
 
     public bool NaoOcupado => !_ocupado;
+
+    /// <summary>
+    /// Igual a <see cref="Ocupado"/>, mas só fica verdadeiro quando a operação passa de
+    /// <see cref="AtrasoDoIndicador"/> ms — cargas rápidas não piscam o overlay.
+    /// </summary>
+    public bool MostrarCarregando
+    {
+        get => _mostrarCarregando;
+        private set => SetProperty(ref _mostrarCarregando, value);
+    }
+
+    /// <summary>
+    /// Liga/desliga o indicador com atraso. Telas que controlam o próprio estado de carga
+    /// (em vez de usar <see cref="Ocupado"/>) chamam este método no setter da sua propriedade.
+    /// </summary>
+    protected void AtualizarIndicador(bool ocupado)
+    {
+        _atrasoIndicador?.Cancel();
+        _atrasoIndicador?.Dispose();
+        _atrasoIndicador = null;
+
+        if (!ocupado)
+        {
+            MostrarCarregando = false;
+            return;
+        }
+
+        var atraso = new CancellationTokenSource();
+        _atrasoIndicador = atraso;
+
+        _ = Task.Delay(AtrasoDoIndicador, atraso.Token).ContinueWith(
+            tarefa =>
+            {
+                if (tarefa.IsCanceled)
+                {
+                    return;
+                }
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (!atraso.IsCancellationRequested)
+                    {
+                        MostrarCarregando = true;
+                    }
+                });
+            },
+            TaskScheduler.Default);
+    }
 
     protected bool SetProperty<T>(ref T campo, T valor, [CallerMemberName] string? nomePropriedade = null)
     {

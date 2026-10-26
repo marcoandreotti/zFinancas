@@ -184,7 +184,13 @@ public sealed class ExtratoViewModel : BaseViewModel
     public bool Carregando
     {
         get => _carregando;
-        private set => SetProperty(ref _carregando, value);
+        private set
+        {
+            if (SetProperty(ref _carregando, value))
+            {
+                AtualizarIndicador(value);
+            }
+        }
     }
 
     public bool SemItens => Itens.Count == 0;

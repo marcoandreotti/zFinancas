@@ -150,11 +150,11 @@
 
     <!-- carregando: aparece enquanto a lista é montada (volume grande no celular) -->
     <Grid Grid.Row="1"
-          IsVisible="{Binding Ocupado}"
+          IsVisible="{Binding MostrarCarregando}"
           BackgroundColor="#D905080F">
       <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
-        <ActivityIndicator IsRunning="{Binding Ocupado}"
-                           IsVisible="{Binding Ocupado}"
+        <ActivityIndicator IsRunning="{Binding MostrarCarregando}"
+                           IsVisible="{Binding MostrarCarregando}"
                            Color="{StaticResource Primaria}"
                            HeightRequest="34"
                            WidthRequest="34" />
