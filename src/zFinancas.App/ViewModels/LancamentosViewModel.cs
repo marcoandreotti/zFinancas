@@ -199,63 +199,67 @@ public sealed class LancamentosViewModel : BaseViewModel
         {
             await ExecutarAsync(async () =>
             {
-                var contas = await _contas.ListarAsync();
-                var centros = (await _centros.ListarAsync(incluirInativos: true)).ToDictionary(c => c.Id);
+                var relogio = System.Diagnostics.Stopwatch.StartNew();
 
                 // Contas marcadas no painel (vazio = todas as permitidas ao usuário).
                 var ids = _idsContas.Count > 0
                     ? _idsContas.ToList()
                     : _sessao.ContasPermitidas.Select(c => c.Id).ToList();
 
+                var corte = DataCorte.Date;
+                var somentePendentes = SomentePendentes;
+                var busca = Busca;
+
+                // O driver do SQLite é síncrono: sem Task.Run tudo isso roda na thread de UI
+                // e o Android trava ("Skipped N frames"). Aqui só leitura, sem tocar na tela.
+                var (contas, idPorConta, novos, saldoAnterior) = await Task.Run(async () =>
+                {
+                    var contasLocal = await _contas.ListarAsync();
+                    var centros = (await _centros.ListarAsync(incluirInativos: true)).ToDictionary(c => c.Id);
+
+                    var todos = new List<Lancamento>();
+                    foreach (var contaId in ids)
+                    {
+                        todos.AddRange(await _lancamentos.ListarAsync(contaId));
+                    }
+
+                    var filtrados = todos
+                        .Where(l => l.DataVencimento.Date >= corte)
+                        .Where(l => !somentePendentes || l.Pendente)
+                        .Where(l => string.IsNullOrWhiteSpace(busca)
+                                    || l.Descricao.Contains(busca, StringComparison.CurrentCultureIgnoreCase))
+                        .OrderBy(l => l.DataVencimento)
+                        .ThenBy(l => l.Id)
+                        .ToList();
+
+                    var contasPorId = contasLocal.ToDictionary(c => c.Id);
+                    var saldos = CalcularSaldos(todos, corte);
+                    var lista = new List<LancamentoVm>(filtrados.Count);
+
+                    foreach (var lancamento in filtrados)
+                    {
+                        var acumulado = saldos.GetValueOrDefault(lancamento.Id);
+
+                        lista.Add(LancamentoVm.Criar(
+                            lancamento,
+                            contasPorId.GetValueOrDefault(lancamento.ContaCorrenteId),
+                            centros.GetValueOrDefault(lancamento.CentroCustoId),
+                            acumulado,
+                            $"saldo {Formatador.Moeda(acumulado)}",
+                            parcelaNoDetalhe: true));
+                    }
+
+                    return (contasLocal, contasPorId, lista, CalcularSaldoAnterior(todos, corte));
+                });
+
                 AtualizarResumoContas(contas, ids);
 
-                var todos = new List<Lancamento>();
-                foreach (var contaId in ids)
-                {
-                    todos.AddRange(await _lancamentos.ListarAsync(contaId));
-                }
-
-                // Data de corte: a lista começa alguns dias antes de hoje (e vai até o
-                // futuro, mostrando o que está programado). O saldo anterior soma só o que
-                // foi compensado ANTES do corte — pela data da compensação, não do vencimento.
-                var corte = DataCorte.Date;
-
-                var filtrados = todos
-                    .Where(l => l.DataVencimento.Date >= corte)
-                    .Where(l => !SomentePendentes || l.Pendente)
-                    .Where(l => string.IsNullOrWhiteSpace(Busca)
-                                || l.Descricao.Contains(Busca, StringComparison.CurrentCultureIgnoreCase))
-                    .OrderBy(l => l.DataVencimento)
-                    .ThenBy(l => l.Id)
-                    .ToList();
-
-                var contasPorId = contas.ToDictionary(c => c.Id);
-
-                // Saldo por linha: parte do compensado antes do corte e recebe o que foi
-                // compensado dentro da janela (mesma regra do extrato).
-                var saldos = CalcularSaldos(todos, corte);
-
-                // Monta a lista fora da coleção e troca de uma vez: adicionar item a item
-                // dispara uma notificação de UI por linha (lento no celular).
-                var novos = new List<LancamentoVm>(filtrados.Count);
-
-                foreach (var lancamento in filtrados)
-                {
-                    var acumulado = saldos.GetValueOrDefault(lancamento.Id);
-
-                    novos.Add(LancamentoVm.Criar(
-                        lancamento,
-                        contasPorId.GetValueOrDefault(lancamento.ContaCorrenteId),
-                        centros.GetValueOrDefault(lancamento.CentroCustoId),
-                        acumulado,
-                        $"saldo {Formatador.Moeda(acumulado)}",
-                        parcelaNoDetalhe: true));
-                }
-
                 Itens = novos;
+                SaldoAnteriorTexto = Formatador.Moeda(saldoAnterior);
 
-                // No lugar dos totais, o saldo de partida da lista (compensado antes do corte).
-                SaldoAnteriorTexto = Formatador.Moeda(CalcularSaldoAnterior(todos, corte));
+                System.Diagnostics.Debug.WriteLine(
+                    $"[perf] Lancamentos total={relogio.ElapsedMilliseconds}ms linhas={novos.Count} " +
+                    $"contas={idPorConta.Count}");
             }, "Não foi possível carregar os lançamentos");
         }
         finally

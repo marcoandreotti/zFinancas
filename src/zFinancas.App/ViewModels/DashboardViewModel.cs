@@ -151,10 +151,20 @@ public sealed class DashboardViewModel : BaseViewModel
     {
         await ExecutarAsync(async () =>
         {
-            var resumo = await _dashboard.ObterAsync();
+            var relogio = System.Diagnostics.Stopwatch.StartNew();
 
-            var contas = (await _contas.ListarAsync()).ToDictionary(c => c.Id);
-            var centros = (await _centros.ListarAsync()).ToDictionary(c => c.Id);
+            // Driver do SQLite é síncrono: sem Task.Run a leitura roda na thread de UI
+            // (o Android chega a pular centenas de frames na abertura).
+            var (resumo, contas, centros) = await Task.Run(async () =>
+            {
+                var resumoLocal = await _dashboard.ObterAsync();
+                var contasLocal = (await _contas.ListarAsync()).ToDictionary(c => c.Id);
+                var centrosLocal = (await _centros.ListarAsync()).ToDictionary(c => c.Id);
+
+                return (resumoLocal, contasLocal, centrosLocal);
+            });
+
+            var msBanco = relogio.ElapsedMilliseconds;
 
             Saudacao = $"{PrimeiroNome(_sessao.Usuario?.Nome)}";
             DataTexto = $"{Formatador.Saudacao()}, {DateTime.Now.ToString("dddd, dd 'de' MMMM", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))}";
@@ -188,6 +198,10 @@ public sealed class DashboardViewModel : BaseViewModel
 
             OnPropertyChanged(nameof(SemLancamentos));
             OnPropertyChanged(nameof(SemContas));
+
+            System.Diagnostics.Debug.WriteLine(
+                $"[perf] Dashboard total={relogio.ElapsedMilliseconds}ms banco={msBanco}ms " +
+                $"contas={resumo.Contas.Count}");
         }, "Não foi possível carregar o dashboard");
     }
 
