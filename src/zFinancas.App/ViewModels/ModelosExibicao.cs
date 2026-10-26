@@ -45,25 +45,33 @@ public static class Formatador
     }
 }
 
-/// <summary>Cores lidas da paleta de recursos (um único lugar para a identidade visual).</summary>
+/// <summary>
+/// Cores lidas da paleta de recursos (um único lugar para a identidade visual).
+/// O valor é resolvido <b>uma vez</b> e memorizado: nas listas cada linha consulta várias
+/// cores e procurar no dicionário de recursos a cada binding custa caro no Android.
+/// </summary>
 public static class Paleta
 {
-    public static Color Texto => Buscar("Texto", Color.FromArgb("#F4F7FF"));
-    public static Color TextoSecundario => Buscar("TextoSecundario", Color.FromArgb("#bbc3d6"));
-    public static Color TextoFraco => Buscar("TextoFraco", Color.FromArgb("#64748B"));
+    private static Color? _texto, _textoSecundario, _textoFraco, _positivo, _negativo;
+    private static Color? _positivoFraco, _negativoFraco, _alerta, _primaria, _superficie;
+    private static Color? _superficieElevada, _borda, _fundo;
 
-    public static Color Positivo => Buscar("Positivo", Color.FromArgb("#4D9BFF"));
-    public static Color Negativo => Buscar("Negativo", Color.FromArgb("#FF5C7A"));
+    public static Color Texto => _texto ??= Buscar("Texto", Color.FromArgb("#F4F7FF"));
+    public static Color TextoSecundario => _textoSecundario ??= Buscar("TextoSecundario", Color.FromArgb("#bbc3d6"));
+    public static Color TextoFraco => _textoFraco ??= Buscar("TextoFraco", Color.FromArgb("#64748B"));
 
-    public static Color PositivoFraco => Buscar("PositivoFraco", Color.FromArgb("#78b2fe"));
-    public static Color NegativoFraco => Buscar("NegativoFraco", Color.FromArgb("#f89eaf"));
+    public static Color Positivo => _positivo ??= Buscar("Positivo", Color.FromArgb("#4D9BFF"));
+    public static Color Negativo => _negativo ??= Buscar("Negativo", Color.FromArgb("#FF5C7A"));
 
-    public static Color Alerta => Buscar("Alerta", Color.FromArgb("#F7B955"));
-    public static Color Primaria => Buscar("Primaria", Color.FromArgb("#6C5BFF"));
-    public static Color Superficie => Buscar("Superficie", Color.FromArgb("#111A2E"));
-    public static Color SuperficieElevada => Buscar("SuperficieElevada", Color.FromArgb("#18233C"));
-    public static Color Borda => Buscar("Borda", Color.FromArgb("#243152"));
-    public static Color Fundo => Buscar("Fundo", Color.FromArgb("#070B16"));
+    public static Color PositivoFraco => _positivoFraco ??= Buscar("PositivoFraco", Color.FromArgb("#78b2fe"));
+    public static Color NegativoFraco => _negativoFraco ??= Buscar("NegativoFraco", Color.FromArgb("#f89eaf"));
+
+    public static Color Alerta => _alerta ??= Buscar("Alerta", Color.FromArgb("#F7B955"));
+    public static Color Primaria => _primaria ??= Buscar("Primaria", Color.FromArgb("#6C5BFF"));
+    public static Color Superficie => _superficie ??= Buscar("Superficie", Color.FromArgb("#111A2E"));
+    public static Color SuperficieElevada => _superficieElevada ??= Buscar("SuperficieElevada", Color.FromArgb("#18233C"));
+    public static Color Borda => _borda ??= Buscar("Borda", Color.FromArgb("#243152"));
+    public static Color Fundo => _fundo ??= Buscar("Fundo", Color.FromArgb("#070B16"));
 
     public static Color Buscar(string chave, Color padrao)
     {

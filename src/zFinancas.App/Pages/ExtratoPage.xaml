@@ -94,6 +94,7 @@
     <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Itens}"
                         SelectionMode="None"
+                        ItemSizingStrategy="MeasureFirstItem"
                         VerticalScrollBarVisibility="Never"
                         Margin="0,0,0,16">
       <CollectionView.EmptyView>
@@ -162,6 +163,21 @@
         </DataTemplate>
       </CollectionView.ItemTemplate>
     </CollectionView>
+
+    <!-- carregando: o cálculo do período passa por todo o histórico da conta -->
+    <Grid Grid.Row="2"
+          IsVisible="{Binding Ocupado}"
+          BackgroundColor="#D905080F">
+      <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
+        <ActivityIndicator IsRunning="{Binding Ocupado}"
+                           IsVisible="{Binding Ocupado}"
+                           Color="{StaticResource Primaria}"
+                           HeightRequest="34"
+                           WidthRequest="34" />
+        <Label Text="Carregando extrato…" Style="{StaticResource Subtitulo}" />
+      </VerticalStackLayout>
+    </Grid>
+
     <!-- ===================== painel de seleção de contas ===================== -->
     <Grid Grid.RowSpan="2"
                   IsVisible="{Binding SelecaoContasAtiva}"

@@ -66,6 +66,7 @@
     <CollectionView Grid.Row="1"
                     ItemsSource="{Binding Itens}"
                     SelectionMode="None"
+                    ItemSizingStrategy="MeasureFirstItem"
                     VerticalScrollBarVisibility="Never"
                     Margin="0,0,0,16">
       <CollectionView.EmptyView>
@@ -147,6 +148,20 @@
         </DataTemplate>
       </CollectionView.ItemTemplate>
     </CollectionView>
+
+    <!-- carregando: aparece enquanto a lista é montada (volume grande no celular) -->
+    <Grid Grid.Row="1"
+          IsVisible="{Binding Ocupado}"
+          BackgroundColor="#D905080F">
+      <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
+        <ActivityIndicator IsRunning="{Binding Ocupado}"
+                           IsVisible="{Binding Ocupado}"
+                           Color="{StaticResource Primaria}"
+                           HeightRequest="34"
+                           WidthRequest="34" />
+        <Label Text="Carregando lançamentos…" Style="{StaticResource Subtitulo}" />
+      </VerticalStackLayout>
+    </Grid>
     <!-- ===================== painel de seleção de parcelas ===================== -->
     <Grid Grid.RowSpan="2"
                               IsVisible="{Binding SelecaoAtiva}"

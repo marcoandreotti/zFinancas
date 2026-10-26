@@ -29,6 +29,7 @@ public sealed class LancamentosViewModel : BaseViewModel
 
     private DateTime _dataCorte = DateTime.Today.AddDays(-DiasDeCorte);
 
+    private CancellationTokenSource? _atrasoBusca;
     private bool _carregando;
     private bool _recarregarPendente;
     private string _busca = string.Empty;
@@ -61,7 +62,23 @@ public sealed class LancamentosViewModel : BaseViewModel
         AbrirSelecaoContasCommand = new ComandoAssincrono(AbrirSelecaoContasAsync);
     }
 
-    public ObservableCollection<LancamentoVm> Itens { get; } = [];
+    private IReadOnlyList<LancamentoVm> _itens = [];
+
+    /// <summary>
+    /// Lista da tela. É trocada inteira a cada carga (uma única notificação), em vez de
+    /// receber item a item — diferença grande de desempenho no Android com muitos lançamentos.
+    /// </summary>
+    public IReadOnlyList<LancamentoVm> Itens
+    {
+        get => _itens;
+        private set
+        {
+            if (SetProperty(ref _itens, value))
+            {
+                OnPropertyChanged(nameof(SemItens));
+            }
+        }
+    }
 
     public ICommand CarregarCommand { get; }
     public ICommand NovoCommand { get; }
@@ -115,10 +132,32 @@ public sealed class LancamentosViewModel : BaseViewModel
         get => _busca;
         set
         {
-            if (SetProperty(ref _busca, value))
+            if (!SetProperty(ref _busca, value))
             {
-                _ = CarregarAsync();
+                return;
             }
+
+            // Espera o usuário parar de digitar: recarregar a cada tecla travava no celular.
+            _atrasoBusca?.Cancel();
+            _atrasoBusca = new CancellationTokenSource();
+            var token = _atrasoBusca.Token;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(350, token).ConfigureAwait(false);
+
+                    if (!token.IsCancellationRequested)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() => _ = CarregarAsync());
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // digitou mais uma letra; a próxima execução assume
+                }
+            });
         }
     }
 
@@ -196,26 +235,27 @@ public sealed class LancamentosViewModel : BaseViewModel
                 // compensado dentro da janela (mesma regra do extrato).
                 var saldos = CalcularSaldos(todos, corte);
 
-                Itens.Clear();
+                // Monta a lista fora da coleção e troca de uma vez: adicionar item a item
+                // dispara uma notificação de UI por linha (lento no celular).
+                var novos = new List<LancamentoVm>(filtrados.Count);
+
                 foreach (var lancamento in filtrados)
                 {
                     var acumulado = saldos.GetValueOrDefault(lancamento.Id);
 
-                    Itens.Add(LancamentoVm.Criar(
+                    novos.Add(LancamentoVm.Criar(
                         lancamento,
                         contasPorId.GetValueOrDefault(lancamento.ContaCorrenteId),
                         centros.GetValueOrDefault(lancamento.CentroCustoId),
                         acumulado,
-                        $"{Formatador.Moeda(acumulado)}",
+                        $"saldo {Formatador.Moeda(acumulado)}",
                         parcelaNoDetalhe: true));
                 }
 
-                // No lugar dos totais, o saldo de partida da lista (compensado antes do corte).
-                SaldoAnteriorTexto = Formatador.Moeda(saldos.Count > 0
-                    ? CalcularSaldoAnterior(todos, corte)
-                    : 0m);
+                Itens = novos;
 
-                OnPropertyChanged(nameof(SemItens));
+                // No lugar dos totais, o saldo de partida da lista (compensado antes do corte).
+                SaldoAnteriorTexto = Formatador.Moeda(CalcularSaldoAnterior(todos, corte));
             }, "Não foi possível carregar os lançamentos");
         }
         finally
@@ -243,7 +283,8 @@ public sealed class LancamentosViewModel : BaseViewModel
 
         foreach (var lancamento in todos.OrderBy(l => l.DataVencimento).ThenBy(l => l.Id))
         {
-            if (DataDaCompensacao(lancamento).Date >= corte.Date)
+            // Só compensado move o saldo; pendente fica parado (como no extrato).
+            if (lancamento.Compensado && DataDaCompensacao(lancamento).Date >= corte.Date)
             {
                 saldo += lancamento.Valor;
             }

@@ -87,7 +87,20 @@ public sealed class ExtratoViewModel : BaseViewModel
         });
     }
 
-    public ObservableCollection<LancamentoVm> Itens { get; } = [];
+    private IReadOnlyList<LancamentoVm> _itens = [];
+
+    /// <summary>Lista da tela: trocada inteira a cada carga (uma notificação só).</summary>
+    public IReadOnlyList<LancamentoVm> Itens
+    {
+        get => _itens;
+        private set
+        {
+            if (SetProperty(ref _itens, value))
+            {
+                OnPropertyChanged(nameof(SemItens));
+            }
+        }
+    }
 
     public ICommand CarregarCommand { get; }
     public ICommand CompensarCommand { get; }
@@ -229,7 +242,8 @@ public sealed class ExtratoViewModel : BaseViewModel
                 linhas.AddRange(extrato.Itens.Select(l => (conta, l)));
             }
 
-            Itens.Clear();
+            // Monta fora da coleção e troca de uma vez (adicionar item a item é lento no celular).
+            var novos = new List<LancamentoVm>(linhas.Count);
 
             var acumulado = saldoAnterior;
 
@@ -237,9 +251,13 @@ public sealed class ExtratoViewModel : BaseViewModel
                          .OrderBy(x => x.Linha.Lancamento.DataVencimento)
                          .ThenBy(x => x.Linha.Lancamento.Id))
             {
-                acumulado += linha.Lancamento.Valor;
+                // Só o que foi compensado dentro do período move o saldo (igual ao card).
+                if (linha.AfetaSaldo)
+                {
+                    acumulado += linha.Lancamento.Valor;
+                }
 
-                Itens.Add(LancamentoVm.Criar(
+                novos.Add(LancamentoVm.Criar(
                     linha.Lancamento,
                     conta,
                     centros.GetValueOrDefault(linha.Lancamento.CentroCustoId),
@@ -248,14 +266,14 @@ public sealed class ExtratoViewModel : BaseViewModel
                     linha.ForaDoPeriodo));
             }
 
+            Itens = novos;
+
             SaldoAnteriorTexto = Formatador.Moeda(saldoAnterior);
             SaldoFinalTexto = Formatador.Moeda(saldoFinal);
             SaldoCompensadoTexto = Formatador.Moeda(saldoCompensado);
             EntradasTexto = Formatador.Moeda(entradas);
             SaidasTexto = Formatador.Moeda(saidas);
             PeriodoTexto = $"{Formatador.Data(DataInicio)} a {Formatador.Data(DataFim)}";
-
-            OnPropertyChanged(nameof(SemItens));
         }
         catch (Exception ex)
         {
