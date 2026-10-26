@@ -204,14 +204,14 @@
           <DataTemplate x:DataType="vm:LancamentoVm">
             <Border Style="{StaticResource LinhaLista}" BackgroundColor="{Binding CorFundoDestaque}">
               <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                <Border WidthRequest="38"
-                                        HeightRequest="38"
-                                        BackgroundColor="{StaticResource SuperficieElevada}"
-                                        StrokeThickness="0"
-                                        StrokeShape="RoundRectangle 12"
-                                        VerticalOptions="Center">
+                <Border WidthRequest="42"
+                        HeightRequest="42"
+                        BackgroundColor="{StaticResource SuperficieElevada}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 8,0,8,0"
+                        VerticalOptions="Center">
                   <Label Text="{Binding IconeCentro}"
-                                           FontSize="16"
+                                           FontSize="26"
                                            HorizontalOptions="Center"
                                            VerticalOptions="Center" />
                 </Border>
@@ -221,16 +221,16 @@
                   <Label Text="{Binding Detalhe}" Style="{StaticResource Subtitulo}" FontSize="11" />
                 </VerticalStackLayout>
 
-                <VerticalStackLayout Grid.Column="2" Spacing="1" VerticalOptions="Center">
+                <VerticalStackLayout Grid.Column="2" Spacing="1" VerticalOptions="Center" Padding="0,0,4,0">
                   <Label Text="{Binding ValorTexto}"
-                                           FontFamily="OpenSansSemibold"
-                                           FontSize="14"
-                                           TextColor="{Binding CorValor}"
-                                           HorizontalTextAlignment="End" />
+                         FontFamily="OpenSansSemibold"
+                         FontSize="14"
+                         TextColor="{Binding CorValor}"
+                         HorizontalTextAlignment="End" />
                   <Label Text="{Binding SituacaoTexto}"
-                                           FontSize="10"
-                                           TextColor="{Binding CorSituacao}"
-                                           HorizontalTextAlignment="End" />
+                         FontSize="10"
+                         TextColor="{Binding CorSituacao}"
+                         HorizontalTextAlignment="End" />
                 </VerticalStackLayout>
               </Grid>
             </Border>

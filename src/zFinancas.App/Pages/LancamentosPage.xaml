@@ -64,10 +64,10 @@
 
     <!-- ============ lista -->
     <CollectionView Grid.Row="1"
-                        ItemsSource="{Binding Itens}"
-                        SelectionMode="None"
-                        VerticalScrollBarVisibility="Never"
-                        Margin="0,0,0,16">
+                    ItemsSource="{Binding Itens}"
+                    SelectionMode="None"
+                    VerticalScrollBarVisibility="Never"
+                    Margin="0,0,0,16">
       <CollectionView.EmptyView>
         <Border Style="{StaticResource Card}">
           <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
@@ -88,14 +88,13 @@
                                     CommandParameter="{Binding .}" />
             </Border.GestureRecognizers>
 
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-              <Border WidthRequest="48"
-                                    HeightRequest="58"
-                                    BackgroundColor="{StaticResource SuperficieElevada}"
-                                    StrokeThickness="0"
-                                    StrokeShape="RoundRectangle 6,0,0,0"
-                                    VerticalOptions="Center">
-                <Label Text="{Binding IconeCentro}" FontSize="26" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0" Padding="0">
+              <Border WidthRequest="56"
+                      HeightRequest="56"
+                      BackgroundColor="{StaticResource SuperficieElevada}"
+                      StrokeShape="RoundRectangle 8,0,8,0"
+                      VerticalOptions="Center">
+                <Label Text="{Binding IconeCentro}" FontSize="32" HorizontalOptions="Center" VerticalOptions="Center" />
               </Border>
 
               <Grid Grid.Column="1" ColumnDefinitions="*">

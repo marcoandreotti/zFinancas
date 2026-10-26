@@ -207,10 +207,10 @@
         <Setter Property="BackgroundColor" Value="{StaticResource Superficie}" />
         <Setter Property="Stroke" Value="{StaticResource BordaSuave}" />
         <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="Padding" Value="0,4,0,0" />
+        <!--<Setter Property="Padding" Value="0,4,0,0" />-->
         <Setter Property="StrokeShape">
             <Setter.Value>
-                <RoundRectangle CornerRadius="16" />
+                <RoundRectangle CornerRadius="8" />
             </Setter.Value>
         </Setter>
     </Style>
