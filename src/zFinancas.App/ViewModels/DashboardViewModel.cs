@@ -30,7 +30,8 @@ public sealed class DashboardViewModel : BaseViewModel
     private string _vencidoTexto = "R$ 0,00";
     private string _entradasTexto = "R$ 0,00";
     private string _saidasTexto = "R$ 0,00";
-    private string _periodoTexto = string.Empty;
+    private string _periodoInicialTexto = string.Empty;
+    private string _periodoFinalTexto = string.Empty;
     private int _posicaoCarrossel;
 
     public DashboardViewModel(
@@ -130,10 +131,16 @@ public sealed class DashboardViewModel : BaseViewModel
         private set => SetProperty(ref _saidasTexto, value);
     }
 
-    public string PeriodoTexto
+    public string PeriodoInicialTexto
     {
-        get => _periodoTexto;
-        private set => SetProperty(ref _periodoTexto, value);
+        get => _periodoInicialTexto;
+        private set => SetProperty(ref _periodoInicialTexto, value);
+    }
+
+    public string PeriodoFinalTexto
+    {
+        get => _periodoFinalTexto;
+        private set => SetProperty(ref _periodoFinalTexto, value);
     }
 
     public bool SemLancamentos => UltimosLancamentos.Count == 0;
@@ -149,8 +156,8 @@ public sealed class DashboardViewModel : BaseViewModel
             var contas = (await _contas.ListarAsync()).ToDictionary(c => c.Id);
             var centros = (await _centros.ListarAsync()).ToDictionary(c => c.Id);
 
-            Saudacao = $"{Formatador.Saudacao()}, {PrimeiroNome(_sessao.Usuario?.Nome)}";
-            DataTexto = DateTime.Now.ToString("dddd, dd 'de' MMMM", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
+            Saudacao = $"{PrimeiroNome(_sessao.Usuario?.Nome)}";
+            DataTexto = $"{Formatador.Saudacao()}, {DateTime.Now.ToString("dddd, dd 'de' MMMM", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))}";
 
             // O número grande é o dinheiro que está na conta (compensado);
             // a projeção (com pendentes) fica no card ao lado.
@@ -161,7 +168,8 @@ public sealed class DashboardViewModel : BaseViewModel
             VencidoTexto = Formatador.Moeda(resumo.Total.NaoCompensadoVencido);
             EntradasTexto = Formatador.Moeda(resumo.EntradasNaJanela);
             SaidasTexto = Formatador.Moeda(resumo.SaidasNaJanela);
-            PeriodoTexto = $"de {Formatador.Data(resumo.InicioJanela)} a {Formatador.Data(resumo.FimJanela)}";
+            PeriodoInicialTexto = $"de {Formatador.Data(resumo.InicioJanela)}";
+            PeriodoFinalTexto = $" a {Formatador.Data(resumo.FimJanela)}";
 
             Contas.Clear();
             foreach (var conta in resumo.Contas)
