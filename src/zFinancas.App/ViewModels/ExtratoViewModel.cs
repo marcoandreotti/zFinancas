@@ -251,11 +251,8 @@ public sealed class ExtratoViewModel : BaseViewModel
                          .OrderBy(x => x.Linha.Lancamento.DataVencimento)
                          .ThenBy(x => x.Linha.Lancamento.Id))
             {
-                // Só o que foi compensado dentro do período move o saldo (igual ao card).
-                if (linha.AfetaSaldo)
-                {
-                    acumulado += linha.Lancamento.Valor;
-                }
+                // Saldo previsto linha a linha: pendentes também entram.
+                acumulado += linha.Lancamento.Valor;
 
                 novos.Add(LancamentoVm.Criar(
                     linha.Lancamento,

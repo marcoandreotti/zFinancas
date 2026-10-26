@@ -283,8 +283,10 @@ public sealed class LancamentosViewModel : BaseViewModel
 
         foreach (var lancamento in todos.OrderBy(l => l.DataVencimento).ThenBy(l => l.Id))
         {
-            // Só compensado move o saldo; pendente fica parado (como no extrato).
-            if (lancamento.Compensado && DataDaCompensacao(lancamento).Date >= corte.Date)
+            // A lista mostra o saldo acumulado linha a linha (pendentes entram na conta,
+            // ou seja, é o saldo previsto). O "saldo anterior" do topo continua sendo o
+            // compensado até o corte.
+            if (DataDaCompensacao(lancamento).Date >= corte.Date)
             {
                 saldo += lancamento.Valor;
             }
