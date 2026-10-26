@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -25,8 +25,8 @@ public sealed class ExtratoViewModel : BaseViewModel
     private SelecaoContasViewModel? _selecaoContas;
     private IReadOnlyList<long> _idsContas = [];
     private string _resumoContas = "Selecione as contas";
-    private DateTime _dataInicio = new(DateTime.Today.Year, DateTime.Today.Month, 1);
-    private DateTime _dataFim = DateTime.Today;
+    private DateTime _dataInicio = DateTime.Today.AddDays(-4);
+    private DateTime _dataFim = DateTime.Today.AddMonths(2);
     private string _saldoAnteriorTexto = "R$ 0,00";
     private string _saldoFinalTexto = "R$ 0,00";
     private string _saldoCompensadoTexto = "R$ 0,00";
@@ -57,9 +57,16 @@ public sealed class ExtratoViewModel : BaseViewModel
         CompensarCommand = new ComandoAssincrono<LancamentoVm>(Compensar);
         AbrirSelecaoContasCommand = new ComandoAssincrono(AbrirSelecaoContasAsync);
 
-        MesAtualCommand = new ComandoAssincrono(() =>
+        Ultimos4DiasCommand = new ComandoAssincrono(() =>
         {
-            DataInicio = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            DataInicio = DateTime.Today.AddDays(-4);
+            DataFim = DateTime.Today.AddMonths(2);
+            return CarregarAsync();
+        });
+
+        Ultimos2MesesCommand = new ComandoAssincrono(() =>
+        {
+            DataInicio = DateTime.Today.AddMonths(-2);
             DataFim = DateTime.Today;
             return CarregarAsync();
         });
@@ -72,9 +79,9 @@ public sealed class ExtratoViewModel : BaseViewModel
             return CarregarAsync();
         });
 
-        Ultimos90DiasCommand = new ComandoAssincrono(() =>
+        MesAtualCommand = new ComandoAssincrono(() =>
         {
-            DataInicio = DateTime.Today.AddDays(-89);
+            DataInicio = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
             DataFim = DateTime.Today;
             return CarregarAsync();
         });
@@ -84,9 +91,10 @@ public sealed class ExtratoViewModel : BaseViewModel
 
     public ICommand CarregarCommand { get; }
     public ICommand CompensarCommand { get; }
-    public ICommand MesAtualCommand { get; }
+    public ICommand Ultimos4DiasCommand { get; }
+    public ICommand Ultimos2MesesCommand { get; }
     public ICommand MesPassadoCommand { get; }
-    public ICommand Ultimos90DiasCommand { get; }
+    public ICommand MesAtualCommand { get; }
     public ICommand AbrirSelecaoContasCommand { get; }
 
     // ------------------------------------------------------------ seleção de contas
@@ -235,7 +243,8 @@ public sealed class ExtratoViewModel : BaseViewModel
                     linha.Lancamento,
                     conta,
                     centros.GetValueOrDefault(linha.Lancamento.CentroCustoId),
-                    $"saldo {Formatador.Moeda(acumulado)}",
+                    acumulado,
+                    $"{Formatador.Moeda(acumulado)}",
                     linha.ForaDoPeriodo));
             }
 

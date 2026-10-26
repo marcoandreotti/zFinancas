@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
@@ -207,7 +207,7 @@
         <Setter Property="BackgroundColor" Value="{StaticResource Superficie}" />
         <Setter Property="Stroke" Value="{StaticResource BordaSuave}" />
         <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="Padding" Value="0,4,0,0" />
         <Setter Property="StrokeShape">
             <Setter.Value>
                 <RoundRectangle CornerRadius="16" />

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -7,7 +7,6 @@ using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Excecoes;
 
 namespace zFinancas.App.ViewModels;
-
 
 /// <summary>Lista de lançamentos com filtros e ações rápidas (compensar, excluir).</summary>
 public sealed class LancamentosViewModel : BaseViewModel
@@ -24,6 +23,7 @@ public sealed class LancamentosViewModel : BaseViewModel
     private IReadOnlyList<long> _idsContas = [];
     private string _resumoContas = "Todas as contas";
     private bool _aplicandoSelecao;
+
     /// <summary>Quantos dias antes de hoje a lista começa (valor inicial da data de corte).</summary>
     private const int DiasDeCorte = 4;
 
@@ -70,7 +70,9 @@ public sealed class LancamentosViewModel : BaseViewModel
 
     /// <summary>Compensação direta na linha (mesmo atalho do extrato).</summary>
     public ICommand CompensarCommand { get; }
+
     public ICommand AbrirSelecaoContasCommand { get; }
+
     public SelecaoContasViewModel? SelecaoContas
     {
         get => _selecaoContas;
@@ -139,6 +141,7 @@ public sealed class LancamentosViewModel : BaseViewModel
     }
 
     public bool SemItens => Itens.Count == 0;
+
     public async Task CarregarAsync()
     {
         // Duas cargas simultâneas (ex.: toque + evento do Picker) seriam inúteis e podem
@@ -196,11 +199,14 @@ public sealed class LancamentosViewModel : BaseViewModel
                 Itens.Clear();
                 foreach (var lancamento in filtrados)
                 {
+                    var acumulado = saldos.GetValueOrDefault(lancamento.Id);
+
                     Itens.Add(LancamentoVm.Criar(
                         lancamento,
                         contasPorId.GetValueOrDefault(lancamento.ContaCorrenteId),
                         centros.GetValueOrDefault(lancamento.CentroCustoId),
-                        $"saldo {Formatador.Moeda(saldos.GetValueOrDefault(lancamento.Id))}",
+                        acumulado,
+                        $"{Formatador.Moeda(acumulado)}",
                         parcelaNoDetalhe: true));
                 }
 
@@ -237,7 +243,7 @@ public sealed class LancamentosViewModel : BaseViewModel
 
         foreach (var lancamento in todos.OrderBy(l => l.DataVencimento).ThenBy(l => l.Id))
         {
-            if (lancamento.Compensado && DataDaCompensacao(lancamento).Date >= corte.Date)
+            if (DataDaCompensacao(lancamento).Date >= corte.Date)
             {
                 saldo += lancamento.Valor;
             }
@@ -355,6 +361,7 @@ public sealed class LancamentosViewModel : BaseViewModel
 
     /// <summary>Confirmou: fecha o painel e executa a ação escolhida (excluir ou quitar).</summary>
     public ICommand ConfirmarSelecaoCommand => _confirmarSelecao ??= new ComandoAssincrono(ConfirmarSelecaoAsync);
+
     private ICommand? _confirmarSelecao;
 
     public ICommand CancelarSelecaoCommand => _cancelarSelecao ??= new Comando(FecharSelecao);
@@ -603,7 +610,9 @@ public sealed class LancamentosViewModel : BaseViewModel
 
         await _lancamentos.ExcluirVariasAsync(ids);
     }
+
 #if DEBUG
+
     /// <summary>Atalho de desenvolvimento: abre o painel de quitação para a 1ª série pendente.</summary>
     public async Task DepurarQuitacaoAsync()
     {
@@ -625,6 +634,7 @@ public sealed class LancamentosViewModel : BaseViewModel
             await AbrirExclusaoAsync(item);
         }
     }
+
 #endif
     // ---------------------------------------------------------- compensação
 
@@ -660,7 +670,9 @@ public sealed class LancamentosViewModel : BaseViewModel
 
         Compensacao = painel;
     }
+
 #if DEBUG
+
     /// <summary>Atalho de desenvolvimento: abre o painel de compensação da 1ª pendência.</summary>
     public async Task DepurarCompensacaoAsync()
     {
@@ -671,7 +683,9 @@ public sealed class LancamentosViewModel : BaseViewModel
             AbrirCompensacao(item);
         }
     }
+
 #endif
+
     /// <summary>Atalho da linha: abre o painel de compensação (data escolhida).</summary>
     private Task CompensarAsync(LancamentoVm? item)
     {
