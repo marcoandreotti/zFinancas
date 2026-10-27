@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -150,11 +150,11 @@
 
     <!-- carregando: aparece enquanto a lista é montada (volume grande no celular) -->
     <Grid Grid.Row="1"
-          IsVisible="{Binding MostrarCarregando}"
+          IsVisible="{Binding Ocupado}"
           BackgroundColor="#D905080F">
       <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
-        <ActivityIndicator IsRunning="{Binding MostrarCarregando}"
-                           IsVisible="{Binding MostrarCarregando}"
+        <ActivityIndicator IsRunning="{Binding Ocupado}"
+                           IsVisible="{Binding Ocupado}"
                            Color="{StaticResource Primaria}"
                            HeightRequest="34"
                            WidthRequest="34" />
@@ -163,23 +163,21 @@
     </Grid>
     <!-- ===================== painel de seleção de parcelas ===================== -->
     <Grid Grid.RowSpan="2"
-                              IsVisible="{Binding SelecaoAtiva}"
-                              BackgroundColor="#CC05080F"
-                              Padding="24">
+          IsVisible="{Binding SelecaoAtiva}"
+          BackgroundColor="#CC05080F"
+          Padding="24">
 
       <Border Style="{StaticResource CardElevado}"
-                                    Padding="0"
-                                    VerticalOptions="Center"
-                                    HorizontalOptions="Fill"
-                                    MaximumWidthRequest="720">
+              Padding="0"
+              VerticalOptions="Center"
+              HorizontalOptions="Fill"
+              MaximumWidthRequest="720">
 
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
 
           <VerticalStackLayout Grid.Row="0" Padding="20,20,20,10" Spacing="4">
             <Label Text="{Binding Selecao.Titulo}" Style="{StaticResource TituloSecao}" />
-            <Label Text="{Binding Selecao.Instrucao}"
-                                               Style="{StaticResource Subtitulo}"
-                                               FontSize="11" />
+            <Label Text="{Binding Selecao.Instrucao}" Style="{StaticResource Subtitulo}" FontSize="11" />
           </VerticalStackLayout>
 
           <CollectionView Grid.Row="1"
@@ -252,25 +250,26 @@
         </Grid>
       </Border>
     </Grid>
+    
     <!-- ===================== painel de seleção de contas ===================== -->
     <Grid Grid.RowSpan="2"
-                  IsVisible="{Binding SelecaoContasAtiva}"
-                  BackgroundColor="#CC05080F"
-                  Padding="24">
+          IsVisible="{Binding SelecaoContasAtiva}"
+          BackgroundColor="#CC05080F"
+          Padding="24">
 
       <Border Style="{StaticResource CardElevado}"
-                        Padding="0"
-                        VerticalOptions="Center"
-                        HorizontalOptions="Fill"
-                        MaximumWidthRequest="560">
+              Padding="0"
+              VerticalOptions="Center"
+              HorizontalOptions="Fill"
+              MaximumWidthRequest="560">
 
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
 
           <VerticalStackLayout Grid.Row="0" Padding="20,20,20,10" Spacing="4">
             <Label Text="{Binding SelecaoContas.Titulo}" Style="{StaticResource TituloSecao}" />
             <Label Text="{Binding SelecaoContas.Instrucao}"
-                                   Style="{StaticResource Subtitulo}"
-                                   FontSize="11" />
+                   Style="{StaticResource Subtitulo}"
+                   FontSize="11" />
           </VerticalStackLayout>
 
           <CollectionView Grid.Row="1"
@@ -328,15 +327,15 @@
     </Grid>
     <!-- ===================== painel de compensação ===================== -->
     <Grid Grid.RowSpan="2"
-                  IsVisible="{Binding CompensacaoAtiva}"
-                  BackgroundColor="#CC05080F"
-                  Padding="24">
+          IsVisible="{Binding CompensacaoAtiva}"
+          BackgroundColor="#CC05080F"
+          Padding="24">
 
       <Border Style="{StaticResource CardElevado}"
-                        Padding="0"
-                        VerticalOptions="Center"
-                        HorizontalOptions="Fill"
-                        MaximumWidthRequest="470">
+              Padding="0"
+              VerticalOptions="Center"
+              HorizontalOptions="Fill"
+              MaximumWidthRequest="470">
 
         <VerticalStackLayout Padding="22,20" Spacing="14">
 
