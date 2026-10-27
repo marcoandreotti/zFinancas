@@ -10,7 +10,7 @@ public static class Formatador
 {
     private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
 
-    public static string Moeda(decimal valor) => valor.ToString("C2", PtBr);
+    public static string Moeda(decimal valor) => valor.ToString("N2", PtBr);
 
     public static string MoedaComSinal(decimal valor)
         => (valor > 0 ? "+ " : valor < 0 ? "- " : string.Empty) + Moeda(Math.Abs(valor));

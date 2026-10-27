@@ -245,7 +245,7 @@ public sealed class LancamentosViewModel : BaseViewModel
                             contasPorId.GetValueOrDefault(lancamento.ContaCorrenteId),
                             centros.GetValueOrDefault(lancamento.CentroCustoId),
                             acumulado,
-                            $"saldo {Formatador.Moeda(acumulado)}",
+                            $"{Formatador.Moeda(acumulado)}",
                             parcelaNoDetalhe: true));
                     }
 
