@@ -1,4 +1,4 @@
-using CommunityToolkit.Maui;
+﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
@@ -47,6 +47,7 @@ public static class MauiProgram
     {
         // ---------------------------------------------------------- persistência
         services.AddSingleton<CaminhoBanco>();
+        services.AddSingleton<zFinancas.Data.Infra.ServicoBackupBanco>();
         services.AddSingleton(sp => new ContextoBanco(sp.GetRequiredService<CaminhoBanco>().Caminho));
         services.AddSingleton<MigradorBanco>();
         services.AddSingleton<ServicoInicializacao>();

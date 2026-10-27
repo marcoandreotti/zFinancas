@@ -8,7 +8,7 @@ namespace zFinancas.Tests;
 public class PrimeiroAcessoTests
 {
     [Fact]
-    public async Task Primeiro_acesso_cria_administrador_e_semeia_conta_e_centro()
+    public async Task Primeiro_acesso_cria_so_o_administrador()
     {
         await using var cenario = await CenarioTeste.CriarAsync();
 
@@ -20,9 +20,11 @@ public class PrimeiroAcessoTests
         Assert.True(resultado.Administrador.EhAdministrador);
         Assert.Equal("Marco", resultado.Administrador.Nome);
         Assert.True(resultado.Administrador.Ativo);
-        Assert.True(resultado.ContaPrincipal.Principal);
-        Assert.True(resultado.CentroPrincipal.Principal);
         Assert.Matches("^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$", resultado.CodigoRecuperacao);
+
+        // A base nasce vazia: o ADM cria as contas e centros que quiser.
+        Assert.Empty(await cenario.ContaRepositorio.ListarAsync(incluirInativas: true));
+        Assert.Empty(await cenario.CentroRepositorio.ListarAsync(incluirInativos: true));
 
         Assert.False(await cenario.PrimeiroAcesso.PrecisaConfigurarAsync());
 
@@ -308,8 +310,11 @@ public class ExtratoEDashboardTests
         Assert.True(extrato.Itens[0].ForaDoPeriodo);
         Assert.True(extrato.Itens[0].Pendente);
         Assert.Equal(-150m, extrato.Itens[0].Valor);
-        Assert.Equal(650m, extrato.Itens[0].SaldoApos);
+        Assert.False(extrato.Itens[0].AfetaSaldo);
+        Assert.Equal(800m, extrato.Itens[0].SaldoApos);
+        Assert.Equal(650m, extrato.Itens[0].SaldoProjetadoApos);
         Assert.Equal(950m, extrato.SaldoFinal);
+        Assert.Equal(1100m, extrato.SaldoCompensadoFinal);
     }
 
     [Fact]

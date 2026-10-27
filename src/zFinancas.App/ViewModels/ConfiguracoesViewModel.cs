@@ -4,6 +4,7 @@ using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Aplicacao.Servicos;
 using zFinancas.Core.Dominio.Entidades;
+using zFinancas.Data.Infra;
 using zFinancas.Core.Dominio.Enums;
 
 namespace zFinancas.App.ViewModels;
@@ -21,6 +22,9 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
     private readonly IInfoDispositivo _dispositivo;
     private readonly CaminhoBanco _caminhoBanco;
     private readonly ServicoPastaDados _pastaDados;
+    private readonly ServicoBackupBanco _backup;
+    private readonly ServicoInicializacao _inicializacao;
+    private readonly IArmazenamentoCompartilhado _armazenamento;
 
     private ContaCorrente? _contaAtiva;
     private bool _biometriaHabilitada;
@@ -37,7 +41,10 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
         ServicoDialogos dialogos,
         IInfoDispositivo dispositivo,
         CaminhoBanco caminhoBanco,
-        ServicoPastaDados pastaDados)
+        ServicoPastaDados pastaDados,
+        ServicoBackupBanco backup,
+        ServicoInicializacao inicializacao,
+        IArmazenamentoCompartilhado armazenamento)
     {
         _sessao = sessao;
         _contas = contas;
@@ -49,6 +56,9 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
         _dispositivo = dispositivo;
         _caminhoBanco = caminhoBanco;
         _pastaDados = pastaDados;
+        _backup = backup;
+        _inicializacao = inicializacao;
+        _armazenamento = armazenamento;
 
         Titulo = "Configurações";
 
@@ -56,6 +66,9 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
         AlternarBiometriaCommand = new ComandoAssincrono<bool>(AlternarBiometriaAsync);
         SairCommand = new ComandoAssincrono(SairAsync);
         EscolherPastaBancoCommand = new ComandoAssincrono(() => _pastaDados.EscolherPastaAsync());
+        CriarBackupCommand = new ComandoAssincrono(CriarBackupAsync);
+        RestaurarBackupCommand = new ComandoAssincrono(RestaurarBackupAsync);
+        ZerarBancoCommand = new ComandoAssincrono(ZerarBancoAsync);
     }
 
     public ObservableCollection<ContaCorrente> Contas { get; } = [];
@@ -66,6 +79,26 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
 
     /// <summary>Deixa o usuário escolher a pasta do banco (útil quando o padrão está bloqueado).</summary>
     public ICommand EscolherPastaBancoCommand { get; }
+
+    public ICommand CriarBackupCommand { get; }
+
+    public ICommand RestaurarBackupCommand { get; }
+
+    /// <summary>Apaga tudo e volta ao primeiro acesso (uso em testes/demonstrações).</summary>
+    public ICommand ZerarBancoCommand { get; }
+
+    /// <summary>Quando foi gerado o último backup neste aparelho.</summary>
+    public string DataUltimoBackup
+    {
+        get
+        {
+            var texto = Preferences.Default.Get("backup.ultimo", string.Empty);
+
+            return DateTime.TryParse(texto, out var quando)
+                ? $"último backup: {Formatador.DataHora(quando)}"
+                : "nenhum backup gerado neste aparelho";
+        }
+    }
 
     public string NomeUsuario => _sessao.Usuario?.Nome ?? "-";
 
@@ -203,6 +236,115 @@ public sealed class ConfiguracoesViewModel : BaseViewModel
         await _preferencias.HabilitarBiometriaAsync(_sessao.Usuario.Id);
         BiometriaHabilitada = true;
         MensagemBiometria = "Entrada por biometria ativada para este aparelho.";
+    }
+
+    private async Task CriarBackupAsync()
+    {
+        await ExecutarAsync(async () =>
+        {
+            var backup = await _backup.CriarAsync();
+            var caminho = await _armazenamento.SalvarBinarioAsync(backup.NomeArquivo, backup.Conteudo);
+
+            if (caminho is null)
+            {
+                return;
+            }
+
+            Preferences.Default.Set("backup.ultimo", DateTime.Now.ToString("o"));
+            OnPropertyChanged(nameof(DataUltimoBackup));
+
+            var tamanho = backup.Conteudo.Length / 1024.0;
+
+            await _dialogos.AlertaAsync(
+                "Backup criado",
+                $"Banco completo com {tamanho:N1} KB.\n\n{caminho}");
+        }, "Não foi possível criar o backup");
+    }
+
+    private async Task RestaurarBackupAsync()
+    {
+        try
+        {
+            var conteudo = await _armazenamento.EscolherArquivoBinarioAsync(".db");
+
+            if (conteudo is null)
+            {
+                return;
+            }
+
+            var confirmar = await _dialogos.ConfirmarAsync(
+                "Restaurar backup",
+                "Os dados atuais serão substituídos pelos do arquivo escolhido. " +
+                "Uma cópia de segurança do banco atual é guardada antes.",
+                "Restaurar",
+                "Cancelar");
+
+            if (!confirmar)
+            {
+                return;
+            }
+
+            await ExecutarAsync(async () =>
+            {
+                var seguranca = await _backup.RestaurarAsync(conteudo);
+
+                _inicializacao.Reiniciar();
+
+                await _dialogos.AlertaAsync(
+                    "Backup restaurado",
+                    "Os dados foram restaurados. Você voltará para a tela de entrada." +
+                    $"\n\nCópia do banco anterior:\n{seguranca}");
+
+                _autenticacao.Sair();
+                await _navegacao.AbrirLoginAsync();
+            }, "Não foi possível restaurar o backup");
+        }
+        catch (Core.Dominio.Excecoes.DominioException ex)
+        {
+            await _dialogos.AlertaAsync("Restaurar backup", ex.Message);
+        }
+    }
+
+    private async Task ZerarBancoAsync()
+    {
+        var primeiraConfirmacao = await _dialogos.ConfirmarAsync(
+            "Começar do zero",
+            "Isso APAGA todos os dados deste aparelho: contas, centros de custo, usuários e lançamentos.\n\n" +
+            "Uma cópia de segurança é guardada na pasta do banco antes de apagar.\n\nDeseja continuar?",
+            "Continuar",
+            "Cancelar");
+
+        if (!primeiraConfirmacao)
+        {
+            return;
+        }
+
+        var digitado = await _dialogos.PerguntarAsync(
+            "Confirmação final",
+            "Digite ZERAR para confirmar que os dados serão apagados.",
+            string.Empty,
+            "ZERAR");
+
+        if (!string.Equals(digitado?.Trim(), "ZERAR", StringComparison.OrdinalIgnoreCase))
+        {
+            await _dialogos.AlertaAsync("Começar do zero", "Nada foi apagado.");
+            return;
+        }
+
+        await ExecutarAsync(async () =>
+        {
+            var seguranca = await _backup.ZerarAsync();
+
+            _inicializacao.Reiniciar();
+            _autenticacao.Sair();
+
+            await _dialogos.AlertaAsync(
+                "Banco zerado",
+                "Os dados foram apagados e você voltará para o primeiro acesso.\n\n" +
+                $"Cópia do banco anterior:\n{seguranca}");
+
+            await _navegacao.AbrirLoginAsync();
+        }, "Não foi possível zerar o banco");
     }
 
     private async Task SairAsync()

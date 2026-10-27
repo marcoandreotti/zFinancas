@@ -27,3 +27,8 @@ Thumbs.db
 ## Artefatos de execução de ferramentas
 --nologo*
 *.log
+
+# Certificados e saída do instalador (nunca versionar chave privada)
+instalador/*.pfx
+instalador/*.cer
+instalador/saida/

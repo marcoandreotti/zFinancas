@@ -66,7 +66,29 @@ separadamente que geraram a mesma conta/centro/usuário (nomes iguais, UUIDs dif
 | **Centros de custo** | CRUD com ícone (emoji), centro principal único |
 | **Usuários** | perfis ADM/USR e vínculo com contas; menu `⋯` para editar, redefinir senha e **ativar/desativar** |
 | **Sincronização** | exporta (diálogo nativo “Salvar como”) e importa pacote `.zfsync`, com resolução de conflito e unificação de registros homônimos |
-| **Configurações** | conta padrão, biometria, informações do aparelho e sair |
+| **Configurações** | conta padrão, biometria, **backup/restauração**, **começar do zero**, informações do aparelho e sair |
+
+## Backup e instalação
+
+- **Backup** em Configurações → BACKUP: gera uma cópia completa do banco (VACUUM INTO) pelo
+  diálogo nativo de salvar, e restaura validando cabeçalho, integridade e versão do esquema
+  antes de substituir — guardando uma cópia do banco anterior. Detalhes em
+  [docs/BACKUP.md](docs/BACKUP.md).
+- **Publicação**: `.\build.ps1 -Publish` gera `.tmp\publicacao\win-x64` (self-contained) e
+  `zFinancas-win-x64.zip`.
+- **Instalador Windows**: `instalador\zFinancas.iss` (Inno Setup 6) — passo a passo em
+  [instalador/LEIA-ME.md](instalador/LEIA-ME.md).
+
+## Trouxe dados de outro app?
+
+O zFinancas importa a base do antigo "finanças" (Access .mdb):
+
+```powershell
+.\scripts\importar-access.ps1 -Mdb "C:\caminho\Financas.mdb"
+```
+
+Gera um banco pronto e um .zfsync para o celular. Regras de conversão em
+[docs/MIGRACAO-ACCESS.md](docs/MIGRACAO-ACCESS.md).
 
 ## Estrutura
 
@@ -75,7 +97,8 @@ zFinancas.sln
 ├── src/zFinancas.Core      domínio + aplicação (sem dependências externas)
 ├── src/zFinancas.Data      SQLite: schema versionado, repositórios, JSON
 ├── src/zFinancas.App       .NET MAUI (Windows + Android): telas, view models, serviços
-├── tests/zFinancas.Tests   64 testes (domínio, serviços, voz e sincronização em duas pontas)
+├── tests/zFinancas.Tests   70 testes (domínio, serviços, voz e sincronização em duas pontas)
+├── tools/zFinancas.ImportadorAccess  converte a base antiga do Access
 ├── tools/zFinancas.Demo    gera banco de demonstração
 └── tools/zFinancas.TestRunner  runner de testes sem vstest
 ```
@@ -103,6 +126,12 @@ Pré-requisitos: **.NET SDK 9** (o `global.json` fixa 9.0.305) e workloads
 
 # compila o APK Android
 .\build.ps1 -Target android
+
+# publica o app para distribuição (self-contained + ZIP)
+.\build.ps1 -Publish
+
+# se o Windows bloquear scripts (política AllSigned), use:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Publish
 ```
 
 Ou direto com `dotnet`:

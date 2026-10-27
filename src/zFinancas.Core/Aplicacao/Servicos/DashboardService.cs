@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Abstracoes;
+using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Excecoes;
@@ -37,10 +37,17 @@ public sealed class DashboardService
 
         if (contas.Count == 0)
         {
-            throw new DominioException(
-                "Nenhuma conta corrente disponível para este usuário. Peça ao administrador para vincular uma conta.");
-        }
+            // Base nova (ou usuário sem vínculo): devolve um painel vazio em vez de erro —
+            // a tela mostra o convite para criar a primeira conta.
+            var hojeVazio = _relogio.Hoje.Date;
 
+            return new ResumoDashboard(
+                [],
+                new SaldoConta(0m, 0m, 0m),
+                [],
+                hojeVazio.AddDays(-(DiasNaJanela - 1)),
+                hojeVazio);
+        }
         var hoje = _relogio.Hoje.Date;
         var inicioJanela = hoje.AddDays(-(DiasNaJanela - 1));
 

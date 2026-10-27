@@ -18,6 +18,9 @@ public sealed class ServicoInicializacao
         _migrador = migrador;
     }
 
+    /// <summary>Descarta o estado "pronto" (usado depois de restaurar um backup).</summary>
+    public void Reiniciar() => _pronto = false;
+
     public async Task GarantirProntoAsync(CancellationToken ct = default)
     {
         if (_pronto) return;

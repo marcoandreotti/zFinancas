@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -64,6 +64,7 @@ public sealed class LoginViewModel : BaseViewModel
     public ICommand AlternarSenhaCommand { get; }
     public ICommand RecuperarSenhaCommand { get; }
     public ICommand PrimeiroAcessoCommand { get; }
+
 
     public Usuario? UsuarioSelecionado
     {
@@ -158,7 +159,9 @@ public sealed class LoginViewModel : BaseViewModel
                 System.Diagnostics.Debug.WriteLine("zFinancas: autologin de desenvolvimento");
 
                 await _autenticacao.EntrarComBiometriaAsync(UsuarioSelecionado.Id);
+                var relogioPerf = System.Diagnostics.Stopwatch.StartNew();
                 await _navegacao.AbrirAplicacaoAsync();
+                System.Diagnostics.Debug.WriteLine($"[perf] AbrirApp={relogioPerf.ElapsedMilliseconds}ms");
                 return;
             }
 #endif
@@ -292,7 +295,6 @@ public sealed class LoginViewModel : BaseViewModel
         }, "Não foi possível entrar");
     }
 }
-
 
 
 

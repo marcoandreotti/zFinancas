@@ -30,9 +30,7 @@ public sealed record RequisicaoConfiguracaoInicial(string NomeAdministrador, str
 
 public sealed record ResultadoConfiguracaoInicial(
     Usuario Administrador,
-    string CodigoRecuperacao,
-    ContaCorrente ContaPrincipal,
-    CentroCusto CentroPrincipal);
+    string CodigoRecuperacao);
 
 /// <summary>Cadastro/edição de usuário, já com a seleção de contas (USUARIOCONTACORRENTE).</summary>
 public sealed record RequisicaoUsuario(

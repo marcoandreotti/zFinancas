@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -7,7 +7,6 @@ using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Excecoes;
 
 namespace zFinancas.App.ViewModels;
-
 
 /// <summary>Lista de lançamentos com filtros e ações rápidas (compensar, excluir).</summary>
 public sealed class LancamentosViewModel : BaseViewModel
@@ -24,13 +23,18 @@ public sealed class LancamentosViewModel : BaseViewModel
     private IReadOnlyList<long> _idsContas = [];
     private string _resumoContas = "Todas as contas";
     private bool _aplicandoSelecao;
+
+    /// <summary>Quantos dias antes de hoje a lista começa (valor inicial da data de corte).</summary>
+    private const int DiasDeCorte = 4;
+
+    private DateTime _dataCorte = DateTime.Today.AddDays(-DiasDeCorte);
+
+    private CancellationTokenSource? _atrasoBusca;
     private bool _carregando;
     private bool _recarregarPendente;
     private string _busca = string.Empty;
     private bool _somentePendentes;
-    private string _totalCompensadoTexto = "R$ 0,00";
-    private string _totalPendenteTexto = "R$ 0,00";
-    private string _quantidadeTexto = "0 lançamentos";
+    private string _saldoAnteriorTexto = "R$ 0,00";
 
     public LancamentosViewModel(
         LancamentoService lancamentos,
@@ -58,7 +62,23 @@ public sealed class LancamentosViewModel : BaseViewModel
         AbrirSelecaoContasCommand = new ComandoAssincrono(AbrirSelecaoContasAsync);
     }
 
-    public ObservableCollection<LancamentoVm> Itens { get; } = [];
+    private IReadOnlyList<LancamentoVm> _itens = [];
+
+    /// <summary>
+    /// Lista da tela. É trocada inteira a cada carga (uma única notificação), em vez de
+    /// receber item a item — diferença grande de desempenho no Android com muitos lançamentos.
+    /// </summary>
+    public IReadOnlyList<LancamentoVm> Itens
+    {
+        get => _itens;
+        private set
+        {
+            if (SetProperty(ref _itens, value))
+            {
+                OnPropertyChanged(nameof(SemItens));
+            }
+        }
+    }
 
     public ICommand CarregarCommand { get; }
     public ICommand NovoCommand { get; }
@@ -67,7 +87,9 @@ public sealed class LancamentosViewModel : BaseViewModel
 
     /// <summary>Compensação direta na linha (mesmo atalho do extrato).</summary>
     public ICommand CompensarCommand { get; }
+
     public ICommand AbrirSelecaoContasCommand { get; }
+
     public SelecaoContasViewModel? SelecaoContas
     {
         get => _selecaoContas;
@@ -89,15 +111,53 @@ public sealed class LancamentosViewModel : BaseViewModel
         private set => SetProperty(ref _resumoContas, value);
     }
 
+    /// <summary>
+    /// Data de corte da lista: carrega os lançamentos a partir dela.
+    /// Dá para voltar no tempo quando aparecem parcelas de lançamentos antigos.
+    /// </summary>
+    public DateTime DataCorte
+    {
+        get => _dataCorte;
+        set
+        {
+            if (SetProperty(ref _dataCorte, value.Date) && !_carregando)
+            {
+                _ = CarregarAsync();
+            }
+        }
+    }
+
     public string Busca
     {
         get => _busca;
         set
         {
-            if (SetProperty(ref _busca, value))
+            if (!SetProperty(ref _busca, value))
             {
-                _ = CarregarAsync();
+                return;
             }
+
+            // Espera o usuário parar de digitar: recarregar a cada tecla travava no celular.
+            _atrasoBusca?.Cancel();
+            _atrasoBusca = new CancellationTokenSource();
+            var token = _atrasoBusca.Token;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(350, token).ConfigureAwait(false);
+
+                    if (!token.IsCancellationRequested)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() => _ = CarregarAsync());
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    // digitou mais uma letra; a próxima execução assume
+                }
+            });
         }
     }
 
@@ -113,25 +173,14 @@ public sealed class LancamentosViewModel : BaseViewModel
         }
     }
 
-    public string TotalCompensadoTexto
+    public string SaldoAnteriorTexto
     {
-        get => _totalCompensadoTexto;
-        private set => SetProperty(ref _totalCompensadoTexto, value);
-    }
-
-    public string TotalPendenteTexto
-    {
-        get => _totalPendenteTexto;
-        private set => SetProperty(ref _totalPendenteTexto, value);
-    }
-
-    public string QuantidadeTexto
-    {
-        get => _quantidadeTexto;
-        private set => SetProperty(ref _quantidadeTexto, value);
+        get => _saldoAnteriorTexto;
+        private set => SetProperty(ref _saldoAnteriorTexto, value);
     }
 
     public bool SemItens => Itens.Count == 0;
+
     public async Task CarregarAsync()
     {
         // Duas cargas simultâneas (ex.: toque + evento do Picker) seriam inúteis e podem
@@ -150,46 +199,67 @@ public sealed class LancamentosViewModel : BaseViewModel
         {
             await ExecutarAsync(async () =>
             {
-                var contas = await _contas.ListarAsync(incluirInativas: true);
-                var centros = (await _centros.ListarAsync(incluirInativos: true)).ToDictionary(c => c.Id);
+                var relogio = System.Diagnostics.Stopwatch.StartNew();
 
                 // Contas marcadas no painel (vazio = todas as permitidas ao usuário).
                 var ids = _idsContas.Count > 0
                     ? _idsContas.ToList()
                     : _sessao.ContasPermitidas.Select(c => c.Id).ToList();
 
+                var corte = DataCorte.Date;
+                var somentePendentes = SomentePendentes;
+                var busca = Busca;
+
+                // O driver do SQLite é síncrono: sem Task.Run tudo isso roda na thread de UI
+                // e o Android trava ("Skipped N frames"). Aqui só leitura, sem tocar na tela.
+                var (contas, idPorConta, novos, saldoAnterior) = await Task.Run(async () =>
+                {
+                    var contasLocal = await _contas.ListarAsync();
+                    var centros = (await _centros.ListarAsync(incluirInativos: true)).ToDictionary(c => c.Id);
+
+                    var todos = new List<Lancamento>();
+                    foreach (var contaId in ids)
+                    {
+                        todos.AddRange(await _lancamentos.ListarAsync(contaId));
+                    }
+
+                    var filtrados = todos
+                        .Where(l => l.DataVencimento.Date >= corte)
+                        .Where(l => !somentePendentes || l.Pendente)
+                        .Where(l => string.IsNullOrWhiteSpace(busca)
+                                    || l.Descricao.Contains(busca, StringComparison.CurrentCultureIgnoreCase))
+                        .OrderBy(l => l.DataVencimento)
+                        .ThenBy(l => l.Id)
+                        .ToList();
+
+                    var contasPorId = contasLocal.ToDictionary(c => c.Id);
+                    var saldos = CalcularSaldos(todos, corte);
+                    var lista = new List<LancamentoVm>(filtrados.Count);
+
+                    foreach (var lancamento in filtrados)
+                    {
+                        var acumulado = saldos.GetValueOrDefault(lancamento.Id);
+
+                        lista.Add(LancamentoVm.Criar(
+                            lancamento,
+                            contasPorId.GetValueOrDefault(lancamento.ContaCorrenteId),
+                            centros.GetValueOrDefault(lancamento.CentroCustoId),
+                            acumulado,
+                            $"{Formatador.Moeda(acumulado)}",
+                            parcelaNoDetalhe: true));
+                    }
+
+                    return (contasLocal, contasPorId, lista, CalcularSaldoAnterior(todos, corte));
+                });
+
                 AtualizarResumoContas(contas, ids);
 
-                var todos = new List<Lancamento>();
-                foreach (var contaId in ids)
-                {
-                    todos.AddRange(await _lancamentos.ListarAsync(contaId));
-                }
+                Itens = novos;
+                SaldoAnteriorTexto = Formatador.Moeda(saldoAnterior);
 
-                var filtrados = todos
-                    .Where(l => !SomentePendentes || l.Pendente)
-                    .Where(l => string.IsNullOrWhiteSpace(Busca)
-                                || l.Descricao.Contains(Busca, StringComparison.CurrentCultureIgnoreCase))
-                    .OrderByDescending(l => l.DataVencimento)
-                    .ThenByDescending(l => l.Id)
-                    .ToList();
-
-                var contasPorId = contas.ToDictionary(c => c.Id);
-
-                Itens.Clear();
-                foreach (var lancamento in filtrados.Take(300))
-                {
-                    Itens.Add(LancamentoVm.Criar(
-                        lancamento,
-                        contasPorId.GetValueOrDefault(lancamento.ContaCorrenteId),
-                        centros.GetValueOrDefault(lancamento.CentroCustoId)));
-                }
-
-                TotalCompensadoTexto = Formatador.Moeda(filtrados.Where(l => l.Compensado).Sum(l => l.Valor));
-                TotalPendenteTexto = Formatador.Moeda(filtrados.Where(l => !l.Compensado).Sum(l => l.Valor));
-                QuantidadeTexto = filtrados.Count == 1 ? "1 lançamento" : $"{filtrados.Count} lançamentos";
-
-                OnPropertyChanged(nameof(SemItens));
+                System.Diagnostics.Debug.WriteLine(
+                    $"[perf] Lancamentos total={relogio.ElapsedMilliseconds}ms linhas={novos.Count} " +
+                    $"contas={idPorConta.Count}");
             }, "Não foi possível carregar os lançamentos");
         }
         finally
@@ -204,11 +274,48 @@ public sealed class LancamentosViewModel : BaseViewModel
         }
     }
 
+    /// <summary>
+    /// Saldo acumulado de cada lançamento, com a mesma regra do extrato consolidado:
+    /// parte do que foi compensado ANTES do corte e cada linha recebe o valor quando a
+    /// compensação caiu dentro da janela. Contas marcadas são somadas (igual ao extrato).
+    /// </summary>
+    private static Dictionary<long, decimal> CalcularSaldos(IEnumerable<Lancamento> lancamentos, DateTime corte)
+    {
+        var todos = lancamentos as IReadOnlyCollection<Lancamento> ?? lancamentos.ToList();
+        var saldos = new Dictionary<long, decimal>(todos.Count);
+        var saldo = CalcularSaldoAnterior(todos, corte);
+
+        foreach (var lancamento in todos.OrderBy(l => l.DataVencimento).ThenBy(l => l.Id))
+        {
+            // A lista mostra o saldo acumulado linha a linha (pendentes entram na conta,
+            // ou seja, é o saldo previsto). O "saldo anterior" do topo continua sendo o
+            // compensado até o corte.
+            if (DataDaCompensacao(lancamento).Date >= corte.Date)
+            {
+                saldo += lancamento.Valor;
+            }
+
+            saldos[lancamento.Id] = saldo;
+        }
+
+        return saldos;
+    }
+
+    /// <summary>Saldo de partida da lista: compensados com compensação anterior ao corte.</summary>
+    private static decimal CalcularSaldoAnterior(IEnumerable<Lancamento> lancamentos, DateTime corte)
+        => lancamentos
+            .Where(l => l.Compensado && DataDaCompensacao(l).Date < corte.Date)
+            .Sum(l => l.Valor);
+
+    /// <summary>Data em que o dinheiro se moveu (compensação), com o vencimento como reserva.</summary>
+    private static DateTime DataDaCompensacao(Lancamento lancamento)
+        => lancamento.DataCompensado ?? lancamento.DataVencimento;
+
     // ------------------------------------------------------------- seleção de contas
 
     private async Task AbrirSelecaoContasAsync()
     {
-        var contas = await _contas.ListarAsync(incluirInativas: true);
+        var contas = await _contas.ListarAsync();
 
         if (contas.Count == 0)
         {
@@ -301,6 +408,7 @@ public sealed class LancamentosViewModel : BaseViewModel
 
     /// <summary>Confirmou: fecha o painel e executa a ação escolhida (excluir ou quitar).</summary>
     public ICommand ConfirmarSelecaoCommand => _confirmarSelecao ??= new ComandoAssincrono(ConfirmarSelecaoAsync);
+
     private ICommand? _confirmarSelecao;
 
     public ICommand CancelarSelecaoCommand => _cancelarSelecao ??= new Comando(FecharSelecao);
@@ -549,7 +657,9 @@ public sealed class LancamentosViewModel : BaseViewModel
 
         await _lancamentos.ExcluirVariasAsync(ids);
     }
+
 #if DEBUG
+
     /// <summary>Atalho de desenvolvimento: abre o painel de quitação para a 1ª série pendente.</summary>
     public async Task DepurarQuitacaoAsync()
     {
@@ -571,6 +681,7 @@ public sealed class LancamentosViewModel : BaseViewModel
             await AbrirExclusaoAsync(item);
         }
     }
+
 #endif
     // ---------------------------------------------------------- compensação
 
@@ -606,7 +717,9 @@ public sealed class LancamentosViewModel : BaseViewModel
 
         Compensacao = painel;
     }
+
 #if DEBUG
+
     /// <summary>Atalho de desenvolvimento: abre o painel de compensação da 1ª pendência.</summary>
     public async Task DepurarCompensacaoAsync()
     {
@@ -617,7 +730,9 @@ public sealed class LancamentosViewModel : BaseViewModel
             AbrirCompensacao(item);
         }
     }
+
 #endif
+
     /// <summary>Atalho da linha: abre o painel de compensação (data escolhida).</summary>
     private Task CompensarAsync(LancamentoVm? item)
     {

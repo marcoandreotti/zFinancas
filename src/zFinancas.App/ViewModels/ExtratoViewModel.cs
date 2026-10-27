@@ -25,8 +25,8 @@ public sealed class ExtratoViewModel : BaseViewModel
     private SelecaoContasViewModel? _selecaoContas;
     private IReadOnlyList<long> _idsContas = [];
     private string _resumoContas = "Selecione as contas";
-    private DateTime _dataInicio = new(DateTime.Today.Year, DateTime.Today.Month, 1);
-    private DateTime _dataFim = DateTime.Today;
+    private DateTime _dataInicio = DateTime.Today.AddDays(-4);
+    private DateTime _dataFim = DateTime.Today.AddMonths(2);
     private string _saldoAnteriorTexto = "R$ 0,00";
     private string _saldoFinalTexto = "R$ 0,00";
     private string _saldoCompensadoTexto = "R$ 0,00";
@@ -57,9 +57,16 @@ public sealed class ExtratoViewModel : BaseViewModel
         CompensarCommand = new ComandoAssincrono<LancamentoVm>(Compensar);
         AbrirSelecaoContasCommand = new ComandoAssincrono(AbrirSelecaoContasAsync);
 
-        MesAtualCommand = new ComandoAssincrono(() =>
+        Ultimos4DiasCommand = new ComandoAssincrono(() =>
         {
-            DataInicio = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            DataInicio = DateTime.Today.AddDays(-4);
+            DataFim = DateTime.Today.AddMonths(2);
+            return CarregarAsync();
+        });
+
+        Ultimos2MesesCommand = new ComandoAssincrono(() =>
+        {
+            DataInicio = DateTime.Today.AddMonths(-2);
             DataFim = DateTime.Today;
             return CarregarAsync();
         });
@@ -72,21 +79,35 @@ public sealed class ExtratoViewModel : BaseViewModel
             return CarregarAsync();
         });
 
-        Ultimos90DiasCommand = new ComandoAssincrono(() =>
+        MesAtualCommand = new ComandoAssincrono(() =>
         {
-            DataInicio = DateTime.Today.AddDays(-89);
+            DataInicio = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
             DataFim = DateTime.Today;
             return CarregarAsync();
         });
     }
 
-    public ObservableCollection<LancamentoVm> Itens { get; } = [];
+    private IReadOnlyList<LancamentoVm> _itens = [];
+
+    /// <summary>Lista da tela: trocada inteira a cada carga (uma notificação só).</summary>
+    public IReadOnlyList<LancamentoVm> Itens
+    {
+        get => _itens;
+        private set
+        {
+            if (SetProperty(ref _itens, value))
+            {
+                OnPropertyChanged(nameof(SemItens));
+            }
+        }
+    }
 
     public ICommand CarregarCommand { get; }
     public ICommand CompensarCommand { get; }
-    public ICommand MesAtualCommand { get; }
+    public ICommand Ultimos4DiasCommand { get; }
+    public ICommand Ultimos2MesesCommand { get; }
     public ICommand MesPassadoCommand { get; }
-    public ICommand Ultimos90DiasCommand { get; }
+    public ICommand MesAtualCommand { get; }
     public ICommand AbrirSelecaoContasCommand { get; }
 
     // ------------------------------------------------------------ seleção de contas
@@ -163,7 +184,13 @@ public sealed class ExtratoViewModel : BaseViewModel
     public bool Carregando
     {
         get => _carregando;
-        private set => SetProperty(ref _carregando, value);
+        private set
+        {
+            if (SetProperty(ref _carregando, value))
+            {
+                AtualizarIndicador(value);
+            }
+        }
     }
 
     public bool SemItens => Itens.Count == 0;
@@ -177,6 +204,7 @@ public sealed class ExtratoViewModel : BaseViewModel
 
         try
         {
+            var relogio = System.Diagnostics.Stopwatch.StartNew();
             var contas = await _contas.ListarAsync();
 
             if (!_carregouContas)
@@ -197,57 +225,73 @@ public sealed class ExtratoViewModel : BaseViewModel
 
             AtualizarResumoContas(selecionadas);
 
-            var centros = (await _centros.ListarAsync(incluirInativos: true)).ToDictionary(c => c.Id);
+            var inicio = DataInicio;
+            var fim = DataFim;
+            var idsSelecionados = selecionadas;
 
-            decimal saldoAnterior = 0m;
-            decimal saldoFinal = 0m;
-            decimal saldoCompensado = 0m;
-            decimal entradas = 0m;
-            decimal saidas = 0m;
-
-            var linhas = new List<(ContaCorrente Conta, LancamentoExtrato Linha)>();
-
-            // Uma conta = extrato normal; várias = extrato consolidado (saldos somados).
-            foreach (var conta in selecionadas)
+            // Driver do SQLite é síncrono: sem Task.Run a consulta inteira roda na thread de
+            // UI e o Android trava. Aqui só leitura/cálculo, sem tocar em propriedade da tela.
+            var (novos, numeros) = await Task.Run(async () =>
             {
-                var extrato = await _extrato.ObterAsync(conta.Id, DataInicio, DataFim);
+                var centros = (await _centros.ListarAsync(incluirInativos: true)).ToDictionary(c => c.Id);
 
-                saldoAnterior += extrato.SaldoAnterior;
-                saldoFinal += extrato.SaldoFinal;
-                saldoCompensado += extrato.SaldoCompensadoFinal;
-                entradas += extrato.TotalEntradas;
-                saidas += extrato.TotalSaidas;
+                decimal anterior = 0m;
+                decimal final = 0m;
+                decimal compensado = 0m;
+                decimal entrada = 0m;
+                decimal saida = 0m;
 
-                linhas.AddRange(extrato.Itens.Select(l => (conta, l)));
-            }
+                var linhas = new List<(ContaCorrente Conta, LancamentoExtrato Linha)>();
 
-            Itens.Clear();
+                // Uma conta = extrato normal; várias = extrato consolidado (saldos somados).
+                foreach (var conta in idsSelecionados)
+                {
+                    var extrato = await _extrato.ObterAsync(conta.Id, inicio, fim);
 
-            var acumulado = saldoAnterior;
+                    anterior += extrato.SaldoAnterior;
+                    final += extrato.SaldoFinal;
+                    compensado += extrato.SaldoCompensadoFinal;
+                    entrada += extrato.TotalEntradas;
+                    saida += extrato.TotalSaidas;
 
-            foreach (var (conta, linha) in linhas
-                         .OrderBy(x => x.Linha.Lancamento.DataVencimento)
-                         .ThenBy(x => x.Linha.Lancamento.Id))
-            {
-                acumulado += linha.Lancamento.Valor;
+                    linhas.AddRange(extrato.Itens.Select(l => (conta, l)));
+                }
 
-                Itens.Add(LancamentoVm.Criar(
-                    linha.Lancamento,
-                    conta,
-                    centros.GetValueOrDefault(linha.Lancamento.CentroCustoId),
-                    $"saldo {Formatador.Moeda(acumulado)}",
-                    linha.ForaDoPeriodo));
-            }
+                var lista = new List<LancamentoVm>(linhas.Count);
+                var acumulado = anterior;
 
-            SaldoAnteriorTexto = Formatador.Moeda(saldoAnterior);
-            SaldoFinalTexto = Formatador.Moeda(saldoFinal);
-            SaldoCompensadoTexto = Formatador.Moeda(saldoCompensado);
-            EntradasTexto = Formatador.Moeda(entradas);
-            SaidasTexto = Formatador.Moeda(saidas);
+                foreach (var (conta, linha) in linhas
+                             .OrderBy(x => x.Linha.Lancamento.DataVencimento)
+                             .ThenBy(x => x.Linha.Lancamento.Id))
+                {
+                    // Saldo previsto linha a linha: pendentes também entram.
+                    acumulado += linha.Lancamento.Valor;
+
+                    lista.Add(LancamentoVm.Criar(
+                        linha.Lancamento,
+                        conta,
+                        centros.GetValueOrDefault(linha.Lancamento.CentroCustoId),
+                        acumulado,
+                        $"{Formatador.Moeda(acumulado)}",
+                        linha.ForaDoPeriodo));
+                }
+
+                return (lista, (anterior, final, compensado, entrada, saida));
+            });
+
+            Itens = novos;
+
+            SaldoAnteriorTexto = Formatador.Moeda(numeros.anterior);
+            SaldoFinalTexto = Formatador.Moeda(numeros.final);
+            SaldoCompensadoTexto = Formatador.Moeda(numeros.compensado);
+            EntradasTexto = Formatador.Moeda(numeros.entrada);
+            SaidasTexto = Formatador.Moeda(numeros.saida);
             PeriodoTexto = $"{Formatador.Data(DataInicio)} a {Formatador.Data(DataFim)}";
 
-            OnPropertyChanged(nameof(SemItens));
+            System.Diagnostics.Debug.WriteLine(
+                $"[perf] Extrato total={relogio.ElapsedMilliseconds}ms contas={selecionadas.Count} linhas={novos.Count}");
         }
+
         catch (Exception ex)
         {
             await _dialogos.AlertaAsync("Extrato", ex.Message);

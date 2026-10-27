@@ -133,7 +133,7 @@ public sealed class ContasViewModel : BaseViewModel
             var contas = await _servico.ListarAsync(incluirInativas: true);
 
             Itens.Clear();
-            foreach (var conta in contas)
+            foreach (var conta in contas.OrderByDescending(x => x.Ativo).ThenBy(x => x.Descricao))
             {
                 Itens.Add(new ContaVm(conta.Id, conta.Descricao, conta.Icone, conta.CorHex, conta.Principal, conta.Ativo));
             }
@@ -218,6 +218,7 @@ public sealed class ContasViewModel : BaseViewModel
             await CarregarAsync();
         }, "Não foi possível definir a conta principal");
     }
+
     /// <summary>Menu de ações da conta na lista (editar, principal, ativar/desativar).</summary>
     private async Task ExecutarAcoesAsync(ContaVm? conta)
     {

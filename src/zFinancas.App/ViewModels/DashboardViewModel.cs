@@ -24,12 +24,14 @@ public sealed class DashboardViewModel : BaseViewModel
     private string _saudacao = string.Empty;
     private string _dataTexto = string.Empty;
     private string _totalTexto = "R$ 0,00";
+    private string _projetadoTexto = "R$ 0,00";
     private string _compensadoTexto = "R$ 0,00";
     private string _pendenteTexto = "R$ 0,00";
     private string _vencidoTexto = "R$ 0,00";
     private string _entradasTexto = "R$ 0,00";
     private string _saidasTexto = "R$ 0,00";
-    private string _periodoTexto = string.Empty;
+    private string _periodoInicialTexto = string.Empty;
+    private string _periodoFinalTexto = string.Empty;
     private int _posicaoCarrossel;
 
     public DashboardViewModel(
@@ -52,6 +54,8 @@ public sealed class DashboardViewModel : BaseViewModel
         Titulo = "Dashboard";
 
         AtualizarCommand = new ComandoAssincrono(CarregarAsync);
+        CriarContaCommand = new ComandoAssincrono(
+            () => ServicosApp.Obter<ServicoNavegacao>().IrParaSecaoAsync(Secoes.Contas));
         NovoLancamentoCommand = new ComandoAssincrono(() => _navegacao.AbrirLancamentoAsync());
         VerExtratoCommand = new ComandoAssincrono(() => _navegacao.IrParaSecaoAsync(Secoes.Extrato));
         VerLancamentosCommand = new ComandoAssincrono(() => _navegacao.IrParaSecaoAsync(Secoes.Lancamentos));
@@ -70,6 +74,9 @@ public sealed class DashboardViewModel : BaseViewModel
     /// <summary>Microfone do dashboard: dita e abre o formulário já preenchido.</summary>
     public ICommand FalarCommand { get; }
 
+    /// <summary>Atalho do estado vazio: leva para o cadastro de contas.</summary>
+    public ICommand CriarContaCommand { get; }
+
     public string Saudacao
     {
         get => _saudacao;
@@ -86,6 +93,12 @@ public sealed class DashboardViewModel : BaseViewModel
     {
         get => _totalTexto;
         private set => SetProperty(ref _totalTexto, value);
+    }
+
+    public string ProjetadoTexto
+    {
+        get => _projetadoTexto;
+        private set => SetProperty(ref _projetadoTexto, value);
     }
 
     public string CompensadoTexto
@@ -118,10 +131,16 @@ public sealed class DashboardViewModel : BaseViewModel
         private set => SetProperty(ref _saidasTexto, value);
     }
 
-    public string PeriodoTexto
+    public string PeriodoInicialTexto
     {
-        get => _periodoTexto;
-        private set => SetProperty(ref _periodoTexto, value);
+        get => _periodoInicialTexto;
+        private set => SetProperty(ref _periodoInicialTexto, value);
+    }
+
+    public string PeriodoFinalTexto
+    {
+        get => _periodoFinalTexto;
+        private set => SetProperty(ref _periodoFinalTexto, value);
     }
 
     public bool SemLancamentos => UltimosLancamentos.Count == 0;
@@ -132,21 +151,35 @@ public sealed class DashboardViewModel : BaseViewModel
     {
         await ExecutarAsync(async () =>
         {
-            var resumo = await _dashboard.ObterAsync();
+            var relogio = System.Diagnostics.Stopwatch.StartNew();
 
-            var contas = (await _contas.ListarAsync()).ToDictionary(c => c.Id);
-            var centros = (await _centros.ListarAsync()).ToDictionary(c => c.Id);
+            // Driver do SQLite é síncrono: sem Task.Run a leitura roda na thread de UI
+            // (o Android chega a pular centenas de frames na abertura).
+            var (resumo, contas, centros) = await Task.Run(async () =>
+            {
+                var resumoLocal = await _dashboard.ObterAsync();
+                var contasLocal = (await _contas.ListarAsync()).ToDictionary(c => c.Id);
+                var centrosLocal = (await _centros.ListarAsync()).ToDictionary(c => c.Id);
 
-            Saudacao = $"{Formatador.Saudacao()}, {PrimeiroNome(_sessao.Usuario?.Nome)}";
-            DataTexto = DateTime.Now.ToString("dddd, dd 'de' MMMM", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
+                return (resumoLocal, contasLocal, centrosLocal);
+            });
 
-            TotalTexto = Formatador.Moeda(resumo.Total.Total);
+            var msBanco = relogio.ElapsedMilliseconds;
+
+            Saudacao = $"{PrimeiroNome(_sessao.Usuario?.Nome)}";
+            DataTexto = $"{Formatador.Saudacao()}, {DateTime.Now.ToString("dddd, dd 'de' MMMM", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))}";
+
+            // O número grande é o dinheiro que está na conta (compensado);
+            // a projeção (com pendentes) fica no card ao lado.
+            TotalTexto = Formatador.Moeda(resumo.Total.Compensado);
+            ProjetadoTexto = Formatador.Moeda(resumo.Total.Total);
             CompensadoTexto = Formatador.Moeda(resumo.Total.Compensado);
             PendenteTexto = Formatador.Moeda(resumo.Total.NaoCompensado);
             VencidoTexto = Formatador.Moeda(resumo.Total.NaoCompensadoVencido);
             EntradasTexto = Formatador.Moeda(resumo.EntradasNaJanela);
             SaidasTexto = Formatador.Moeda(resumo.SaidasNaJanela);
-            PeriodoTexto = $"de {Formatador.Data(resumo.InicioJanela)} a {Formatador.Data(resumo.FimJanela)}";
+            PeriodoInicialTexto = $"de {Formatador.Data(resumo.InicioJanela)}";
+            PeriodoFinalTexto = $" a {Formatador.Data(resumo.FimJanela)}";
 
             Contas.Clear();
             foreach (var conta in resumo.Contas)
@@ -165,6 +198,10 @@ public sealed class DashboardViewModel : BaseViewModel
 
             OnPropertyChanged(nameof(SemLancamentos));
             OnPropertyChanged(nameof(SemContas));
+
+            System.Diagnostics.Debug.WriteLine(
+                $"[perf] Dashboard total={relogio.ElapsedMilliseconds}ms banco={msBanco}ms " +
+                $"contas={resumo.Contas.Count}");
         }, "Não foi possível carregar o dashboard");
     }
 

@@ -74,13 +74,9 @@ public sealed class PrimeiroAcessoService
             var administradorId = await _usuarios.SalvarAsync(administrador, token).ConfigureAwait(false);
             administrador.Id = administradorId;
 
-            var conta = ContaCorrente.Nova("Conta Principal", principal: true, agora, ContaCorrente.PaletaCores[0], "🏦");
-            conta.Id = await _contas.SalvarAsync(conta, token).ConfigureAwait(false);
-
-            var centro = CentroCusto.Novo("Geral", principal: true, agora, "🧾");
-            centro.Id = await _centrosDeCusto.SalvarAsync(centro, token).ConfigureAwait(false);
-
-            return new ResultadoConfiguracaoInicial(administrador, codigoRecuperacao, conta, centro);
+            // A base nasce vazia de propósito: o ADM cria as contas e centros que quiser
+            // (evita "Conta Principal"/"Geral" fantasma depois de começar do zero).
+            return new ResultadoConfiguracaoInicial(administrador, codigoRecuperacao);
         }, ct).ConfigureAwait(false);
     }
 }

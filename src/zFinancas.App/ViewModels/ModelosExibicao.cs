@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Servicos;
@@ -10,7 +10,7 @@ public static class Formatador
 {
     private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
 
-    public static string Moeda(decimal valor) => valor.ToString("C2", PtBr);
+    public static string Moeda(decimal valor) => valor.ToString("N2", PtBr);
 
     public static string MoedaComSinal(decimal valor)
         => (valor > 0 ? "+ " : valor < 0 ? "- " : string.Empty) + Moeda(Math.Abs(valor));
@@ -45,20 +45,33 @@ public static class Formatador
     }
 }
 
-/// <summary>Cores lidas da paleta de recursos (um único lugar para a identidade visual).</summary>
+/// <summary>
+/// Cores lidas da paleta de recursos (um único lugar para a identidade visual).
+/// O valor é resolvido <b>uma vez</b> e memorizado: nas listas cada linha consulta várias
+/// cores e procurar no dicionário de recursos a cada binding custa caro no Android.
+/// </summary>
 public static class Paleta
 {
-    public static Color Texto => Buscar("Texto", Color.FromArgb("#F4F7FF"));
-    public static Color TextoSecundario => Buscar("TextoSecundario", Color.FromArgb("#9AA8C7"));
-    public static Color TextoFraco => Buscar("TextoFraco", Color.FromArgb("#64748B"));
-    public static Color Positivo => Buscar("Positivo", Color.FromArgb("#4D9BFF"));
-    public static Color Negativo => Buscar("Negativo", Color.FromArgb("#FF5C7A"));
-    public static Color Alerta => Buscar("Alerta", Color.FromArgb("#F7B955"));
-    public static Color Primaria => Buscar("Primaria", Color.FromArgb("#6C5BFF"));
-    public static Color Superficie => Buscar("Superficie", Color.FromArgb("#111A2E"));
-    public static Color SuperficieElevada => Buscar("SuperficieElevada", Color.FromArgb("#18233C"));
-    public static Color Borda => Buscar("Borda", Color.FromArgb("#243152"));
-    public static Color Fundo => Buscar("Fundo", Color.FromArgb("#070B16"));
+    private static Color? _texto, _textoSecundario, _textoFraco, _positivo, _negativo;
+    private static Color? _positivoFraco, _negativoFraco, _alerta, _primaria, _superficie;
+    private static Color? _superficieElevada, _borda, _fundo;
+
+    public static Color Texto => _texto ??= Buscar("Texto", Color.FromArgb("#F4F7FF"));
+    public static Color TextoSecundario => _textoSecundario ??= Buscar("TextoSecundario", Color.FromArgb("#bbc3d6"));
+    public static Color TextoFraco => _textoFraco ??= Buscar("TextoFraco", Color.FromArgb("#64748B"));
+
+    public static Color Positivo => _positivo ??= Buscar("Positivo", Color.FromArgb("#4D9BFF"));
+    public static Color Negativo => _negativo ??= Buscar("Negativo", Color.FromArgb("#FF5C7A"));
+
+    public static Color PositivoFraco => _positivoFraco ??= Buscar("PositivoFraco", Color.FromArgb("#78b2fe"));
+    public static Color NegativoFraco => _negativoFraco ??= Buscar("NegativoFraco", Color.FromArgb("#f89eaf"));
+
+    public static Color Alerta => _alerta ??= Buscar("Alerta", Color.FromArgb("#F7B955"));
+    public static Color Primaria => _primaria ??= Buscar("Primaria", Color.FromArgb("#6C5BFF"));
+    public static Color Superficie => _superficie ??= Buscar("Superficie", Color.FromArgb("#111A2E"));
+    public static Color SuperficieElevada => _superficieElevada ??= Buscar("SuperficieElevada", Color.FromArgb("#18233C"));
+    public static Color Borda => _borda ??= Buscar("Borda", Color.FromArgb("#243152"));
+    public static Color Fundo => _fundo ??= Buscar("Fundo", Color.FromArgb("#070B16"));
 
     public static Color Buscar(string chave, Color padrao)
     {
@@ -99,28 +112,32 @@ public static class Paleta
 /// <summary>Lançamento já formatado para exibição em listas.</summary>
 public sealed class LancamentoVm
 {
-    public required long Id { get; init; }
-    public required string Descricao { get; init; }
-    public required string Detalhe { get; init; }
-    public required string ValorTexto { get; init; }
-    public required decimal Valor { get; init; }
-    public required DateTime DataVencimento { get; init; }
-    public required bool Pendente { get; init; }
-    public required bool ForaDoPeriodo { get; init; }
-    public required string IconeCentro { get; init; }
-    public required string RotuloParcela { get; init; }
-    public required long ContaCorrenteId { get; init; }
-    public required long CentroCustoId { get; init; }
-    public required string ContaDescricao { get; init; }
-    public required string CentroDescricao { get; init; }
-    public required string? Observacao { get; init; }
+    public long Id { get; init; }
+    public string Descricao { get; init; }
+    public string Detalhe { get; init; }
+    public string ValorTexto { get; init; }
+    public decimal Valor { get; init; }
+    public DateTime DataVencimento { get; init; }
+    public bool Pendente { get; init; }
+    public bool ForaDoPeriodo { get; init; }
+    public string IconeCentro { get; init; }
+    public string RotuloParcela { get; init; }
+    public long ContaCorrenteId { get; init; }
+    public long CentroCustoId { get; init; }
+    public string ContaDescricao { get; init; }
+    public string CentroDescricao { get; init; }
+    public string? Observacao { get; init; }
 
     /// <summary>Saldo acumulado após a linha (somente no extrato).</summary>
     public string? SaldoTexto { get; init; }
 
+    public Color? CorSaldo { get; init; }
+
     public string DataTexto => Formatador.Data(DataVencimento);
 
     public Color CorValor => Valor < 0 ? Paleta.Negativo : Paleta.Positivo;
+
+    public Color CorPendente => Pendente ? Paleta.Alerta : Paleta.Texto;
 
     public Color CorFundoDestaque => ForaDoPeriodo
         ? Color.FromRgba(247, 185, 85, 28)
@@ -138,12 +155,26 @@ public sealed class LancamentoVm
         Lancamento lancamento,
         ContaCorrente? conta = null,
         CentroCusto? centro = null,
+        decimal? saldo = null,
         string? saldoTexto = null,
-        bool foraDoPeriodo = false)
+        bool foraDoPeriodo = false,
+        bool parcelaNoDetalhe = false)
     {
-        var detalhe = centro is null
-            ? lancamento.DataVencimento.ToString("dd/MM/yyyy")
-            : $"{lancamento.DataVencimento:dd/MM/yyyy} • {centro.Icone} {centro.Descricao}";
+        var partes = new List<string> { lancamento.DataVencimento.ToString("dd/MM/yyyy") };
+
+        // Na tela de Lançamentos a parcela entra no meio: data • 3/12 • centro.
+        if (parcelaNoDetalhe && lancamento.QuantidadeParcelas > 1)
+        {
+            partes.Add(lancamento.RotuloParcela);
+        }
+
+        if (centro is not null)
+        {
+            //partes.Add($"{centro.Icone} {centro.Descricao}");
+            partes.Add($"{centro.Descricao}");
+        }
+
+        var detalhe = string.Join(" • ", partes);
 
         return new LancamentoVm
         {
@@ -162,21 +193,25 @@ public sealed class LancamentoVm
             ContaDescricao = conta?.Descricao ?? string.Empty,
             CentroDescricao = centro?.Descricao ?? string.Empty,
             Observacao = lancamento.Observacao,
-            SaldoTexto = saldoTexto
+            SaldoTexto = saldoTexto,
+            CorSaldo = GetCorSaldo(saldo)
         };
     }
+
+    private static Color GetCorSaldo(decimal? saldo) => saldo < 0 ? Paleta.NegativoFraco : Paleta.PositivoFraco;
 }
 
 /// <summary>Cartão de conta do carrossel do dashboard.</summary>
 public sealed class ContaCartaoVm
 {
-    public required long Id { get; init; }
-    public required string Descricao { get; init; }
-    public required string Icone { get; init; }
-    public required string CompensadoTexto { get; init; }
-    public required string PendenteTexto { get; init; }
-    public required string TotalTexto { get; init; }
-    public required bool Principal { get; init; }
+    public long Id { get; init; }
+    public string Descricao { get; init; }
+    public string Icone { get; init; }
+    public string CompensadoTexto { get; init; }
+    public string PendenteTexto { get; init; }
+    public string VencidoTexto { get; init; }
+    public string TotalTexto { get; init; }
+    public bool Principal { get; init; }
 
     public Brush Gradiente { get; init; } = new SolidColorBrush(Paleta.Primaria);
 
@@ -192,6 +227,7 @@ public sealed class ContaCartaoVm
             Icone = resumo.Icone,
             CompensadoTexto = Formatador.Moeda(resumo.Saldo.Compensado),
             PendenteTexto = Formatador.Moeda(resumo.Saldo.NaoCompensado),
+            VencidoTexto = Formatador.Moeda(resumo.Saldo.NaoCompensadoVencido),
             TotalTexto = Formatador.Moeda(resumo.Saldo.Total),
             Principal = resumo.Principal,
             Gradiente = new LinearGradientBrush(
@@ -267,9 +303,9 @@ public sealed class IconeOpcao : System.ComponentModel.INotifyPropertyChanged
 
 public sealed class ItemMenu
 {
-    public required string Titulo { get; init; }
-    public required string Icone { get; init; }
-    public required string Rota { get; init; }
+    public string Titulo { get; init; }
+    public string Icone { get; init; }
+    public string Rota { get; init; }
     public bool Selecionado { get; init; }
 
     public Color CorFundo => Selecionado ? Color.FromArgb("#1C2743") : Colors.Transparent;
