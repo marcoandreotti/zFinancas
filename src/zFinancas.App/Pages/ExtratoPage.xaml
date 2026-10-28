@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -112,7 +112,15 @@
                             Margin="0,0,0,6"
                             BackgroundColor="{Binding CorFundoDestaque}">
 
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0" Padding="0">
+            <!-- duplo clique: mostra/esconde os totais da série -->
+            <Border.GestureRecognizers>
+              <TapGestureRecognizer NumberOfTapsRequired="2"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExtratoViewModel}}, Path=AlternarTotaisCommand}"
+                                    CommandParameter="{Binding .}" />
+            </Border.GestureRecognizers>
+
+            <VerticalStackLayout Spacing="0">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0" Padding="0">
               <Border WidthRequest="56"
                       HeightRequest="55"
                       BackgroundColor="{StaticResource SuperficieElevada}"
@@ -126,7 +134,7 @@
                 <VerticalStackLayout Spacing="1" VerticalOptions="Center">
                   <Label Text="{Binding Descricao}" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{Binding CorPendente}" />
 
-                  <Grid Grid.Column="1" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="12">
+                  <Grid Grid.Column="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="12">
                     <VerticalStackLayout Spacing="1" VerticalOptions="End">
                       <Label Text="{Binding Detalhe}" Style="{StaticResource Subtitulo}" FontSize="11" />
                       <Label Text="{Binding ContaDescricao}" FontSize="10" TextColor="{StaticResource TextoFraco}" />
@@ -146,6 +154,17 @@
                     </VerticalStackLayout>
 
                     <Button Grid.Column="2"
+                                    Text="Σ"
+                                    IsVisible="{Binding PodeExpandir}"
+                                    Style="{StaticResource BotaoTexto}"
+                                    FontSize="13"
+                                    SemanticProperties.Description="Ver totais da série"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExtratoViewModel}}, Path=AlternarTotaisCommand}"
+                                    CommandParameter="{Binding .}"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="End" />
+
+                    <Button Grid.Column="3"
                                     Text="✓"
                                     IsVisible="{Binding Pendente}"
                                     Style="{StaticResource BotaoTexto}"
@@ -158,6 +177,27 @@
                 </VerticalStackLayout>
               </Grid>
             </Grid>
+
+            <!-- totais da série (duplo clique na linha) -->
+            <VerticalStackLayout IsVisible="{Binding TotaisVisiveis}" Spacing="4" Margin="68,8,0,2">
+              <BoxView Style="{StaticResource Separador}" />
+
+              <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Total pago" Style="{StaticResource Subtitulo}" FontSize="11" />
+                <Label Grid.Column="1" Text="{Binding PagoTexto}" FontSize="11" TextColor="{StaticResource TextoSecundario}" />
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Total à pagar" Style="{StaticResource Subtitulo}" FontSize="11" />
+                <Label Grid.Column="1" Text="{Binding APagarTexto}" FontSize="11" TextColor="{StaticResource TextoSecundario}" />
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Total geral" Style="{StaticResource Subtitulo}" FontSize="11" />
+                <Label Grid.Column="1" Text="{Binding TotalSerieTexto}" FontSize="11" FontFamily="OpenSansSemibold" TextColor="{StaticResource Texto}" />
+              </Grid>
+            </VerticalStackLayout>
+            </VerticalStackLayout>
           </Border>
         </DataTemplate>
       </CollectionView.ItemTemplate>

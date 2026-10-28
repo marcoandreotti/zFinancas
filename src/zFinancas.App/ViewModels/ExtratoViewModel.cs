@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -55,6 +55,7 @@ public sealed class ExtratoViewModel : BaseViewModel
 
         CarregarCommand = new ComandoAssincrono(CarregarAsync);
         CompensarCommand = new ComandoAssincrono<LancamentoVm>(Compensar);
+        AlternarTotaisCommand = new ComandoAssincrono<LancamentoVm>(AlternarTotaisAsync);
         AbrirSelecaoContasCommand = new ComandoAssincrono(AbrirSelecaoContasAsync);
 
         Ultimos4DiasCommand = new ComandoAssincrono(() =>
@@ -104,6 +105,7 @@ public sealed class ExtratoViewModel : BaseViewModel
 
     public ICommand CarregarCommand { get; }
     public ICommand CompensarCommand { get; }
+    public ICommand AlternarTotaisCommand { get; }
     public ICommand Ultimos4DiasCommand { get; }
     public ICommand Ultimos2MesesCommand { get; }
     public ICommand MesPassadoCommand { get; }
@@ -300,6 +302,37 @@ public sealed class ExtratoViewModel : BaseViewModel
         {
             Carregando = false;
         }
+    }
+
+    /// <summary>
+    /// Duplo clique na linha de uma série: mostra (ou esconde) total pago, a pagar e geral.
+    /// Os totais são buscados uma única vez por linha.
+    /// </summary>
+    private async Task AlternarTotaisAsync(LancamentoVm? linha)
+    {
+        if (linha is null || !linha.PodeExpandir)
+        {
+            return;
+        }
+
+        if (linha.TotaisVisiveis)
+        {
+            linha.TotaisVisiveis = false;
+            return;
+        }
+
+        if (linha.TotaisCarregados)
+        {
+            linha.TotaisVisiveis = true;
+            return;
+        }
+
+        await ExecutarAsync(async () =>
+        {
+            var totais = await _lancamentos.ObterTotaisDaSerieAsync(linha.ChaveDaSerie);
+
+            linha.PreencherTotais(totais.Pago, totais.APagar, totais.Total);
+        });
     }
 
     // ------------------------------------------------------- seleção (painel)

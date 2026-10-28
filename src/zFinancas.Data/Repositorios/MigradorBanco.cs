@@ -12,7 +12,7 @@ namespace zFinancas.Data.Repositorios;
 /// </summary>
 public sealed class MigradorBanco
 {
-    public const int VersaoAtual = 1;
+    public const int VersaoAtual = 2;
 
     private readonly ContextoBanco _contexto;
 
@@ -35,6 +35,11 @@ public sealed class MigradorBanco
         if (versao < 1)
         {
             await ExecutarScriptAsync(ScriptVersao1, ct).ConfigureAwait(false);
+        }
+
+        if (versao < 2)
+        {
+            await ExecutarScriptAsync(ScriptVersao2, ct).ConfigureAwait(false);
         }
 
         await DefinirVersaoAsync(VersaoAtual, ct).ConfigureAwait(false);
@@ -71,6 +76,18 @@ public sealed class MigradorBanco
     /// e EXCLUIDO para permitir sincronização PC ? celular com resolução de conflito.
     /// </para>
     /// </summary>
+    /// <summary>
+    /// Versão 2 — periodicidade da série.
+    /// <para>
+    /// A recorrência passa a ser gravada em cada parcela (nula nos lançamentos antigos,
+    /// que foram criados antes desta informação existir). Ela é o que permite propagar
+    /// ajustes e acrescentar novas parcelas mantendo o espaçamento das datas.
+    /// </para>
+    /// </summary>
+    private const string ScriptVersao2 = """
+        ALTER TABLE LANCAMENTO ADD COLUMN RECORRENCIA INTEGER;
+        """;
+
     private const string ScriptVersao1 = """
         CREATE TABLE IF NOT EXISTS USUARIO (
             ID                 INTEGER PRIMARY KEY AUTOINCREMENT,

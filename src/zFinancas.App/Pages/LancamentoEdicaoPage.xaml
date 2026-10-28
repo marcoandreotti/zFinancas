@@ -126,7 +126,19 @@
             <!-- ===================== recorrência -->
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">
-                    <Label Text="REPETIÇÃO" Style="{StaticResource Rotulo}" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="REPETIÇÃO" Style="{StaticResource Rotulo}" VerticalOptions="Center" />
+                        <Border Grid.Column="1"
+                                IsVisible="{Binding MostraParcela}"
+                                BackgroundColor="{StaticResource SuperficieElevada}"
+                                StrokeThickness="0"
+                                Padding="8,3"
+                                StrokeShape="RoundRectangle 8">
+                            <Label Text="{Binding TextoParcela}"
+                                   FontSize="10"
+                                   TextColor="{StaticResource TextoSecundario}" />
+                        </Border>
+                    </Grid>
 
                     <Border Style="{StaticResource Campo}">
                         <Picker ItemsSource="{Binding Recorrencias}"
@@ -150,6 +162,24 @@
                     </Grid>
 
                     <Label Text="{Binding ResumoParcelas}" Style="{StaticResource Subtitulo}" />
+
+                    <!-- série: propagar o novo valor e acrescentar parcelas -->
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding MostraAplicarNaSerie}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="APLICAR ÀS DEMAIS PARCELAS" Style="{StaticResource Rotulo}" />
+                            <Label Text="Só nas que ainda não foram compensadas"
+                                   Style="{StaticResource Subtitulo}"
+                                   FontSize="11" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding AplicarValorNaSerie}"
+                                VerticalOptions="Center" />
+                    </Grid>
+
+                    <Button Text="Adicionar parcelas"
+                            Command="{Binding AbrirParcelasCommand}"
+                            IsVisible="{Binding MostraAcrescentarParcelas}"
+                            Style="{StaticResource BotaoSecundario}" />
 
                     <BoxView Style="{StaticResource Separador}" />
 
@@ -202,6 +232,41 @@
                     HorizontalOptions="Center" />
 
             <ActivityIndicator IsRunning="{Binding Ocupado}" IsVisible="{Binding Ocupado}" HeightRequest="22" />
+
+            <!-- ===================== modal: nova quantidade de parcelas -->
+            <Grid IsVisible="{Binding ModalParcelasAtiva}"
+                  BackgroundColor="#CC05080F"
+                  Padding="16">
+                <Border Style="{StaticResource CardElevado}"
+                        VerticalOptions="Center"
+                        Padding="20">
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="Adicionar parcelas" Style="{StaticResource TituloSecao}" />
+                        <Label Text="Informe a nova quantidade total da série. As parcelas novas são criadas na sequência, com o mesmo espaçamento da repetição escolhida."
+                               Style="{StaticResource Subtitulo}"
+                               FontSize="12" />
+
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="NOVA QUANTIDADE TOTAL" Style="{StaticResource Rotulo}" />
+                            <Border Style="{StaticResource Campo}">
+                                <Entry Text="{Binding NovaQuantidadeParcelas}"
+                                       Keyboard="Numeric"
+                                       Placeholder="18" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Button Text="Cancelar"
+                                    Command="{Binding FecharParcelasCommand}"
+                                    Style="{StaticResource BotaoSecundario}" />
+
+                            <Button Grid.Column="1"
+                                    Text="Adicionar"
+                                    Command="{Binding ConfirmarParcelasCommand}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
 
         </VerticalStackLayout>
     </ScrollView>

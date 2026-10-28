@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
@@ -46,6 +46,9 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
     private bool _podeExcluir;
     private bool _podeQuitar;
     private bool _editandoSerie;
+    private bool _aplicarValorNaSerie;
+    private bool _modalParcelasAtiva;
+    private string _novaQuantidadeParcelas = string.Empty;
     private Lancamento? _lancamentoOriginal;
 
     public LancamentoEdicaoViewModel(
@@ -72,6 +75,9 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         CompensarCommand = new ComandoAssincrono(AlternarCompensacaoAsync);
         QuitarCommand = new ComandoAssincrono(QuitarPendentesAsync);
         CancelarCommand = new ComandoAssincrono(() => _navegacao.PopAsync());
+        AbrirParcelasCommand = new Comando(AbrirModalParcelas);
+        FecharParcelasCommand = new Comando(() => ModalParcelasAtiva = false);
+        ConfirmarParcelasCommand = new ComandoAssincrono(AcrescentarParcelasAsync);
         DespesaCommand = new Comando(() => EhDespesa = true);
         RecebimentoCommand = new Comando(() => EhDespesa = false);
         FalarCommand = new ComandoAssincrono(FalarAsync);
@@ -97,6 +103,9 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
     public ICommand CompensarCommand { get; }
     public ICommand QuitarCommand { get; }
     public ICommand CancelarCommand { get; }
+    public ICommand AbrirParcelasCommand { get; }
+    public ICommand FecharParcelasCommand { get; }
+    public ICommand ConfirmarParcelasCommand { get; }
     public ICommand DespesaCommand { get; }
     public ICommand RecebimentoCommand { get; }
 
@@ -179,7 +188,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         }
     }
 
-    public bool PermiteParcelas => RecorrenciaSelecionada?.Valor != Recorrencia.Unica;
+    public bool PermiteParcelas => !EditandoSerie && RecorrenciaSelecionada?.Valor != Recorrencia.Unica;
 
     public string QuantidadeParcelas
     {
@@ -238,6 +247,39 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
     {
         get => _editandoSerie;
         private set => SetProperty(ref _editandoSerie, value);
+    }
+
+    /// <summary>"Parcela 3 de 12" quando o lançamento faz parte de uma série.</summary>
+    public string TextoParcela => _lancamentoOriginal is { QuantidadeParcelas: > 1 } l
+        ? $"Parcela {l.Parcela} de {l.QuantidadeParcelas}"
+        : string.Empty;
+
+    public bool MostraParcela => !string.IsNullOrEmpty(TextoParcela);
+
+    /// <summary>Checkbox de propagar o valor: só faz sentido em série com parcelas em aberto.</summary>
+    public bool MostraAplicarNaSerie => EditandoSerie && _lancamentoOriginal?.Compensado == false;
+
+    /// <summary>Botão "Adicionar parcelas": série ainda não totalmente compensada.</summary>
+    public bool MostraAcrescentarParcelas => EditandoSerie && _lancamentoOriginal?.Compensado == false;
+
+    public bool AplicarValorNaSerie
+    {
+        get => _aplicarValorNaSerie;
+        set => SetProperty(ref _aplicarValorNaSerie, value);
+    }
+
+    /// <summary>O modal de novas parcelas está aberto?</summary>
+    public bool ModalParcelasAtiva
+    {
+        get => _modalParcelasAtiva;
+        private set => SetProperty(ref _modalParcelasAtiva, value);
+    }
+
+    /// <summary>Quantidade total de parcelas depois de acrescentar (o usuário digita o novo total).</summary>
+    public string NovaQuantidadeParcelas
+    {
+        get => _novaQuantidadeParcelas;
+        set => SetProperty(ref _novaQuantidadeParcelas, value);
     }
 
     public string TextoCompensacao => _lancamentoOriginal?.Compensado == true
@@ -300,14 +342,23 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
             Compensado = lancamento.Compensado;
             DataCompensado = lancamento.DataCompensado ?? DateTime.Today;
             Observacao = lancamento.Observacao ?? string.Empty;
-            RecorrenciaSelecionada = Recorrencias[0];
+
+            // Lançamentos antigos não têm a recorrência gravada; a edição exige escolher.
+            RecorrenciaSelecionada = lancamento.Recorrencia is { } gravada
+                ? Recorrencias.FirstOrDefault(r => r.Valor == gravada) ?? Recorrencias[0]
+                : null;
 
             EditandoSerie = lancamento.FazParteDeSerie;
+            AplicarValorNaSerie = false;
             PodeExcluir = !lancamento.Compensado;
             PodeQuitar = !lancamento.Compensado && lancamento.FazParteDeSerie;
 
             OnPropertyChanged(nameof(MostraDataCompensacao));
             OnPropertyChanged(nameof(TextoCompensacao));
+            OnPropertyChanged(nameof(TextoParcela));
+            OnPropertyChanged(nameof(MostraParcela));
+            OnPropertyChanged(nameof(MostraAplicarNaSerie));
+            OnPropertyChanged(nameof(MostraAcrescentarParcelas));
             AtualizarResumo();
         }, "Não foi possível abrir o lançamento");
     }
@@ -410,6 +461,13 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
             }
             else
             {
+                // Série sem recorrência gravada (lançamentos antigos): obriga escolher antes de salvar.
+                if (EditandoSerie && RecorrenciaSelecionada is null or { Valor: Recorrencia.Unica })
+                {
+                    throw new DominioException(
+                        "Escolha a repetição desta série (semanal, mensal...) antes de salvar.");
+                }
+
                 var requisicao = new RequisicaoLancamento(
                     _lancamentoId.Value,
                     ContaSelecionada.Id,
@@ -417,7 +475,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
                     Descricao,
                     valor,
                     DataVencimento,
-                    Recorrencia.Unica,
+                    RecorrenciaSelecionada?.Valor ?? Recorrencia.Unica,
                     1,
                     Compensado,
                     Compensado ? DataCompensado : null,
@@ -425,10 +483,77 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
                     DataLancamento);
 
                 await _lancamentos.AtualizarAsync(requisicao);
+
+                // Grava a periodicidade em toda a série (inclusive nos lançamentos antigos,
+                // que não tinham essa informação) para as próximas melhorias.
+                if (EditandoSerie && RecorrenciaSelecionada is { Valor: not Recorrencia.Unica } repeticao)
+                {
+                    await _lancamentos.DefinirRecorrenciaAsync(_lancamentoId.Value, repeticao.Valor);
+                }
+
+                // Propaga o novo valor para as parcelas em aberto da mesma série.
+                if (AplicarValorNaSerie && EditandoSerie)
+                {
+                    var ajustadas = await _lancamentos.PropagarValorAsync(_lancamentoId.Value, valor);
+
+                    await _dialogos.AlertaAsync(
+                        "Valor atualizado",
+                        $"O novo valor foi aplicado em {ajustadas} parcela(s) em aberto desta série.");
+                }
             }
 
             await _navegacao.PopAsync();
         }, "Não foi possível salvar o lançamento");
+    }
+
+    // ------------------------------------------------------------ novas parcelas
+
+    private void AbrirModalParcelas()
+    {
+        var atual = _lancamentoOriginal?.QuantidadeParcelas ?? 1;
+
+        NovaQuantidadeParcelas = (atual + 1).ToString(CultureInfo.GetCultureInfo("pt-BR"));
+        ModalParcelasAtiva = true;
+    }
+
+    private async Task AcrescentarParcelasAsync()
+    {
+        if (_lancamentoId is null)
+        {
+            return;
+        }
+
+        await ExecutarAsync(async () =>
+        {
+            if (RecorrenciaSelecionada is null or { Valor: Recorrencia.Unica })
+            {
+                throw new DominioException(
+                    "Escolha a repetição desta série (semanal, mensal...) antes de acrescentar parcelas.");
+            }
+
+            var texto = (NovaQuantidadeParcelas ?? string.Empty).Trim();
+
+            if (!int.TryParse(texto, NumberStyles.Integer, CultureInfo.GetCultureInfo("pt-BR"), out var nova)
+                && !int.TryParse(texto, NumberStyles.Integer, CultureInfo.InvariantCulture, out nova))
+            {
+                throw new DominioException("Informe a nova quantidade total de parcelas (ex.: 18).");
+            }
+
+            var criadas = await _lancamentos.AcrescentarParcelasAsync(
+                _lancamentoId.Value,
+                nova,
+                RecorrenciaSelecionada.Valor);
+
+            ModalParcelasAtiva = false;
+
+            await _dialogos.AlertaAsync(
+                "Parcelas acrescentadas",
+                criadas.Count == 1
+                    ? "1 parcela foi criada e a série foi renumerada."
+                    : $"{criadas.Count} parcelas foram criadas e a série foi renumerada.");
+
+            await _navegacao.PopAsync();
+        }, "Não foi possível acrescentar parcelas");
     }
 
     private async Task ExcluirAsync()

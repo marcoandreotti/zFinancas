@@ -95,6 +95,7 @@ public sealed class LancamentoService
                     AgrupadorUuid = agrupadorUuid,
                     Parcela = parcela.Numero,
                     QuantidadeParcelas = parcela.Total,
+                    Recorrencia = requisicao.Recorrencia,
                     Observacao = string.IsNullOrWhiteSpace(requisicao.Observacao) ? null : requisicao.Observacao.Trim(),
                     AtualizadoEm = agora
                 };
@@ -154,6 +155,13 @@ public sealed class LancamentoService
                 lancamento.AgrupadorUuid = null;
                 lancamento.Parcela = 1;
                 lancamento.QuantidadeParcelas = 1;
+                lancamento.Recorrencia = null;
+            }
+            else
+            {
+                // Série: guarda a periodicidade escolhida (inclusive nos lançamentos antigos,
+                // que vieram sem essa informação).
+                lancamento.Recorrencia = requisicao.Recorrencia;
             }
 
             if (requisicao.Compensado)
@@ -345,6 +353,211 @@ public sealed class LancamentoService
             quitacao.Id = await _lancamentos.SalvarAsync(quitacao, token).ConfigureAwait(false);
             return quitacao;
         }, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Totais de uma série de parcelas (usado no extrato ao expandir a linha).</summary>
+    public async Task<TotaisDaSerie> ObterTotaisDaSerieAsync(string? chaveDaSerie, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(chaveDaSerie))
+        {
+            return new TotaisDaSerie(0m, 0m, 0m, 0, 0);
+        }
+
+        var serie = await _lancamentos.ListarPorSerieAsync(chaveDaSerie, ct).ConfigureAwait(false);
+
+        var total = serie.Sum(l => l.Valor);
+        var pago = serie.Where(l => l.Compensado).Sum(l => l.Valor);
+
+        return new TotaisDaSerie(total, pago, total - pago, serie.Count, serie.Count(l => l.Compensado));
+    }
+
+    /// <summary>
+    /// Propaga um novo valor para todas as parcelas <b>em aberto</b> da mesma série
+    /// (as já compensadas ficam como estão, porque representam dinheiro que já se moveu).
+    /// Devolve quantas parcelas foram ajustadas.
+    /// </summary>
+    public async Task<int> PropagarValorAsync(long id, decimal valor, CancellationToken ct = default)
+    {
+        ValidarValor(valor);
+
+        var agora = _relogio.AgoraUtc;
+        var ajustadas = 0;
+
+        await _unidadeDeTrabalho.ExecutarAsync(async token =>
+        {
+            var lancamento = await _lancamentos.ObterPorIdAsync(id, token).ConfigureAwait(false)
+                             ?? throw new DominioException("Lançamento não encontrado.");
+
+            GarantirAcessoConta(lancamento.ContaCorrenteId);
+
+            if (lancamento.ChaveDaSerie is not { } chave)
+            {
+                throw new DominioException("Este lançamento não faz parte de uma série de parcelas.");
+            }
+
+            var serie = await _lancamentos.ListarPorSerieAsync(chave, token).ConfigureAwait(false);
+
+            var alvos = serie.Where(l => !l.Compensado).ToList();
+
+            if (alvos.Count == 0)
+            {
+                throw new DominioException("Todas as parcelas desta série já estão compensadas.");
+            }
+
+            foreach (var alvo in alvos)
+            {
+                alvo.AlterarDados(alvo.Descricao, valor, alvo.DataVencimento, alvo.CentroCustoId, alvo.Observacao, agora);
+            }
+
+            await _lancamentos.SalvarVariosAsync(alvos, token).ConfigureAwait(false);
+            ajustadas = alvos.Count;
+        }, ct).ConfigureAwait(false);
+
+        return ajustadas;
+    }
+
+    /// <summary>
+    /// Acrescenta parcelas a uma série existente: todas passam a ter a nova quantidade e as
+    /// novas são criadas na sequência, espaçadas pela recorrência informada (ou pela que já
+    /// estava gravada na série).
+    /// </summary>
+    public async Task<IReadOnlyList<Lancamento>> AcrescentarParcelasAsync(
+        long id,
+        int novaQuantidade,
+        Recorrencia? recorrencia = null,
+        CancellationToken ct = default)
+    {
+        var agora = _relogio.AgoraUtc;
+        var hoje = _relogio.Hoje;
+        IReadOnlyList<Lancamento> criados = [];
+
+        await _unidadeDeTrabalho.ExecutarAsync(async token =>
+        {
+            var lancamento = await _lancamentos.ObterPorIdAsync(id, token).ConfigureAwait(false)
+                             ?? throw new DominioException("Lançamento não encontrado.");
+
+            GarantirAcessoConta(lancamento.ContaCorrenteId);
+
+            if (lancamento.ChaveDaSerie is not { } chave)
+            {
+                throw new DominioException("Só é possível acrescentar parcelas em um lançamento parcelado.");
+            }
+
+            var serie = (await _lancamentos.ListarPorSerieAsync(chave, token).ConfigureAwait(false))
+                .OrderBy(l => l.Parcela)
+                .ThenBy(l => l.DataVencimento)
+                .ToList();
+
+            if (serie.Count == 0)
+            {
+                throw new DominioException("Série de parcelas não encontrada.");
+            }
+
+            var periodicidade = recorrencia ?? lancamento.Recorrencia ?? serie[^1].Recorrencia;
+
+            if (periodicidade is null || periodicidade == Recorrencia.Unica)
+            {
+                throw new DominioException(
+                    "Escolha a repetição (semanal, mensal...) antes de acrescentar parcelas a esta série.");
+            }
+
+            var atual = serie.Max(l => l.QuantidadeParcelas);
+
+            if (novaQuantidade <= atual)
+            {
+                throw new DominioException(
+                    $"A nova quantidade precisa ser maior que a atual ({atual}). Para reduzir, exclua as parcelas que sobram.");
+            }
+
+            if (novaQuantidade > GeradorDeParcelas.MaximoParcelas)
+            {
+                throw new DominioException(
+                    $"A quantidade de parcelas não pode passar de {GeradorDeParcelas.MaximoParcelas}.");
+            }
+
+            // Todas as existentes passam a "X/nova quantidade" e guardam a periodicidade.
+            foreach (var parcela in serie)
+            {
+                parcela.AjustarSerie(novaQuantidade, periodicidade.Value, agora);
+            }
+
+            var ultima = serie[^1];
+            var data = ultima.DataVencimento;
+            var novos = new List<Lancamento>((int)(novaQuantidade - atual));
+
+            for (var numero = atual + 1; numero <= novaQuantidade; numero++)
+            {
+                data = periodicidade.Value.Avancar(data);
+
+                var novo = new Lancamento
+                {
+                    ContaCorrenteId = ultima.ContaCorrenteId,
+                    CentroCustoId = ultima.CentroCustoId,
+                    DataLancamento = hoje,
+                    DataVencimento = data,
+                    Descricao = ultima.Descricao,
+                    Valor = ultima.Valor,
+                    Agrupador = ultima.Agrupador,
+                    AgrupadorUuid = ultima.AgrupadorUuid,
+                    Parcela = numero,
+                    QuantidadeParcelas = novaQuantidade,
+                    Recorrencia = periodicidade,
+                    Observacao = ultima.Observacao,
+                    AtualizadoEm = agora
+                };
+
+                novo.Validar();
+                novos.Add(novo);
+            }
+
+            var todos = new List<Lancamento>(serie.Count + novos.Count);
+            todos.AddRange(serie);
+            todos.AddRange(novos);
+
+            await _lancamentos.SalvarVariosAsync(todos, token).ConfigureAwait(false);
+            criados = novos;
+        }, ct).ConfigureAwait(false);
+
+        return criados;
+    }
+
+    /// <summary>
+    /// Grava a periodicidade em toda a série. Serve para os lançamentos antigos, criados
+    /// antes de a recorrência existir no banco.
+    /// </summary>
+    public async Task<int> DefinirRecorrenciaAsync(long id, Recorrencia recorrencia, CancellationToken ct = default)
+    {
+        var agora = _relogio.AgoraUtc;
+        var alterados = 0;
+
+        await _unidadeDeTrabalho.ExecutarAsync(async token =>
+        {
+            var lancamento = await _lancamentos.ObterPorIdAsync(id, token).ConfigureAwait(false)
+                             ?? throw new DominioException("Lançamento não encontrado.");
+
+            GarantirAcessoConta(lancamento.ContaCorrenteId);
+
+            if (lancamento.ChaveDaSerie is not { } chave)
+            {
+                lancamento.Recorrencia = recorrencia;
+                lancamento.MarcarAlteracao(agora);
+                await _lancamentos.SalvarAsync(lancamento, token).ConfigureAwait(false);
+                alterados = 1;
+                return;
+            }
+
+            var serie = await _lancamentos.ListarPorSerieAsync(chave, token).ConfigureAwait(false);
+
+            foreach (var parcela in serie)
+            {
+                parcela.AjustarSerie(parcela.QuantidadeParcelas, recorrencia, agora);
+            }
+
+            await _lancamentos.SalvarVariosAsync(serie, token).ConfigureAwait(false);
+            alterados = serie.Count;
+        }, ct).ConfigureAwait(false);
+
+        return alterados;
     }
 
     private void GarantirAcessoConta(long contaCorrenteId)

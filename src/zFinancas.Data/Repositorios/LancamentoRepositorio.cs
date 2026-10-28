@@ -1,6 +1,7 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Entidades;
+using zFinancas.Core.Dominio.Enums;
 using zFinancas.Data.Infra;
 
 namespace zFinancas.Data.Repositorios;
@@ -10,7 +11,7 @@ public sealed class LancamentoRepositorio : RepositorioBase, ILancamentoReposito
     private const string Colunas = """
         ID, CONTACORRENTEID, CENTRODECUSTOID, DATALANCAMENTO, DATAVENCIMENTO, DATACOMPENSADO,
         DESCRICAO, VALOR, COMPENSADO, AGRUPADOR, AGRUPADORUUID, PARCELA, QUANTIDADEPARCELAS,
-        OBSERVACAO, UUID, ATUALIZADOEM, EXCLUIDO
+        OBSERVACAO, UUID, ATUALIZADOEM, EXCLUIDO, RECORRENCIA
         """;
 
     public LancamentoRepositorio(ContextoBanco contexto) : base(contexto)
@@ -167,6 +168,7 @@ public sealed class LancamentoRepositorio : RepositorioBase, ILancamentoReposito
                 DATAVENCIMENTO = $vencimento, DATACOMPENSADO = $compensado, DESCRICAO = $descricao,
                 VALOR = $valor, COMPENSADO = $flag, AGRUPADOR = $agrupador, AGRUPADORUUID = $agrupadorUuid,
                 PARCELA = $parcela, QUANTIDADEPARCELAS = $quantidade, OBSERVACAO = $observacao,
+            RECORRENCIA = $recorrencia,
                 ATUALIZADOEM = $atualizado, EXCLUIDO = $excluido
             WHERE ID = $id;
             """,
@@ -227,11 +229,11 @@ public sealed class LancamentoRepositorio : RepositorioBase, ILancamentoReposito
             INSERT INTO LANCAMENTO
                 (CONTACORRENTEID, CENTRODECUSTOID, DATALANCAMENTO, DATAVENCIMENTO, DATACOMPENSADO,
                  DESCRICAO, VALOR, COMPENSADO, AGRUPADOR, AGRUPADORUUID, PARCELA, QUANTIDADEPARCELAS,
-                 OBSERVACAO, UUID, ATUALIZADOEM, EXCLUIDO)
+                 OBSERVACAO, UUID, ATUALIZADOEM, EXCLUIDO, RECORRENCIA)
             VALUES
                 ($conta, $centro, $lancamento, $vencimento, $compensado,
                  $descricao, $valor, $flag, $agrupador, $agrupadorUuid, $parcela, $quantidade,
-                 $observacao, $uuid, $atualizado, $excluido);
+                 $observacao, $uuid, $atualizado, $excluido, $recorrencia);
             """,
             c => PreencherParametros(c, lancamento),
             ct);
@@ -251,6 +253,7 @@ public sealed class LancamentoRepositorio : RepositorioBase, ILancamentoReposito
         comando.Parameters.AddWithValue("$parcela", lancamento.Parcela);
         comando.Parameters.AddWithValue("$quantidade", lancamento.QuantidadeParcelas);
         comando.Parameters.AddWithValue("$observacao", Texto(lancamento.Observacao));
+        comando.Parameters.AddWithValue("$recorrencia", lancamento.Recorrencia is null ? DBNull.Value : (object)(int)lancamento.Recorrencia.Value);
         comando.Parameters.AddWithValue("$uuid", lancamento.Uuid);
         comando.Parameters.AddWithValue("$atualizado", Texto(lancamento.AtualizadoEm));
         comando.Parameters.AddWithValue("$excluido", lancamento.Excluido ? 1 : 0);
@@ -274,6 +277,11 @@ public sealed class LancamentoRepositorio : RepositorioBase, ILancamentoReposito
         Observacao = LerTextoOpcional(leitor, 13),
         Uuid = leitor.GetString(14),
         AtualizadoEm = LerData(leitor, 15),
-        Excluido = LerBooleano(leitor, 16)
+        Excluido = LerBooleano(leitor, 16),
+        Recorrencia = LerRecorrencia(leitor, 17)
     };
+
+    /// <summary>Coluna RECORRENCIA é nula nos lançamentos anteriores à versão 2 do banco.</summary>
+    private static Recorrencia? LerRecorrencia(SqliteDataReader leitor, int indice)
+        => leitor.IsDBNull(indice) ? null : (Recorrencia)leitor.GetInt32(indice);
 }

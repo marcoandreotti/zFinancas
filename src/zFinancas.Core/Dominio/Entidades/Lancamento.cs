@@ -51,6 +51,12 @@ public class Lancamento : EntidadeBase
 
     public long QuantidadeParcelas { get; set; } = 1;
 
+    /// <summary>
+    /// Periodicidade da série (mensal, semanal...). Nula nos lançamentos criados antes
+    /// desta informação existir — nesse caso a edição pede para escolher.
+    /// </summary>
+    public Enums.Recorrencia? Recorrencia { get; set; }
+
     public string? Observacao { get; set; }
 
     // ------------------------------------------------------------------ leitura
@@ -102,6 +108,18 @@ public class Lancamento : EntidadeBase
         DataVencimento = dataVencimento.Date;
         CentroCustoId = centroCustoId;
         Observacao = string.IsNullOrWhiteSpace(observacao) ? null : observacao.Trim();
+        MarcarAlteracao(agoraUtc);
+        Validar();
+    }
+
+    /// <summary>
+    /// Ajusta a série: nova quantidade de parcelas e a periodicidade. Usado ao acrescentar
+    /// parcelas (todas as existentes passam a "X/Y" com o novo total).
+    /// </summary>
+    public void AjustarSerie(long quantidadeParcelas, Enums.Recorrencia recorrencia, DateTime agoraUtc)
+    {
+        QuantidadeParcelas = quantidadeParcelas;
+        Recorrencia = recorrencia;
         MarcarAlteracao(agoraUtc);
         Validar();
     }
