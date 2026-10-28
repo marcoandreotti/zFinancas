@@ -1,4 +1,4 @@
-using zFinancas.Core.Aplicacao.Modelos;
+﻿using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Enums;
 using zFinancas.Core.Dominio.Excecoes;
 using zFinancas.Tests.Apoio;
@@ -233,6 +233,47 @@ public class SerieParcelasTests
             serie.Lancamentos[1].Id, Recorrencia.Quinzenal);
 
         Assert.Equal(0, segundaVez);
+    }
+
+    [Fact]
+    public void Avulso_com_agrupador_importado_nao_e_tratado_como_serie()
+    {
+        // Bases antigas podem trazer agrupador/UUID mesmo em lançamentos únicos.
+        var avulso = new zFinancas.Core.Dominio.Entidades.Lancamento
+        {
+            Id = 1,
+            ContaCorrenteId = 1,
+            CentroCustoId = 1,
+            Descricao = "Importado",
+            Valor = -10m,
+            DataVencimento = Vencimento,
+            Agrupador = 0,
+            AgrupadorUuid = Guid.NewGuid().ToString("N"),
+            Parcela = 1,
+            QuantidadeParcelas = 1
+        };
+
+        Assert.False(avulso.FazParteDeSerie);
+        Assert.Null(avulso.ChaveDaSerie);
+        Assert.Empty(avulso.RotuloParcela);
+
+        var serie = new zFinancas.Core.Dominio.Entidades.Lancamento
+        {
+            Id = 2,
+            ContaCorrenteId = 1,
+            CentroCustoId = 1,
+            Descricao = "Parcelado",
+            Valor = -10m,
+            DataVencimento = Vencimento,
+            Agrupador = 7,
+            AgrupadorUuid = Guid.NewGuid().ToString("N"),
+            Parcela = 2,
+            QuantidadeParcelas = 6
+        };
+
+        Assert.True(serie.FazParteDeSerie);
+        Assert.NotNull(serie.ChaveDaSerie);
+        Assert.Equal("2/6", serie.RotuloParcela);
     }
 
     [Fact]

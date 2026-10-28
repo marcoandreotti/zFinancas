@@ -229,7 +229,8 @@ foreach (var l in lancamentosAccess.OrderBy(l => l.lancamentoID))
         Parcela = parcela,
         QuantidadeParcelas = total,
         Agrupador = l.agrupador,
-        AgrupadorUuid = UuidDoAgrupador(l.agrupador, agrupadores),
+        // UUID só faz sentido em série; avulso fica sem (senão vira "série" de 1 parcela).
+        AgrupadorUuid = total > 1 ? UuidDoAgrupador(l.agrupador, agrupadores) : null,
         AtualizadoEm = DateTime.UtcNow
     };
 
