@@ -77,14 +77,48 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         RecebimentoCommand = new Comando(() => EhDespesa = false);
         FalarCommand = new ComandoAssincrono(FalarAsync);
 
-        Recorrencias =
-        [
-            new(Recorrencia.Unica, "Não repetir"),
-            new(Recorrencia.Semanal, "Semanal"),
-            new(Recorrencia.Quinzenal, "Quinzenal"),
-            new(Recorrencia.Mensal, "Mensal"),
-            new(Recorrencia.Anual, "Anual")
-        ];
+        Recorrencias = [];
+        MontarRecorrencias(incluirNaoRepetir: true);
+    }
+
+    /// <summary>Todas as periodicidades possíveis, na ordem exibida.</summary>
+    private static readonly RecorrenciaOpcao[] TodasAsRecorrencias =
+    [
+        new(Recorrencia.Unica, "Não repetir"),
+        new(Recorrencia.Semanal, "Semanal"),
+        new(Recorrencia.Quinzenal, "Quinzenal"),
+        new(Recorrencia.Mensal, "Mensal"),
+        new(Recorrencia.Anual, "Anual")
+    ];
+
+    /// <summary>
+    /// Monta a lista de repetição conforme o lançamento:
+    /// série não aceita "Não repetir"; avulso só aceita "Não repetir" (não há o que escolher);
+    /// lançamento novo aceita todas.
+    /// </summary>
+    private void MontarRecorrencias(bool incluirNaoRepetir, bool somenteNaoRepetir = false)
+    {
+        Recorrencias.Clear();
+
+        foreach (var opcao in TodasAsRecorrencias)
+        {
+            var ehNaoRepetir = opcao.Valor == Recorrencia.Unica;
+
+            if (somenteNaoRepetir)
+            {
+                if (ehNaoRepetir)
+                {
+                    Recorrencias.Add(opcao);
+                }
+
+                continue;
+            }
+
+            if (!ehNaoRepetir || incluirNaoRepetir)
+            {
+                Recorrencias.Add(opcao);
+            }
+        }
     }
 
     public ObservableCollection<ContaCorrente> Contas { get; } = [];
@@ -295,6 +329,9 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
                                    ?? Contas.FirstOrDefault(c => c.Principal)
                                    ?? Contas.FirstOrDefault();
                 CentroSelecionado = Centros.FirstOrDefault(c => c.Principal) ?? Centros.FirstOrDefault();
+
+                // Novo lançamento: todas as opções (pode virar série).
+                MontarRecorrencias(incluirNaoRepetir: true);
                 RecorrenciaSelecionada = Recorrencias[0];
                 DataVencimento = DateTime.Today;
                 DataLancamento = DateTime.Today;
@@ -323,8 +360,18 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
             DataCompensado = lancamento.DataCompensado ?? DateTime.Today;
             Observacao = lancamento.Observacao ?? string.Empty;
 
-            // Recorrência já gravada vem selecionada. Sem ela: avulso entra como "Não repetir"
-            // (não há o que escolher); série antiga fica em branco e exige escolher.
+            // Lista conforme o caso: série não aceita "Não repetir"; avulso só tem "Não repetir".
+            if (lancamento.FazParteDeSerie)
+            {
+                MontarRecorrencias(incluirNaoRepetir: false);
+            }
+            else
+            {
+                MontarRecorrencias(incluirNaoRepetir: true, somenteNaoRepetir: true);
+            }
+
+            // Recorrência já gravada vem selecionada. Série antiga (sem gravação) fica em
+            // branco e exige escolher; avulso abre com "Não repetir".
             RecorrenciaSelecionada = lancamento.Recorrencia is { } gravada
                 ? Recorrencias.FirstOrDefault(r => r.Valor == gravada) ?? Recorrencias[0]
                 : lancamento.FazParteDeSerie
