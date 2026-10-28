@@ -1,4 +1,4 @@
-using zFinancas.Core.Aplicacao.Modelos;
+﻿using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Enums;
 using zFinancas.Core.Dominio.Excecoes;
 using zFinancas.Tests.Apoio;
@@ -122,6 +122,81 @@ public class SerieParcelasTests
         var criadas = await cenario.Lancamentos.AcrescentarParcelasAsync(serie.Lancamentos[0].Id, 4, Recorrencia.Mensal);
 
         Assert.Equal(2, criadas.Count);
+    }
+
+    [Fact]
+    public async Task Ajustar_quantidade_acrescenta_a_partir_da_ultima_parcela()
+    {
+        await using var cenario = await CenarioTeste.CriarAsync();
+        await cenario.ConfigurarAdministradorAsync();
+
+        var conta = (await cenario.ContaRepositorio.ListarAsync())[0];
+        var centro = await cenario.CriarCentroAsync();
+
+        var serie = await cenario.Lancamentos.CriarAsync(new RequisicaoLancamento(
+            0, conta.Id, centro.Id, "Carro", -900m, Vencimento,
+            Recorrencia.Mensal, 3, false, null, null));
+
+        var criadas = await cenario.Lancamentos.AjustarQuantidadeAsync(serie.Lancamentos[0].Id, 5);
+
+        Assert.Equal(2, criadas.Count);
+
+        var depois = (await cenario.Lancamentos.ListarSerieAsync(serie.Lancamentos[0].ChaveDaSerie!))
+            .OrderBy(l => l.Parcela)
+            .ToList();
+
+        Assert.Equal(5, depois.Count);
+        Assert.All(depois, l => Assert.Equal(5, l.QuantidadeParcelas));
+        Assert.All(criadas, l => Assert.False(l.Compensado));
+        Assert.Equal(new DateTime(2026, 6, 10), depois[3].DataVencimento);
+    }
+
+    [Fact]
+    public async Task Ajustar_quantidade_reduz_excluindo_as_ultimas_em_aberto()
+    {
+        await using var cenario = await CenarioTeste.CriarAsync();
+        await cenario.ConfigurarAdministradorAsync();
+
+        var conta = (await cenario.ContaRepositorio.ListarAsync())[0];
+        var centro = await cenario.CriarCentroAsync();
+
+        var serie = await cenario.Lancamentos.CriarAsync(new RequisicaoLancamento(
+            0, conta.Id, centro.Id, "Moto", -400m, Vencimento,
+            Recorrencia.Mensal, 6, false, null, null));
+
+        await cenario.Lancamentos.AjustarQuantidadeAsync(serie.Lancamentos[0].Id, 4);
+
+        var depois = await cenario.Lancamentos.ListarSerieAsync(serie.Lancamentos[0].ChaveDaSerie!);
+
+        Assert.Equal(4, depois.Count);
+        Assert.All(depois, l => Assert.Equal(4, l.QuantidadeParcelas));
+        Assert.DoesNotContain(depois, l => l.Parcela > 4);
+    }
+
+    [Fact]
+    public async Task Ajustar_quantidade_nao_reduz_parcela_ja_compensada()
+    {
+        await using var cenario = await CenarioTeste.CriarAsync(new DateTime(2026, 3, 1));
+        await cenario.ConfigurarAdministradorAsync();
+
+        var conta = (await cenario.ContaRepositorio.ListarAsync())[0];
+        var centro = await cenario.CriarCentroAsync();
+
+        var serie = await cenario.Lancamentos.CriarAsync(new RequisicaoLancamento(
+            0, conta.Id, centro.Id, "Som", -50m, Vencimento,
+            Recorrencia.Mensal, 3, false, null, null));
+
+        // Compensa a última parcela: ela não pode ser removida por redução.
+        var ultima = serie.Lancamentos.OrderBy(l => l.Parcela).Last();
+        await cenario.Lancamentos.CompensarAsync(ultima.Id);
+
+        var erro = await Assert.ThrowsAsync<DominioException>(
+            () => cenario.Lancamentos.AjustarQuantidadeAsync(serie.Lancamentos[0].Id, 2));
+
+        Assert.Contains("compensadas", erro.Message, StringComparison.OrdinalIgnoreCase);
+
+        // A série continua com 3 parcelas.
+        Assert.Equal(3, (await cenario.Lancamentos.ListarSerieAsync(serie.Lancamentos[0].ChaveDaSerie!)).Count);
     }
 
     [Fact]

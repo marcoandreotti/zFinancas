@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
@@ -47,8 +47,6 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
     private bool _podeQuitar;
     private bool _editandoSerie;
     private bool _aplicarValorNaSerie;
-    private bool _modalParcelasAtiva;
-    private string _novaQuantidadeParcelas = string.Empty;
     private Lancamento? _lancamentoOriginal;
 
     public LancamentoEdicaoViewModel(
@@ -75,9 +73,6 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         CompensarCommand = new ComandoAssincrono(AlternarCompensacaoAsync);
         QuitarCommand = new ComandoAssincrono(QuitarPendentesAsync);
         CancelarCommand = new ComandoAssincrono(() => _navegacao.PopAsync());
-        AbrirParcelasCommand = new Comando(AbrirModalParcelas);
-        FecharParcelasCommand = new Comando(() => ModalParcelasAtiva = false);
-        ConfirmarParcelasCommand = new ComandoAssincrono(AcrescentarParcelasAsync);
         DespesaCommand = new Comando(() => EhDespesa = true);
         RecebimentoCommand = new Comando(() => EhDespesa = false);
         FalarCommand = new ComandoAssincrono(FalarAsync);
@@ -103,9 +98,6 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
     public ICommand CompensarCommand { get; }
     public ICommand QuitarCommand { get; }
     public ICommand CancelarCommand { get; }
-    public ICommand AbrirParcelasCommand { get; }
-    public ICommand FecharParcelasCommand { get; }
-    public ICommand ConfirmarParcelasCommand { get; }
     public ICommand DespesaCommand { get; }
     public ICommand RecebimentoCommand { get; }
 
@@ -188,7 +180,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         }
     }
 
-    public bool PermiteParcelas => !EditandoSerie && RecorrenciaSelecionada?.Valor != Recorrencia.Unica;
+    public bool PermiteParcelas => RecorrenciaSelecionada?.Valor != Recorrencia.Unica;
 
     public string QuantidadeParcelas
     {
@@ -225,6 +217,11 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         set => SetProperty(ref _observacao, value);
     }
 
+    /// <summary>Em série o campo representa o total de parcelas da série (não desta parcela).</summary>
+    public string RotuloQuantidadeParcelas => EditandoSerie
+        ? "TOTAL DE PARCELAS DA SÉRIE"
+        : "QUANTIDADE DE PARCELAS";
+
     public string ResumoParcelas
     {
         get => _resumoParcelas;
@@ -259,27 +256,10 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
     /// <summary>Checkbox de propagar o valor: só faz sentido em série com parcelas em aberto.</summary>
     public bool MostraAplicarNaSerie => EditandoSerie && _lancamentoOriginal?.Compensado == false;
 
-    /// <summary>Botão "Adicionar parcelas": série ainda não totalmente compensada.</summary>
-    public bool MostraAcrescentarParcelas => EditandoSerie && _lancamentoOriginal?.Compensado == false;
-
     public bool AplicarValorNaSerie
     {
         get => _aplicarValorNaSerie;
         set => SetProperty(ref _aplicarValorNaSerie, value);
-    }
-
-    /// <summary>O modal de novas parcelas está aberto?</summary>
-    public bool ModalParcelasAtiva
-    {
-        get => _modalParcelasAtiva;
-        private set => SetProperty(ref _modalParcelasAtiva, value);
-    }
-
-    /// <summary>Quantidade total de parcelas depois de acrescentar (o usuário digita o novo total).</summary>
-    public string NovaQuantidadeParcelas
-    {
-        get => _novaQuantidadeParcelas;
-        set => SetProperty(ref _novaQuantidadeParcelas, value);
     }
 
     public string TextoCompensacao => _lancamentoOriginal?.Compensado == true
@@ -349,6 +329,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
                 : null;
 
             EditandoSerie = lancamento.FazParteDeSerie;
+            QuantidadeParcelas = lancamento.QuantidadeParcelas.ToString(CultureInfo.GetCultureInfo("pt-BR"));
             AplicarValorNaSerie = false;
             PodeExcluir = !lancamento.Compensado;
             PodeQuitar = !lancamento.Compensado && lancamento.FazParteDeSerie;
@@ -357,8 +338,8 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
             OnPropertyChanged(nameof(TextoCompensacao));
             OnPropertyChanged(nameof(TextoParcela));
             OnPropertyChanged(nameof(MostraParcela));
+            OnPropertyChanged(nameof(RotuloQuantidadeParcelas));
             OnPropertyChanged(nameof(MostraAplicarNaSerie));
-            OnPropertyChanged(nameof(MostraAcrescentarParcelas));
             AtualizarResumo();
         }, "Não foi possível abrir o lançamento");
     }
@@ -402,6 +383,12 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
 
         return quantidade;
     }
+
+    /// <summary>Total de parcelas informado no formulário (usado ao editar uma série).</summary>
+    private int ObterQuantidadeParcelasDaSerie()
+        => int.TryParse(QuantidadeParcelas, out var q) && q >= 1
+            ? q
+            : throw new DominioException("Informe a quantidade de parcelas (1 ou mais).");
 
     private void AtualizarResumo()
     {
@@ -500,60 +487,35 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
                         "Valor atualizado",
                         $"O novo valor foi aplicado em {ajustadas} parcela(s) em aberto desta série.");
                 }
+
+                // Quantidade informada = total da série: acrescenta (ou reduz) as parcelas
+                // e renumera todas para "X/novo total".
+                if (EditandoSerie)
+                {
+                    var informada = ObterQuantidadeParcelasDaSerie();
+                    var atual = (int)(_lancamentoOriginal?.QuantidadeParcelas ?? informada);
+
+                    if (informada != atual)
+                    {
+                        var criadas = await _lancamentos.AjustarQuantidadeAsync(
+                            _lancamentoId.Value,
+                            informada,
+                            RecorrenciaSelecionada?.Valor);
+
+                        var texto = informada > atual
+                            ? (criadas.Count == 1
+                                ? "1 parcela criada. A série agora tem "
+                                : $"{criadas.Count} parcelas criadas. A série agora tem ")
+                              + $"{informada} parcelas."
+                            : $"A série agora tem {informada} parcelas (as que sobravam foram excluídas).";
+
+                        await _dialogos.AlertaAsync("Série atualizada", texto);
+                    }
+                }
             }
 
             await _navegacao.PopAsync();
         }, "Não foi possível salvar o lançamento");
-    }
-
-    // ------------------------------------------------------------ novas parcelas
-
-    private void AbrirModalParcelas()
-    {
-        var atual = _lancamentoOriginal?.QuantidadeParcelas ?? 1;
-
-        NovaQuantidadeParcelas = (atual + 1).ToString(CultureInfo.GetCultureInfo("pt-BR"));
-        ModalParcelasAtiva = true;
-    }
-
-    private async Task AcrescentarParcelasAsync()
-    {
-        if (_lancamentoId is null)
-        {
-            return;
-        }
-
-        await ExecutarAsync(async () =>
-        {
-            if (RecorrenciaSelecionada is null or { Valor: Recorrencia.Unica })
-            {
-                throw new DominioException(
-                    "Escolha a repetição desta série (semanal, mensal...) antes de acrescentar parcelas.");
-            }
-
-            var texto = (NovaQuantidadeParcelas ?? string.Empty).Trim();
-
-            if (!int.TryParse(texto, NumberStyles.Integer, CultureInfo.GetCultureInfo("pt-BR"), out var nova)
-                && !int.TryParse(texto, NumberStyles.Integer, CultureInfo.InvariantCulture, out nova))
-            {
-                throw new DominioException("Informe a nova quantidade total de parcelas (ex.: 18).");
-            }
-
-            var criadas = await _lancamentos.AcrescentarParcelasAsync(
-                _lancamentoId.Value,
-                nova,
-                RecorrenciaSelecionada.Valor);
-
-            ModalParcelasAtiva = false;
-
-            await _dialogos.AlertaAsync(
-                "Parcelas acrescentadas",
-                criadas.Count == 1
-                    ? "1 parcela foi criada e a série foi renumerada."
-                    : $"{criadas.Count} parcelas foram criadas e a série foi renumerada.");
-
-            await _navegacao.PopAsync();
-        }, "Não foi possível acrescentar parcelas");
     }
 
     private async Task ExcluirAsync()

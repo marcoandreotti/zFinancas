@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -148,7 +148,7 @@
 
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding PermiteParcelas}">
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="QUANTIDADE DE PARCELAS" Style="{StaticResource Rotulo}" />
+                            <Label Text="{Binding RotuloQuantidadeParcelas}" Style="{StaticResource Rotulo}" />
                             <Border Style="{StaticResource Campo}">
                                 <Entry Text="{Binding QuantidadeParcelas}" Keyboard="Numeric" Placeholder="12" />
                             </Border>
@@ -175,11 +175,6 @@
                                 IsToggled="{Binding AplicarValorNaSerie}"
                                 VerticalOptions="Center" />
                     </Grid>
-
-                    <Button Text="Adicionar parcelas"
-                            Command="{Binding AbrirParcelasCommand}"
-                            IsVisible="{Binding MostraAcrescentarParcelas}"
-                            Style="{StaticResource BotaoSecundario}" />
 
                     <BoxView Style="{StaticResource Separador}" />
 
@@ -233,40 +228,6 @@
 
             <ActivityIndicator IsRunning="{Binding Ocupado}" IsVisible="{Binding Ocupado}" HeightRequest="22" />
 
-            <!-- ===================== modal: nova quantidade de parcelas -->
-            <Grid IsVisible="{Binding ModalParcelasAtiva}"
-                  BackgroundColor="#CC05080F"
-                  Padding="16">
-                <Border Style="{StaticResource CardElevado}"
-                        VerticalOptions="Center"
-                        Padding="20">
-                    <VerticalStackLayout Spacing="14">
-                        <Label Text="Adicionar parcelas" Style="{StaticResource TituloSecao}" />
-                        <Label Text="Informe a nova quantidade total da série. As parcelas novas são criadas na sequência, com o mesmo espaçamento da repetição escolhida."
-                               Style="{StaticResource Subtitulo}"
-                               FontSize="12" />
-
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="NOVA QUANTIDADE TOTAL" Style="{StaticResource Rotulo}" />
-                            <Border Style="{StaticResource Campo}">
-                                <Entry Text="{Binding NovaQuantidadeParcelas}"
-                                       Keyboard="Numeric"
-                                       Placeholder="18" />
-                            </Border>
-                        </VerticalStackLayout>
-
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                            <Button Text="Cancelar"
-                                    Command="{Binding FecharParcelasCommand}"
-                                    Style="{StaticResource BotaoSecundario}" />
-
-                            <Button Grid.Column="1"
-                                    Text="Adicionar"
-                                    Command="{Binding ConfirmarParcelasCommand}" />
-                        </Grid>
-                    </VerticalStackLayout>
-                </Border>
-            </Grid>
 
         </VerticalStackLayout>
     </ScrollView>

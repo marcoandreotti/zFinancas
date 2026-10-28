@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Abstracoes;
+using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Enums;
@@ -417,16 +417,27 @@ public sealed class LancamentoService
     }
 
     /// <summary>
-    /// Acrescenta parcelas a uma série existente: todas passam a ter a nova quantidade e as
-    /// novas são criadas na sequência, espaçadas pela recorrência informada (ou pela que já
-    /// estava gravada na série).
+    /// Ajusta o <b>total</b> de parcelas da série: aumentando, cria as que faltam a partir da
+    /// última (mesmo valor e espaçamento da recorrência); diminuindo, exclui as últimas que
+    /// ainda estão em aberto. Em todos os casos, todas as parcelas passam a "X/novo total".
     /// </summary>
-    public async Task<IReadOnlyList<Lancamento>> AcrescentarParcelasAsync(
+    public async Task<IReadOnlyList<Lancamento>> AjustarQuantidadeAsync(
         long id,
         int novaQuantidade,
         Recorrencia? recorrencia = null,
         CancellationToken ct = default)
     {
+        if (novaQuantidade < 1)
+        {
+            throw new DominioException("A quantidade de parcelas deve ser maior que zero.");
+        }
+
+        if (novaQuantidade > GeradorDeParcelas.MaximoParcelas)
+        {
+            throw new DominioException(
+                $"A quantidade de parcelas não pode passar de {GeradorDeParcelas.MaximoParcelas}.");
+        }
+
         var agora = _relogio.AgoraUtc;
         var hoje = _relogio.Hoje;
         IReadOnlyList<Lancamento> criados = [];
@@ -440,7 +451,7 @@ public sealed class LancamentoService
 
             if (lancamento.ChaveDaSerie is not { } chave)
             {
-                throw new DominioException("Só é possível acrescentar parcelas em um lançamento parcelado.");
+                throw new DominioException("Só é possível ajustar a quantidade em um lançamento parcelado.");
             }
 
             var serie = (await _lancamentos.ListarPorSerieAsync(chave, token).ConfigureAwait(false))
@@ -453,72 +464,112 @@ public sealed class LancamentoService
                 throw new DominioException("Série de parcelas não encontrada.");
             }
 
+            var atual = (int)serie.Max(l => l.QuantidadeParcelas);
+
+            if (novaQuantidade == atual)
+            {
+                return;
+            }
+
             var periodicidade = recorrencia ?? lancamento.Recorrencia ?? serie[^1].Recorrencia;
 
             if (periodicidade is null || periodicidade == Recorrencia.Unica)
             {
                 throw new DominioException(
-                    "Escolha a repetição (semanal, mensal...) antes de acrescentar parcelas a esta série.");
+                    "Escolha a repetição (semanal, mensal...) antes de mudar a quantidade de parcelas desta série.");
             }
 
-            var atual = serie.Max(l => l.QuantidadeParcelas);
-
-            if (novaQuantidade <= atual)
+            if (novaQuantidade < atual)
             {
-                throw new DominioException(
-                    $"A nova quantidade precisa ser maior que a atual ({atual}). Para reduzir, exclua as parcelas que sobram.");
+                // Reduzir só é seguro nas parcelas em aberto (as compensadas já moveram dinheiro).
+                var sobrando = serie.Where(l => l.Parcela > novaQuantidade).ToList();
+
+                if (sobrando.Any(l => l.Compensado))
+                {
+                    throw new DominioException(
+                        $"As parcelas {novaQuantidade + 1} a {atual} já estão compensadas. Descompense antes de reduzir a quantidade.");
+                }
+
+                foreach (var parcela in sobrando)
+                {
+                    parcela.MarcarExclusao(agora);
+                }
+
+                await _lancamentos.SalvarVariosAsync(sobrando, token).ConfigureAwait(false);
+
+                serie = serie.Where(l => l.Parcela <= novaQuantidade).ToList();
             }
 
-            if (novaQuantidade > GeradorDeParcelas.MaximoParcelas)
-            {
-                throw new DominioException(
-                    $"A quantidade de parcelas não pode passar de {GeradorDeParcelas.MaximoParcelas}.");
-            }
-
-            // Todas as existentes passam a "X/nova quantidade" e guardam a periodicidade.
             foreach (var parcela in serie)
             {
                 parcela.AjustarSerie(novaQuantidade, periodicidade.Value, agora);
             }
 
-            var ultima = serie[^1];
-            var data = ultima.DataVencimento;
-            var novos = new List<Lancamento>((int)(novaQuantidade - atual));
-
-            for (var numero = atual + 1; numero <= novaQuantidade; numero++)
+            if (novaQuantidade > atual)
             {
-                data = periodicidade.Value.Avancar(data);
+                var ultima = serie[^1];
+                var data = ultima.DataVencimento;
+                var novos = new List<Lancamento>(novaQuantidade - atual);
 
-                var novo = new Lancamento
+                for (var numero = atual + 1; numero <= novaQuantidade; numero++)
                 {
-                    ContaCorrenteId = ultima.ContaCorrenteId,
-                    CentroCustoId = ultima.CentroCustoId,
-                    DataLancamento = hoje,
-                    DataVencimento = data,
-                    Descricao = ultima.Descricao,
-                    Valor = ultima.Valor,
-                    Agrupador = ultima.Agrupador,
-                    AgrupadorUuid = ultima.AgrupadorUuid,
-                    Parcela = numero,
-                    QuantidadeParcelas = novaQuantidade,
-                    Recorrencia = periodicidade,
-                    Observacao = ultima.Observacao,
-                    AtualizadoEm = agora
-                };
+                    data = periodicidade.Value.Avancar(data);
 
-                novo.Validar();
-                novos.Add(novo);
+                    // Parcelas novas nascem em aberto; o "já compensado" do formulário
+                    // vale só para o lançamento que está sendo editado.
+                    var novo = new Lancamento
+                    {
+                        ContaCorrenteId = ultima.ContaCorrenteId,
+                        CentroCustoId = ultima.CentroCustoId,
+                        DataLancamento = hoje,
+                        DataVencimento = data,
+                        Descricao = ultima.Descricao,
+                        Valor = ultima.Valor,
+                        Agrupador = ultima.Agrupador,
+                        AgrupadorUuid = ultima.AgrupadorUuid,
+                        Parcela = numero,
+                        QuantidadeParcelas = novaQuantidade,
+                        Recorrencia = periodicidade,
+                        Observacao = ultima.Observacao,
+                        AtualizadoEm = agora
+                    };
+
+                    novo.Validar();
+                    novos.Add(novo);
+                }
+
+                serie.AddRange(novos);
+                criados = novos;
             }
 
-            var todos = new List<Lancamento>(serie.Count + novos.Count);
-            todos.AddRange(serie);
-            todos.AddRange(novos);
-
-            await _lancamentos.SalvarVariosAsync(todos, token).ConfigureAwait(false);
-            criados = novos;
+            await _lancamentos.SalvarVariosAsync(serie, token).ConfigureAwait(false);
         }, ct).ConfigureAwait(false);
 
         return criados;
+    }
+
+    /// <summary>
+    /// Acrescenta parcelas a uma série existente (atalho para <see cref="AjustarQuantidadeAsync"/>,
+    /// que também sabe reduzir o total).
+    /// </summary>
+    public async Task<IReadOnlyList<Lancamento>> AcrescentarParcelasAsync(
+        long id,
+        int novaQuantidade,
+        Recorrencia? recorrencia = null,
+        CancellationToken ct = default)
+    {
+        var atual = (await _lancamentos.ListarPorSerieAsync(
+            (await _lancamentos.ObterPorIdAsync(id, ct).ConfigureAwait(false)
+             ?? throw new DominioException("Lançamento não encontrado.")).ChaveDaSerie!, ct).ConfigureAwait(false))
+            .Max(l => l.QuantidadeParcelas);
+
+        if (novaQuantidade <= atual)
+        {
+            throw new DominioException(
+                $"A nova quantidade precisa ser maior que a atual ({atual}). Para reduzir, exclua as parcelas que sobram.");
+        }
+
+        return await AjustarQuantidadeAsync(id, novaQuantidade, recorrencia, ct).ConfigureAwait(false);
     }
 
     /// <summary>
