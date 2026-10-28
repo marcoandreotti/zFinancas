@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
@@ -323,10 +323,13 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
             DataCompensado = lancamento.DataCompensado ?? DateTime.Today;
             Observacao = lancamento.Observacao ?? string.Empty;
 
-            // Lançamentos antigos não têm a recorrência gravada; a edição exige escolher.
+            // Recorrência já gravada vem selecionada. Sem ela: avulso entra como "Não repetir"
+            // (não há o que escolher); série antiga fica em branco e exige escolher.
             RecorrenciaSelecionada = lancamento.Recorrencia is { } gravada
                 ? Recorrencias.FirstOrDefault(r => r.Valor == gravada) ?? Recorrencias[0]
-                : null;
+                : lancamento.FazParteDeSerie
+                    ? null
+                    : Recorrencias[0];
 
             EditandoSerie = lancamento.FazParteDeSerie;
             QuantidadeParcelas = lancamento.QuantidadeParcelas.ToString(CultureInfo.GetCultureInfo("pt-BR"));
