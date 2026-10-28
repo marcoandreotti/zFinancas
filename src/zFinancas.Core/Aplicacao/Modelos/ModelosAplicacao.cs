@@ -71,5 +71,16 @@ public sealed record RequisicaoLancamento(
 
 public sealed record ResultadoCriacaoLancamentos(IReadOnlyList<Lancamento> Lancamentos, long Agrupador);
 
+/// <summary>Totais de uma série de parcelas: o que já foi pago, o que falta e o total.</summary>
+public sealed record TotaisDaSerie(
+    decimal Total,
+    decimal Pago,
+    decimal APagar,
+    int Parcelas,
+    int Compensadas)
+{
+    public bool TemParcelas => Parcelas > 0;
+}
+
 /// <summary>Erro de validação apresentável ao usuário.</summary>
 public sealed record MensagemValidacao(string Mensagem);

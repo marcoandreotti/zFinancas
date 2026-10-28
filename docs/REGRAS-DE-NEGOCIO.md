@@ -183,3 +183,16 @@ Regras do `InterpretadorDeVoz`:
   “paguei cinquenta reais de aluguel ontem” → 50 em Moradia com data de ontem;
   “recebi 2 mil de bônus” → recebimento 2.000; “vou pagar 300 de condomínio” → pendente.
 
+
+## Séries de parcelas (recorrência)
+
+Cada parcela guarda a **recorrência** da série (coluna `RECORRENCIA`). Lançamentos antigos ou
+importados podem estar sem ela (`NULL`); nesse caso a edição **exige escolher** a repetição
+antes de salvar — sem isso não há como espaçar novas parcelas.
+
+| Ação | Regra |
+| --- | --- |
+| **Propagar valor** | aplica o novo valor somente nas parcelas **em aberto**; as compensadas ficam como estão (dinheiro que já se moveu) |
+| **Adicionar parcelas** | informa-se a **nova quantidade total**; todas passam a `X/novo total` e as novas são criadas na sequência, espaçadas pela recorrência |
+| **Reduzir quantidade** | não é feito por aqui: exclua as parcelas que sobram (mantém o histórico coerente) |
+| **Totais da série** | `Total pago` (compensadas), `Total à pagar` (em aberto) e `Total geral` — no extrato, duplo clique na linha ou no botão **Σ** |

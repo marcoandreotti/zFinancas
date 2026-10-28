@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
@@ -46,6 +46,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
     private bool _podeExcluir;
     private bool _podeQuitar;
     private bool _editandoSerie;
+    private bool _aplicarValorNaSerie;
     private Lancamento? _lancamentoOriginal;
 
     public LancamentoEdicaoViewModel(
@@ -76,14 +77,33 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         RecebimentoCommand = new Comando(() => EhDespesa = false);
         FalarCommand = new ComandoAssincrono(FalarAsync);
 
-        Recorrencias =
-        [
-            new(Recorrencia.Unica, "Não repetir"),
-            new(Recorrencia.Semanal, "Semanal"),
-            new(Recorrencia.Quinzenal, "Quinzenal"),
-            new(Recorrencia.Mensal, "Mensal"),
-            new(Recorrencia.Anual, "Anual")
-        ];
+        Recorrencias = [];
+        MontarRecorrencias();
+    }
+
+    /// <summary>Todas as periodicidades possíveis, na ordem exibida.</summary>
+    private static readonly RecorrenciaOpcao[] TodasAsRecorrencias =
+    [
+        new(Recorrencia.Unica, "Não repetir"),
+        new(Recorrencia.Semanal, "Semanal"),
+        new(Recorrencia.Quinzenal, "Quinzenal"),
+        new(Recorrencia.Mensal, "Mensal"),
+        new(Recorrencia.Anual, "Anual")
+    ];
+
+    /// <summary>
+    /// Preenche o combo de repetição com todas as opções. A escolha válida depende do
+    /// lançamento: avulso já vem com "Não repetir"; série precisa de uma repetição de verdade
+    /// (validado ao salvar).
+    /// </summary>
+    private void MontarRecorrencias()
+    {
+        Recorrencias.Clear();
+
+        foreach (var opcao in TodasAsRecorrencias)
+        {
+            Recorrencias.Add(opcao);
+        }
     }
 
     public ObservableCollection<ContaCorrente> Contas { get; } = [];
@@ -216,6 +236,11 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
         set => SetProperty(ref _observacao, value);
     }
 
+    /// <summary>Em série o campo representa o total de parcelas da série (não desta parcela).</summary>
+    public string RotuloQuantidadeParcelas => EditandoSerie
+        ? "TOTAL DE PARCELAS DA SÉRIE"
+        : "QUANTIDADE DE PARCELAS";
+
     public string ResumoParcelas
     {
         get => _resumoParcelas;
@@ -238,6 +263,22 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
     {
         get => _editandoSerie;
         private set => SetProperty(ref _editandoSerie, value);
+    }
+
+    /// <summary>"Parcela 3 de 12" quando o lançamento faz parte de uma série.</summary>
+    public string TextoParcela => _lancamentoOriginal is { QuantidadeParcelas: > 1 } l
+        ? $"Parcela {l.Parcela} de {l.QuantidadeParcelas}"
+        : string.Empty;
+
+    public bool MostraParcela => !string.IsNullOrEmpty(TextoParcela);
+
+    /// <summary>Checkbox de propagar o valor: só faz sentido em série com parcelas em aberto.</summary>
+    public bool MostraAplicarNaSerie => EditandoSerie && _lancamentoOriginal?.Compensado == false;
+
+    public bool AplicarValorNaSerie
+    {
+        get => _aplicarValorNaSerie;
+        set => SetProperty(ref _aplicarValorNaSerie, value);
     }
 
     public string TextoCompensacao => _lancamentoOriginal?.Compensado == true
@@ -273,6 +314,9 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
                                    ?? Contas.FirstOrDefault(c => c.Principal)
                                    ?? Contas.FirstOrDefault();
                 CentroSelecionado = Centros.FirstOrDefault(c => c.Principal) ?? Centros.FirstOrDefault();
+
+                // Novo lançamento: todas as opções (pode virar série).
+                MontarRecorrencias();
                 RecorrenciaSelecionada = Recorrencias[0];
                 DataVencimento = DateTime.Today;
                 DataLancamento = DateTime.Today;
@@ -300,14 +344,29 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
             Compensado = lancamento.Compensado;
             DataCompensado = lancamento.DataCompensado ?? DateTime.Today;
             Observacao = lancamento.Observacao ?? string.Empty;
-            RecorrenciaSelecionada = Recorrencias[0];
+
+            MontarRecorrencias();
+
+            // Recorrência já gravada vem selecionada. Sem ela: avulso abre com "Não repetir";
+            // série antiga fica em branco e exige escolher (a validação do salvar cobra).
+            RecorrenciaSelecionada = lancamento.Recorrencia is { } gravada
+                ? Recorrencias.FirstOrDefault(r => r.Valor == gravada) ?? Recorrencias[0]
+                : lancamento.FazParteDeSerie
+                    ? null
+                    : Recorrencias[0];
 
             EditandoSerie = lancamento.FazParteDeSerie;
+            QuantidadeParcelas = lancamento.QuantidadeParcelas.ToString(CultureInfo.GetCultureInfo("pt-BR"));
+            AplicarValorNaSerie = false;
             PodeExcluir = !lancamento.Compensado;
             PodeQuitar = !lancamento.Compensado && lancamento.FazParteDeSerie;
 
             OnPropertyChanged(nameof(MostraDataCompensacao));
             OnPropertyChanged(nameof(TextoCompensacao));
+            OnPropertyChanged(nameof(TextoParcela));
+            OnPropertyChanged(nameof(MostraParcela));
+            OnPropertyChanged(nameof(RotuloQuantidadeParcelas));
+            OnPropertyChanged(nameof(MostraAplicarNaSerie));
             AtualizarResumo();
         }, "Não foi possível abrir o lançamento");
     }
@@ -351,6 +410,12 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
 
         return quantidade;
     }
+
+    /// <summary>Total de parcelas informado no formulário (usado ao editar uma série).</summary>
+    private int ObterQuantidadeParcelasDaSerie()
+        => int.TryParse(QuantidadeParcelas, out var q) && q >= 1
+            ? q
+            : throw new DominioException("Informe a quantidade de parcelas (1 ou mais).");
 
     private void AtualizarResumo()
     {
@@ -410,6 +475,13 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
             }
             else
             {
+                // Série sem recorrência gravada (lançamentos antigos): obriga escolher antes de salvar.
+                if (EditandoSerie && RecorrenciaSelecionada is null or { Valor: Recorrencia.Unica })
+                {
+                    throw new DominioException(
+                        "Escolha a repetição desta série (semanal, mensal...) antes de salvar.");
+                }
+
                 var requisicao = new RequisicaoLancamento(
                     _lancamentoId.Value,
                     ContaSelecionada.Id,
@@ -417,7 +489,7 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
                     Descricao,
                     valor,
                     DataVencimento,
-                    Recorrencia.Unica,
+                    RecorrenciaSelecionada?.Valor ?? Recorrencia.Unica,
                     1,
                     Compensado,
                     Compensado ? DataCompensado : null,
@@ -425,6 +497,48 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
                     DataLancamento);
 
                 await _lancamentos.AtualizarAsync(requisicao);
+
+                // Grava a periodicidade em toda a série (inclusive nos lançamentos antigos,
+                // que não tinham essa informação) para as próximas melhorias.
+                if (EditandoSerie && RecorrenciaSelecionada is { Valor: not Recorrencia.Unica } repeticao)
+                {
+                    await _lancamentos.DefinirRecorrenciaAsync(_lancamentoId.Value, repeticao.Valor);
+                }
+
+                // Propaga o novo valor para as parcelas em aberto da mesma série.
+                if (AplicarValorNaSerie && EditandoSerie)
+                {
+                    var ajustadas = await _lancamentos.PropagarValorAsync(_lancamentoId.Value, valor);
+
+                    await _dialogos.AlertaAsync(
+                        "Valor atualizado",
+                        $"O novo valor foi aplicado em {ajustadas} parcela(s) em aberto desta série.");
+                }
+
+                // Quantidade informada = total da série: acrescenta (ou reduz) as parcelas
+                // e renumera todas para "X/novo total".
+                if (EditandoSerie)
+                {
+                    var informada = ObterQuantidadeParcelasDaSerie();
+                    var atual = (int)(_lancamentoOriginal?.QuantidadeParcelas ?? informada);
+
+                    if (informada != atual)
+                    {
+                        var criadas = await _lancamentos.AjustarQuantidadeAsync(
+                            _lancamentoId.Value,
+                            informada,
+                            RecorrenciaSelecionada?.Valor);
+
+                        var texto = informada > atual
+                            ? (criadas.Count == 1
+                                ? "1 parcela criada. A série agora tem "
+                                : $"{criadas.Count} parcelas criadas. A série agora tem ")
+                              + $"{informada} parcelas."
+                            : $"A série agora tem {informada} parcelas (as que sobravam foram excluídas).";
+
+                        await _dialogos.AlertaAsync("Série atualizada", texto);
+                    }
+                }
             }
 
             await _navegacao.PopAsync();

@@ -110,8 +110,68 @@ public static class Paleta
 }
 
 /// <summary>Lançamento já formatado para exibição em listas.</summary>
-public sealed class LancamentoVm
+public sealed class LancamentoVm : System.ComponentModel.INotifyPropertyChanged
 {
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    private bool _totaisVisiveis;
+    private bool _totaisCarregados;
+    private string _pagoTexto = string.Empty;
+    private string _aPagarTexto = string.Empty;
+    private string _totalSerieTexto = string.Empty;
+
+    /// <summary>Só linha de série (parcelada) pode expandir os totais.</summary>
+    public bool PodeExpandir => !string.IsNullOrEmpty(RotuloParcela) && !string.IsNullOrEmpty(ChaveDaSerie);
+
+    /// <summary>Totais da série aparecem embaixo da linha (duplo clique alterna).</summary>
+    public bool TotaisVisiveis
+    {
+        get => _totaisVisiveis;
+        set
+        {
+            if (_totaisVisiveis == value)
+            {
+                return;
+            }
+
+            _totaisVisiveis = value;
+            Avisar(nameof(TotaisVisiveis));
+        }
+    }
+
+    public bool TotaisCarregados => _totaisCarregados;
+
+    public string PagoTexto
+    {
+        get => _pagoTexto;
+        private set { _pagoTexto = value; Avisar(nameof(PagoTexto)); }
+    }
+
+    public string APagarTexto
+    {
+        get => _aPagarTexto;
+        private set { _aPagarTexto = value; Avisar(nameof(APagarTexto)); }
+    }
+
+    public string TotalSerieTexto
+    {
+        get => _totalSerieTexto;
+        private set { _totalSerieTexto = value; Avisar(nameof(TotalSerieTexto)); }
+    }
+
+    /// <summary>Preenche os totais da série (chamado uma vez, quando o usuário expande).</summary>
+    public void PreencherTotais(decimal pago, decimal aPagar, decimal total)
+    {
+        PagoTexto = Formatador.Moeda(pago);
+        APagarTexto = Formatador.Moeda(aPagar);
+        TotalSerieTexto = Formatador.Moeda(total);
+        _totaisCarregados = true;
+        TotaisVisiveis = true;
+    }
+
+    private void Avisar(string nome)
+        => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nome));
+
     public long Id { get; init; }
     public string Descricao { get; init; }
     public string Detalhe { get; init; }
@@ -130,6 +190,9 @@ public sealed class LancamentoVm
 
     /// <summary>Saldo acumulado após a linha (somente no extrato).</summary>
     public string? SaldoTexto { get; init; }
+
+    /// <summary>Identifica a série (usado para buscar os totais no duplo clique).</summary>
+    public string? ChaveDaSerie { get; init; }
 
     public Color? CorSaldo { get; init; }
 
@@ -194,6 +257,7 @@ public sealed class LancamentoVm
             CentroDescricao = centro?.Descricao ?? string.Empty,
             Observacao = lancamento.Observacao,
             SaldoTexto = saldoTexto,
+            ChaveDaSerie = lancamento.ChaveDaSerie,
             CorSaldo = GetCorSaldo(saldo)
         };
     }

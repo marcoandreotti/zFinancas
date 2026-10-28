@@ -179,9 +179,13 @@ foreach (var vinculo in vinculosAccess)
 Console.WriteLine($"  vínculos: {adicionados.Count}");
 
 // -------------------------------------------------------------- lançamentos
+const int AgrupadorMercadoSemanal = 221;
+
 var agrupadores = new Dictionary<int, string>();
 var lote = new List<Lancamento>(512);
 var importados = 0;
+var mensais = 0;
+var semanais = 0;
 var ignorados = 0;
 var problemas = new List<string>();
 
@@ -216,6 +220,25 @@ foreach (var l in lancamentosAccess.OrderBy(l => l.lancamentoID))
     var dataCompensado = l.dataCompensado ?? vencimentoOriginal;
     var dataBase = l.compensado ? dataCompensado : vencimentoOriginal;
 
+    // Regra combinada para a base antiga:
+    //  - toda série é MENSAL, exceto "DESPESA MERCADO" do agrupador 221 (semanal);
+    //  - avulso fica sem recorrência (equivale a "Não repetir").
+    var ehMercadoSemanal = l.agrupador == AgrupadorMercadoSemanal
+                           && descricao.Contains("DESPESA MERCADO", StringComparison.OrdinalIgnoreCase);
+
+    var recorrencia = total > 1
+        ? ehMercadoSemanal ? Recorrencia.Semanal : Recorrencia.Mensal
+        : (Recorrencia?)null;
+
+    if (recorrencia == Recorrencia.Semanal)
+    {
+        semanais++;
+    }
+    else if (recorrencia is not null)
+    {
+        mensais++;
+    }
+
     var entidade = new Lancamento
     {
         ContaCorrenteId = contaId,
@@ -229,7 +252,9 @@ foreach (var l in lancamentosAccess.OrderBy(l => l.lancamentoID))
         Parcela = parcela,
         QuantidadeParcelas = total,
         Agrupador = l.agrupador,
-        AgrupadorUuid = UuidDoAgrupador(l.agrupador, agrupadores),
+        // UUID só faz sentido em série; avulso fica sem (senão vira "série" de 1 parcela).
+        AgrupadorUuid = total > 1 ? UuidDoAgrupador(l.agrupador, agrupadores) : null,
+        Recorrencia = recorrencia,
         AtualizadoEm = DateTime.UtcNow
     };
 
@@ -264,7 +289,7 @@ if (lote.Count > 0)
 }
 
 Console.WriteLine();
-Console.WriteLine($"Lançamentos importados: {importados}");
+Console.WriteLine($"Lançamentos importados: {importados}  (séries mensais: {mensais}, semanais: {semanais})");
 Console.WriteLine($"Ignorados (conta/centro inexistente ou inválido): {ignorados}");
 
 foreach (var problema in problemas)

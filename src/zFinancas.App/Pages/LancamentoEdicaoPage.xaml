@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -126,7 +126,19 @@
             <!-- ===================== recorrência -->
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">
-                    <Label Text="REPETIÇÃO" Style="{StaticResource Rotulo}" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="REPETIÇÃO" Style="{StaticResource Rotulo}" VerticalOptions="Center" />
+                        <Border Grid.Column="1"
+                                IsVisible="{Binding MostraParcela}"
+                                BackgroundColor="{StaticResource SuperficieElevada}"
+                                StrokeThickness="0"
+                                Padding="8,3"
+                                StrokeShape="RoundRectangle 8">
+                            <Label Text="{Binding TextoParcela}"
+                                   FontSize="10"
+                                   TextColor="{StaticResource TextoSecundario}" />
+                        </Border>
+                    </Grid>
 
                     <Border Style="{StaticResource Campo}">
                         <Picker ItemsSource="{Binding Recorrencias}"
@@ -136,7 +148,7 @@
 
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding PermiteParcelas}">
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="QUANTIDADE DE PARCELAS" Style="{StaticResource Rotulo}" />
+                            <Label Text="{Binding RotuloQuantidadeParcelas}" Style="{StaticResource Rotulo}" />
                             <Border Style="{StaticResource Campo}">
                                 <Entry Text="{Binding QuantidadeParcelas}" Keyboard="Numeric" Placeholder="12" />
                             </Border>
@@ -150,6 +162,19 @@
                     </Grid>
 
                     <Label Text="{Binding ResumoParcelas}" Style="{StaticResource Subtitulo}" />
+
+                    <!-- série: propagar o novo valor e acrescentar parcelas -->
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding MostraAplicarNaSerie}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="APLICAR ÀS DEMAIS PARCELAS" Style="{StaticResource Rotulo}" />
+                            <Label Text="Só nas que ainda não foram compensadas"
+                                   Style="{StaticResource Subtitulo}"
+                                   FontSize="11" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding AplicarValorNaSerie}"
+                                VerticalOptions="Center" />
+                    </Grid>
 
                     <BoxView Style="{StaticResource Separador}" />
 
@@ -202,6 +227,7 @@
                     HorizontalOptions="Center" />
 
             <ActivityIndicator IsRunning="{Binding Ocupado}" IsVisible="{Binding Ocupado}" HeightRequest="22" />
+
 
         </VerticalStackLayout>
     </ScrollView>

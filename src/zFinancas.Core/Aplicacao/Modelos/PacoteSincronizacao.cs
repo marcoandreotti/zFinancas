@@ -101,6 +101,9 @@ public sealed class LancamentoSync
     public string? AgrupadorUuid { get; set; }
     public long Parcela { get; set; }
     public long QuantidadeParcelas { get; set; }
+
+    /// <summary>Periodicidade da série (nulo nos lançamentos antigos).</summary>
+    public int? Recorrencia { get; set; }
     public string? Observacao { get; set; }
     public DateTime AtualizadoEm { get; set; }
     public bool Excluido { get; set; }

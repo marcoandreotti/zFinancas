@@ -51,6 +51,12 @@ public class Lancamento : EntidadeBase
 
     public long QuantidadeParcelas { get; set; } = 1;
 
+    /// <summary>
+    /// Periodicidade da série (mensal, semanal...). Nula nos lançamentos criados antes
+    /// desta informação existir — nesse caso a edição pede para escolher.
+    /// </summary>
+    public Enums.Recorrencia? Recorrencia { get; set; }
+
     public string? Observacao { get; set; }
 
     // ------------------------------------------------------------------ leitura
@@ -67,12 +73,19 @@ public class Lancamento : EntidadeBase
     /// <summary>Parte do valor que ainda não foi compensada.</summary>
     public decimal ValorPendente => Compensado ? 0m : Valor;
 
-    public bool FazParteDeSerie => Agrupador > 0 || !string.IsNullOrWhiteSpace(AgrupadorUuid);
+    /// <summary>
+    /// Só é série quando existe mais de uma parcela. O agrupamento sozinho não serve:
+    /// lançamentos importados de bases antigas podem trazer um identificador de grupo
+    /// mesmo sendo únicos.
+    /// </summary>
+    public bool FazParteDeSerie => QuantidadeParcelas > 1;
 
     /// <summary>Chave usada para operar a série inteira (quitação, exclusão das futuras).</summary>
-    public string? ChaveDaSerie => !string.IsNullOrWhiteSpace(AgrupadorUuid)
-        ? AgrupadorUuid
-        : Agrupador > 0 ? $"L{Agrupador}" : null;
+    public string? ChaveDaSerie => !FazParteDeSerie
+        ? null
+        : !string.IsNullOrWhiteSpace(AgrupadorUuid)
+            ? AgrupadorUuid
+            : Agrupador > 0 ? $"L{Agrupador}" : null;
 
     /// <summary>Rótulo "3/10" (vazio para lançamentos avulsos).</summary>
     public string RotuloParcela => QuantidadeParcelas > 1 ? $"{Parcela}/{QuantidadeParcelas}" : string.Empty;
@@ -102,6 +115,18 @@ public class Lancamento : EntidadeBase
         DataVencimento = dataVencimento.Date;
         CentroCustoId = centroCustoId;
         Observacao = string.IsNullOrWhiteSpace(observacao) ? null : observacao.Trim();
+        MarcarAlteracao(agoraUtc);
+        Validar();
+    }
+
+    /// <summary>
+    /// Ajusta a série: nova quantidade de parcelas e a periodicidade. Usado ao acrescentar
+    /// parcelas (todas as existentes passam a "X/Y" com o novo total).
+    /// </summary>
+    public void AjustarSerie(long quantidadeParcelas, Enums.Recorrencia recorrencia, DateTime agoraUtc)
+    {
+        QuantidadeParcelas = quantidadeParcelas;
+        Recorrencia = recorrencia;
         MarcarAlteracao(agoraUtc);
         Validar();
     }

@@ -137,6 +137,7 @@ public sealed class SincronizacaoService
                     AgrupadorUuid = l.AgrupadorUuid,
                     Parcela = l.Parcela,
                     QuantidadeParcelas = l.QuantidadeParcelas,
+                Recorrencia = (int?)l.Recorrencia,
                     Observacao = l.Observacao,
                     AtualizadoEm = l.AtualizadoEm,
                     Excluido = l.Excluido
@@ -474,6 +475,7 @@ public sealed class SincronizacaoService
                     local.AgrupadorUuid = remoto.AgrupadorUuid;
                     local.Parcela = remoto.Parcela;
                     local.QuantidadeParcelas = remoto.QuantidadeParcelas;
+                local.Recorrencia = remoto.Recorrencia is null ? null : (zFinancas.Core.Dominio.Enums.Recorrencia)remoto.Recorrencia.Value;
                     local.Observacao = remoto.Observacao;
                     local.AtualizadoEm = remoto.AtualizadoEm;
                     local.Excluido = remoto.Excluido;
