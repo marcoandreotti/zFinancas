@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Aplicacao.Modelos;
+using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Enums;
 using zFinancas.Core.Dominio.Excecoes;
 using zFinancas.Tests.Apoio;
@@ -197,6 +197,42 @@ public class SerieParcelasTests
 
         // A série continua com 3 parcelas.
         Assert.Equal(3, (await cenario.Lancamentos.ListarSerieAsync(serie.Lancamentos[0].ChaveDaSerie!)).Count);
+    }
+
+    [Fact]
+    public async Task Definir_recorrencia_propaga_para_toda_a_serie_uma_unica_vez()
+    {
+        await using var cenario = await CenarioTeste.CriarAsync();
+        await cenario.ConfigurarAdministradorAsync();
+
+        var conta = (await cenario.ContaRepositorio.ListarAsync())[0];
+        var centro = await cenario.CriarCentroAsync();
+
+        var serie = await cenario.Lancamentos.CriarAsync(new RequisicaoLancamento(
+            0, conta.Id, centro.Id, "Antigo", -150m, Vencimento,
+            Recorrencia.Mensal, 4, false, null, null));
+
+        // Simula os lançamentos antigos, sem recorrência gravada.
+        foreach (var parcela in serie.Lancamentos)
+        {
+            parcela.Recorrencia = null;
+            await cenario.LancamentoRepositorio.SalvarAsync(parcela);
+        }
+
+        // Atribuindo a repetição, todas as parcelas da série recebem.
+        var alteradas = await cenario.Lancamentos.DefinirRecorrenciaAsync(
+            serie.Lancamentos[1].Id, Recorrencia.Quinzenal);
+
+        Assert.Equal(4, alteradas);
+
+        var depois = await cenario.Lancamentos.ListarSerieAsync(serie.Lancamentos[0].ChaveDaSerie!);
+        Assert.All(depois, l => Assert.Equal(Recorrencia.Quinzenal, l.Recorrencia));
+
+        // Chamar de novo não reescreve nada (nem gera sincronização à toa).
+        var segundaVez = await cenario.Lancamentos.DefinirRecorrenciaAsync(
+            serie.Lancamentos[1].Id, Recorrencia.Quinzenal);
+
+        Assert.Equal(0, segundaVez);
     }
 
     [Fact]

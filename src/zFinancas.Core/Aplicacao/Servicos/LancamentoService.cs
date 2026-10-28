@@ -573,8 +573,13 @@ public sealed class LancamentoService
     }
 
     /// <summary>
-    /// Grava a periodicidade em toda a série. Serve para os lançamentos antigos, criados
-    /// antes de a recorrência existir no banco.
+    /// Grava a periodicidade em toda a série (útil nos lançamentos antigos, criados antes de
+    /// a recorrência existir no banco).
+    /// <para>
+    /// Só as parcelas que ainda estão sem repetição (ou com outra) são gravadas — editar uma
+    /// série já marcada não gera escrita nem sincronização desnecessária.
+    /// Devolve quantas parcelas foram realmente alteradas.
+    /// </para>
     /// </summary>
     public async Task<int> DefinirRecorrenciaAsync(long id, Recorrencia recorrencia, CancellationToken ct = default)
     {
@@ -590,6 +595,11 @@ public sealed class LancamentoService
 
             if (lancamento.ChaveDaSerie is not { } chave)
             {
+                if (lancamento.Recorrencia == recorrencia)
+                {
+                    return;
+                }
+
                 lancamento.Recorrencia = recorrencia;
                 lancamento.MarcarAlteracao(agora);
                 await _lancamentos.SalvarAsync(lancamento, token).ConfigureAwait(false);
@@ -599,13 +609,20 @@ public sealed class LancamentoService
 
             var serie = await _lancamentos.ListarPorSerieAsync(chave, token).ConfigureAwait(false);
 
-            foreach (var parcela in serie)
+            var paraGravar = serie.Where(p => p.Recorrencia != recorrencia).ToList();
+
+            if (paraGravar.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var parcela in paraGravar)
             {
                 parcela.AjustarSerie(parcela.QuantidadeParcelas, recorrencia, agora);
             }
 
-            await _lancamentos.SalvarVariosAsync(serie, token).ConfigureAwait(false);
-            alterados = serie.Count;
+            await _lancamentos.SalvarVariosAsync(paraGravar, token).ConfigureAwait(false);
+            alterados = paraGravar.Count;
         }, ct).ConfigureAwait(false);
 
         return alterados;
