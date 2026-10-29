@@ -1,7 +1,6 @@
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Entidades;
-using zFinancas.Core.Dominio.Excecoes;
 using zFinancas.Core.Dominio.Servicos;
 
 namespace zFinancas.Core.Aplicacao.Servicos;

@@ -185,6 +185,7 @@ public sealed class CentrosCustoViewModel : BaseViewModel
             await CarregarAsync();
         }, "Não foi possível definir como principal");
     }
+
     /// <summary>Menu de ações do centro de custo na lista (editar, principal, ativar/desativar).</summary>
     private async Task ExecutarAcoesAsync(CentroCustoVm? centro)
     {
@@ -222,6 +223,7 @@ public sealed class CentrosCustoViewModel : BaseViewModel
 
         await CarregarAsync();
     }
+
     /// <summary>Seleciona o ícone pelo chip e atualiza a marcação visual.</summary>
     public void DefinirIcone(string? icone)
     {

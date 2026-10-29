@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Abstracoes;
+namespace zFinancas.Core.Abstracoes;
 
 /// <summary>
 /// Fronteira transacional. Serviços de aplicação usam esta abstração em vez de

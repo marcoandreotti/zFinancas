@@ -1,4 +1,4 @@
-﻿namespace zFinancas.App.Servicos;
+namespace zFinancas.App.Servicos;
 
 /// <summary>Diálogos nativos usados pelos view models (sem acoplá-los a Page).</summary>
 public sealed class ServicoDialogos

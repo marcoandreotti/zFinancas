@@ -1,7 +1,6 @@
 using System.Text;
 using Android.App;
 using Android.Content;
-using Microsoft.Maui.ApplicationModel;
 
 namespace zFinancas.App.Plataformas;
 

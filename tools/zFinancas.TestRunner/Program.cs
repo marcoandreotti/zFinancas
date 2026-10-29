@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 
 // Runner minimalista: descobre os metodos [Fact] da suite zFinancas.Tests e executa.
@@ -69,6 +69,7 @@ foreach (var tipo in tipos)
                 case IAsyncDisposable assincrono:
                     await assincrono.DisposeAsync().ConfigureAwait(false);
                     break;
+
                 case IDisposable descartavel:
                     descartavel.Dispose();
                     break;
@@ -91,5 +92,3 @@ foreach (var falha in falhas)
 }
 
 return falhas.Count == 0 ? 0 : 1;
-
-

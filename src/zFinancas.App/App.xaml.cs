@@ -1,4 +1,4 @@
-﻿namespace zFinancas.App;
+namespace zFinancas.App;
 
 public partial class App : Application
 {

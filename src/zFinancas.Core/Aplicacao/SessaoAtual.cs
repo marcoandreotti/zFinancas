@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Abstracoes;
+using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Entidades;
 
 namespace zFinancas.Core.Aplicacao;

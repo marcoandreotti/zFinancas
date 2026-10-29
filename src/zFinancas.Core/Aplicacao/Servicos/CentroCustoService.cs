@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Abstracoes;
+using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Excecoes;

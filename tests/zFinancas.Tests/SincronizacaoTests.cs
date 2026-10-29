@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Aplicacao.Modelos;
+using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Enums;
 using zFinancas.Tests.Apoio;
 

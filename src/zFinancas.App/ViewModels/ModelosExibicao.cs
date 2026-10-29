@@ -1,7 +1,6 @@
 using System.Globalization;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Dominio.Entidades;
-using zFinancas.Core.Dominio.Servicos;
 
 namespace zFinancas.App.ViewModels;
 

@@ -7,8 +7,8 @@ using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Aplicacao.Servicos;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Enums;
-using zFinancas.Core.Dominio.Voz;
 using zFinancas.Core.Dominio.Excecoes;
+using zFinancas.Core.Dominio.Voz;
 
 namespace zFinancas.App.ViewModels;
 

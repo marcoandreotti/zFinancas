@@ -1,4 +1,4 @@
-﻿namespace zFinancas.App.Conversores;
+namespace zFinancas.App.Conversores;
 
 /// <summary>
 /// Converte um booleano em cor. Parâmetro no formato <c>"#COR_TRUE|#COR_FALSE"</c>.

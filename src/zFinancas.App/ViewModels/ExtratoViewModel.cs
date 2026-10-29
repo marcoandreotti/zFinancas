@@ -1,4 +1,3 @@
-﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -293,7 +292,6 @@ public sealed class ExtratoViewModel : BaseViewModel
             System.Diagnostics.Debug.WriteLine(
                 $"[perf] Extrato total={relogio.ElapsedMilliseconds}ms contas={selecionadas.Count} linhas={novos.Count}");
         }
-
         catch (Exception ex)
         {
             await _dialogos.AlertaAsync("Extrato", ex.Message);

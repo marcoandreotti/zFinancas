@@ -1,4 +1,4 @@
-﻿using zFinancas.App.Servicos;
+using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
 
 namespace zFinancas.App.Pages;
@@ -20,6 +20,7 @@ public partial class CentrosCustoPage : ContentPage
         base.OnAppearing();
         await _viewModel.CarregarAsync();
     }
+
     /// <summary>Escolhe o ícone pelo chip (chips grandes, ao contrário do Picker nativo).</summary>
     private void OnIconeTapped(object? sender, TappedEventArgs e)
     {
@@ -28,6 +29,7 @@ public partial class CentrosCustoPage : ContentPage
             _viewModel.DefinirIcone(opcao.Valor);
         }
     }
+
     /// <summary>Seleção do ícone pela CollectionView (toque nativo confiável no Android).</summary>
     private void OnIconeSelecionado(object? sender, SelectionChangedEventArgs e)
     {

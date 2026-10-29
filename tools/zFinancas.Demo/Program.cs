@@ -28,7 +28,6 @@ foreach (var sufixo in new[] { string.Empty, "-wal", "-shm" })
     if (File.Exists(arquivo)) File.Delete(arquivo);
 }
 
-
 Console.WriteLine($"Criando banco de demonstração em: {caminho}");
 
 var contexto = new ContextoBanco(caminho);

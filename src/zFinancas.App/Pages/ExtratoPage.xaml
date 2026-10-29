@@ -26,26 +26,29 @@
                         HorizontalOptions="Fill"
                         LineBreakMode="TailTruncation" />
 
-        <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="10">
-          <Border Style="{StaticResource Campo}">
-            <DatePicker Date="{Binding DataInicio}" Format="dd/MM/yyyy" />
-          </Border>
+        <Grid ColumnDefinitions="*,Auto">
+          <Grid Grid.Column="1" ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="10" HorizontalOptions="End">
+            <Border Style="{StaticResource Campo}">
+              <DatePicker Date="{Binding DataInicio}" Format="dd/MM/yyyy" />
+            </Border>
 
-          <Border Grid.Column="1" Style="{StaticResource Campo}">
-            <DatePicker Date="{Binding DataFim}" Format="dd/MM/yyyy" />
-          </Border>
+            <Border Grid.Column="1" Style="{StaticResource Campo}">
+              <DatePicker Date="{Binding DataFim}" Format="dd/MM/yyyy" />
+            </Border>
 
-          <Border Grid.Column="2">
-            <Button Text="Atualizar"
-                    FontSize="13"
-                    Padding="14,10"
-                    Command="{Binding CarregarCommand}"
-                    Style="{StaticResource BotaoSecundario}"
-                    SemanticProperties.Description="Atualizar"
-                    VerticalOptions="Center"
-                    HorizontalOptions="End" />
-          </Border>
+            <Border Grid.Column="2">
+              <Button Text="Atualizar"
+                      FontSize="13"
+                      Padding="14,10"
+                      Command="{Binding CarregarCommand}"
+                      Style="{StaticResource BotaoSecundario}"
+                      SemanticProperties.Description="Atualizar"
+                      VerticalOptions="Center"
+                      HorizontalOptions="End" />
+            </Border>
+          </Grid>
         </Grid>
+        
       </VerticalStackLayout>
 
       <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
@@ -121,39 +124,39 @@
 
             <VerticalStackLayout Spacing="0">
               <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0" Padding="0">
-              <Border WidthRequest="56"
+                <Border WidthRequest="56"
                       HeightRequest="55"
                       BackgroundColor="{StaticResource SuperficieElevada}"
                       StrokeThickness="0"
                       StrokeShape="RoundRectangle 8,0,8,0"
                       VerticalOptions="Center">
-                <Label Text="{Binding IconeCentro}" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
-              </Border>
+                  <Label Text="{Binding IconeCentro}" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
 
-              <Grid Grid.Column="1" ColumnDefinitions="*">
-                <VerticalStackLayout Spacing="1" VerticalOptions="Center">
-                  <Label Text="{Binding Descricao}" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{Binding CorPendente}" />
+                <Grid Grid.Column="1" ColumnDefinitions="*">
+                  <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                    <Label Text="{Binding Descricao}" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{Binding CorPendente}" />
 
-                  <Grid Grid.Column="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="12">
-                    <VerticalStackLayout Spacing="1" VerticalOptions="End">
-                      <Label Text="{Binding Detalhe}" Style="{StaticResource Subtitulo}" FontSize="11" />
-                      <Label Text="{Binding ContaDescricao}" FontSize="10" TextColor="{StaticResource TextoFraco}" />
-                    </VerticalStackLayout>
+                    <Grid Grid.Column="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="12">
+                      <VerticalStackLayout Spacing="1" VerticalOptions="End">
+                        <Label Text="{Binding Detalhe}" Style="{StaticResource Subtitulo}" FontSize="11" />
+                        <Label Text="{Binding ContaDescricao}" FontSize="10" TextColor="{StaticResource TextoFraco}" />
+                      </VerticalStackLayout>
 
-                    <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="End">
-                      <Label Text="{Binding ValorTexto}"
+                      <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="End">
+                        <Label Text="{Binding ValorTexto}"
                                        FontFamily="OpenSansSemibold"
                                        FontSize="14"
                                        TextColor="{Binding CorValor}"
                                        HorizontalTextAlignment="End" />
-                      <Label Text="{Binding SaldoTexto}"
+                        <Label Text="{Binding SaldoTexto}"
                                        FontSize="11"
                                        TextColor="{Binding CorSaldo}"
                                        IsVisible="{Binding TemSaldo}"
                                        HorizontalTextAlignment="End" />
-                    </VerticalStackLayout>
+                      </VerticalStackLayout>
 
-                    <Button Grid.Column="2"
+                      <Button Grid.Column="2"
                                     Text="Σ"
                                     IsVisible="{Binding PodeExpandir}"
                                     Style="{StaticResource BotaoTexto}"
@@ -164,7 +167,7 @@
                                     VerticalOptions="Center"
                                     HorizontalOptions="End" />
 
-                    <Button Grid.Column="3"
+                      <Button Grid.Column="3"
                                     Text="✓"
                                     IsVisible="{Binding Pendente}"
                                     Style="{StaticResource BotaoTexto}"
@@ -173,30 +176,30 @@
                                     CommandParameter="{Binding .}"
                                     VerticalOptions="Center"
                                     HorizontalOptions="End" />
-                  </Grid>
-                </VerticalStackLayout>
-              </Grid>
-            </Grid>
-
-            <!-- totais da série (duplo clique na linha) -->
-            <VerticalStackLayout IsVisible="{Binding TotaisVisiveis}" Spacing="4" Margin="68,8,0,2">
-              <BoxView Style="{StaticResource Separador}" />
-
-              <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Total pago" Style="{StaticResource Subtitulo}" FontSize="11" />
-                <Label Grid.Column="1" Text="{Binding PagoTexto}" FontSize="11" TextColor="{StaticResource TextoSecundario}" />
+                    </Grid>
+                  </VerticalStackLayout>
+                </Grid>
               </Grid>
 
-              <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Total à pagar" Style="{StaticResource Subtitulo}" FontSize="11" />
-                <Label Grid.Column="1" Text="{Binding APagarTexto}" FontSize="11" TextColor="{StaticResource TextoSecundario}" />
-              </Grid>
+              <!-- totais da série (duplo clique na linha) -->
+              <VerticalStackLayout IsVisible="{Binding TotaisVisiveis}" Spacing="4" Margin="68,8,0,2">
+                <BoxView Style="{StaticResource Separador}" />
 
-              <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Total geral" Style="{StaticResource Subtitulo}" FontSize="11" />
-                <Label Grid.Column="1" Text="{Binding TotalSerieTexto}" FontSize="11" FontFamily="OpenSansSemibold" TextColor="{StaticResource Texto}" />
-              </Grid>
-            </VerticalStackLayout>
+                <Grid ColumnDefinitions="*,Auto">
+                  <Label Text="Total pago" Style="{StaticResource Subtitulo}" FontSize="11" />
+                  <Label Grid.Column="1" Text="{Binding PagoTexto}" FontSize="11" TextColor="{StaticResource TextoSecundario}" />
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto">
+                  <Label Text="Total à pagar" Style="{StaticResource Subtitulo}" FontSize="11" />
+                  <Label Grid.Column="1" Text="{Binding APagarTexto}" FontSize="11" TextColor="{StaticResource TextoSecundario}" />
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto">
+                  <Label Text="Total geral" Style="{StaticResource Subtitulo}" FontSize="11" />
+                  <Label Grid.Column="1" Text="{Binding TotalSerieTexto}" FontSize="11" FontFamily="OpenSansSemibold" TextColor="{StaticResource Texto}" />
+                </Grid>
+              </VerticalStackLayout>
             </VerticalStackLayout>
           </Border>
         </DataTemplate>

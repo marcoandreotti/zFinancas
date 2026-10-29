@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using CommunityToolkit.Maui.Storage;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Excecoes;

@@ -16,7 +16,6 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     private readonly IInfoDispositivo _dispositivo;
     private readonly ServicoDialogos _dialogos;
 
-
     private string _dispositivoId = string.Empty;
     private string _ultimaSincronizacao = string.Empty;
     private string _resultado = string.Empty;
@@ -96,7 +95,6 @@ public sealed class SincronizacaoViewModel : BaseViewModel
     {
         await ExecutarAsync(async () =>
         {
-
             var caminho = await _sincronizacao.ExportarAsync(_armazenamento);
 
             if (caminho is null)

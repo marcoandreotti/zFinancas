@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Dominio.Entidades;
+namespace zFinancas.Core.Dominio.Entidades;
 
 /// <summary>
 /// Centro de custo (tabela CENTRODECUSTO) é agrupador de despesas/receitas.

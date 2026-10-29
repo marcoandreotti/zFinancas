@@ -7,127 +7,123 @@
              Title=""
              Background="{StaticResource GradienteFundo}">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="24,16,24,32" Spacing="16" MaximumWidthRequest="820">
+  <ScrollView>
+    <VerticalStackLayout Padding="24,16,24,32" Spacing="16" MaximumWidthRequest="820">
 
-            <Label Text="Configurações" Style="{StaticResource TituloPagina}" />
+      <Label Text="Configurações" Style="{StaticResource TituloPagina}" />
 
-            <!-- ===== usuário -->
-            <Border Style="{StaticResource CardElevado}">
-                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
-                    <Border WidthRequest="54"
+      <!-- ===== usuário -->
+      <Border Style="{StaticResource CardElevado}">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+          <Border WidthRequest="54"
                             HeightRequest="54"
                             Background="{StaticResource GradienteHero}"
                             StrokeThickness="0"
                             StrokeShape="RoundRectangle 18"
                             VerticalOptions="Center">
-                        <Label Text="{Binding Iniciais}"
+            <Label Text="{Binding Iniciais}"
                                FontFamily="OpenSansSemibold"
                                FontSize="18"
                                HorizontalOptions="Center"
                                VerticalOptions="Center" />
-                    </Border>
+          </Border>
 
-                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                        <Label Text="{Binding NomeUsuario}" Style="{StaticResource TituloSecao}" />
-                        <Label Text="{Binding PerfilUsuario}" Style="{StaticResource Subtitulo}" />
-                        <Label Text="{Binding ContasVinculadas}" FontSize="11" TextColor="{StaticResource TextoFraco}" />
-                    </VerticalStackLayout>
-                </Grid>
-            </Border>
+          <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+            <Label Text="{Binding NomeUsuario}" Style="{StaticResource TituloSecao}" />
+            <Label Text="{Binding PerfilUsuario}" Style="{StaticResource Subtitulo}" />
+            <Label Text="{Binding ContasVinculadas}" FontSize="11" TextColor="{StaticResource TextoFraco}" />
+          </VerticalStackLayout>
+        </Grid>
+      </Border>
 
-            <!-- ===== conta ativa -->
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="CONTA PADRÃO" Style="{StaticResource Rotulo}" />
-                    <Label Text="Usada como padrão ao registrar lançamentos." Style="{StaticResource Subtitulo}" FontSize="11" />
-                    <Border Style="{StaticResource Campo}">
-                        <Picker ItemsSource="{Binding Contas}"
+      <!-- ===== conta ativa -->
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="10">
+          <Label Text="CONTA PADRÃO" Style="{StaticResource Rotulo}" />
+          <Label Text="Usada como padrão ao registrar lançamentos." Style="{StaticResource Subtitulo}" FontSize="11" />
+          <Border Style="{StaticResource Campo}">
+            <Picker ItemsSource="{Binding Contas}"
                                 ItemDisplayBinding="{Binding Descricao}"
                                 SelectedItem="{Binding ContaAtiva}" />
-                    </Border>
-                </VerticalStackLayout>
-            </Border>
+          </Border>
+        </VerticalStackLayout>
+      </Border>
 
-            <!-- ===== biometria -->
-            <Border Style="{StaticResource Card}">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    <VerticalStackLayout Spacing="2">
-                        <Label Text="ENTRADA POR BIOMETRIA" Style="{StaticResource Rotulo}" />
-                        <Label Text="{Binding MensagemBiometria}" Style="{StaticResource Subtitulo}" FontSize="11" />
-                        <Label Text="Ativar / desativar" FontSize="11" TextColor="{StaticResource PrimariaClara}" />
-                    </VerticalStackLayout>
+      <!-- ===== biometria -->
+      <Border Style="{StaticResource Card}">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <VerticalStackLayout Spacing="2">
+            <Label Text="ENTRADA POR BIOMETRIA" Style="{StaticResource Rotulo}" />
+            <Label Text="{Binding MensagemBiometria}" Style="{StaticResource Subtitulo}" FontSize="11" />
+            <Label Text="Ativar / desativar" FontSize="11" TextColor="{StaticResource PrimariaClara}" />
+          </VerticalStackLayout>
 
-                    <Grid Grid.Column="1" WidthRequest="64" HeightRequest="34" VerticalOptions="Center">
-                        <Switch x:Name="SwitchBiometria"
+          <Grid Grid.Column="1" WidthRequest="64" HeightRequest="34" VerticalOptions="Center">
+            <Switch x:Name="SwitchBiometria"
                                 IsEnabled="{Binding BiometriaDisponivel}"
                                 Toggled="OnBiometriaToggled" />
-                    </Grid>
-                </Grid>
-            </Border>
-            <!-- ===== backup -->
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="BACKUP" Style="{StaticResource Rotulo}" />
-                    <Label Text="Cópia completa do banco (contas, lançamentos, usuários e senhas). Guarde em local seguro."
+          </Grid>
+        </Grid>
+      </Border>
+      <!-- ===== backup -->
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="10">
+          <Label Text="BACKUP" Style="{StaticResource Rotulo}" />
+          <Label Text="Cópia completa do banco (contas, lançamentos, usuários e senhas). Guarde em local seguro."
                            Style="{StaticResource Subtitulo}"
                            FontSize="11" />
-                    <Label Text="{Binding DataUltimoBackup}"
+          <Label Text="{Binding DataUltimoBackup}"
                            Style="{StaticResource Subtitulo}"
                            FontSize="11" />
 
-                    <Button Text="Criar backup"
+          <Button Text="Criar backup"
                             Command="{Binding CriarBackupCommand}" />
 
-                    <Button Text="Restaurar backup"
+          <Button Text="Restaurar backup"
                             Command="{Binding RestaurarBackupCommand}"
                             Style="{StaticResource BotaoSecundario}" />
-                    <Button Text="Começar do zero"
+          <Button Text="Começar do zero"
                             Command="{Binding ZerarBancoCommand}"
                             Style="{StaticResource BotaoSecundario}"
                             TextColor="{StaticResource Negativo}" />
-                    <Label Text="Apaga todos os dados deste aparelho e volta ao primeiro acesso (guarda uma cópia antes)."
+          <Label Text="Apaga todos os dados deste aparelho e volta ao primeiro acesso (guarda uma cópia antes)."
                            Style="{StaticResource Subtitulo}"
                            FontSize="10" />
-                </VerticalStackLayout>
-            </Border>
+        </VerticalStackLayout>
+      </Border>
 
-
-            <!-- ===== sobre -->
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="SOBRE" Style="{StaticResource Rotulo}" />
-                    <Label Text="{Binding Versao}" FontSize="13" />
-                    <Label Text="{Binding Dispositivo}" Style="{StaticResource Subtitulo}" FontSize="11" />
-                    <Label Text="BANCO DE DADOS (SQLITE, LOCAL)" Style="{StaticResource Rotulo}" Margin="0,6,0,0" />
-                    <Label Text="{Binding CaminhoBanco}"
+      <!-- ===== sobre -->
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="8">
+          <Label Text="SOBRE" Style="{StaticResource Rotulo}" />
+          <Label Text="{Binding Versao}" FontSize="13" />
+          <Label Text="{Binding Dispositivo}" Style="{StaticResource Subtitulo}" FontSize="11" />
+          <Label Text="BANCO DE DADOS (SQLITE, LOCAL)" Style="{StaticResource Rotulo}" Margin="0,6,0,0" />
+          <Label Text="{Binding CaminhoBanco}"
                            Style="{StaticResource Subtitulo}"
                            FontSize="10"
                            LineBreakMode="CharacterWrap" />
 
-                    <Button Text="Alterar pasta do banco"
+          <Button Text="Alterar pasta do banco"
                             Command="{Binding EscolherPastaBancoCommand}"
                             Style="{StaticResource BotaoTexto}"
                             HorizontalOptions="Start"
                             Margin="0,4,0,0" />
 
-                    <Label Text="{Binding AvisoBanco}"
+          <Label Text="{Binding AvisoBanco}"
                            IsVisible="{Binding TemAvisoBanco}"
                            FontSize="10"
                            TextColor="{StaticResource Alerta}"
                            LineBreakMode="WordWrap" />
-                    <BoxView Style="{StaticResource Separador}" />
-                    <Label Text="Tema escuro fixo • dados 100% offline • sem telemetria"
+          <BoxView Style="{StaticResource Separador}" />
+          <Label Text="Tema escuro fixo • dados 100% offline • sem telemetria"
                            Style="{StaticResource Subtitulo}" FontSize="11" />
-                </VerticalStackLayout>
-            </Border>
-
-            <Button Text="Sair da conta" Command="{Binding SairCommand}" Style="{StaticResource BotaoPerigo}" />
-
-            <ActivityIndicator IsRunning="{Binding Ocupado}" IsVisible="{Binding Ocupado}" HeightRequest="22" />
-
         </VerticalStackLayout>
-    </ScrollView>
+      </Border>
 
+      <Button Text="Sair da conta" Command="{Binding SairCommand}" Style="{StaticResource BotaoPerigo}" />
+
+      <ActivityIndicator IsRunning="{Binding Ocupado}" IsVisible="{Binding Ocupado}" HeightRequest="22" />
+    </VerticalStackLayout>
+  </ScrollView>
 </ContentPage>
-

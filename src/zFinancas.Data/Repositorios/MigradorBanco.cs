@@ -1,4 +1,3 @@
-﻿using Microsoft.Data.Sqlite;
 using zFinancas.Data.Infra;
 
 namespace zFinancas.Data.Repositorios;

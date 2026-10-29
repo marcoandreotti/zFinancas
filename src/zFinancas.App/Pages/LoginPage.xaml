@@ -6,9 +6,9 @@
              x:DataType="vm:LoginViewModel"
              Background="{StaticResource GradienteFundo}">
 
-    <Grid>
-        <!-- brilho decorativo no topo -->
-        <Border WidthRequest="320"
+  <Grid>
+    <!-- brilho decorativo no topo -->
+    <Border WidthRequest="320"
                 HeightRequest="320"
                 HorizontalOptions="Center"
                 VerticalOptions="Start"
@@ -18,110 +18,107 @@
                 BackgroundColor="{StaticResource Primaria}"
                 StrokeShape="RoundRectangle 200" />
 
-        <ScrollView>
-            <Grid Padding="24,40,24,28" RowDefinitions="*,Auto">
+    <ScrollView>
+      <Grid Padding="24,40,24,28" RowDefinitions="*,Auto">
 
-                <VerticalStackLayout Grid.Row="0"
+        <VerticalStackLayout Grid.Row="0"
                                      MaximumWidthRequest="440"
                                      Spacing="20"
                                      HorizontalOptions="Center"
                                      VerticalOptions="Center">
 
-                    <!-- marca -->
-                    <Image Source="simbolo.png"
+          <!-- marca -->
+          <Image Source="simbolo.png"
                            WidthRequest="104"
                            HeightRequest="104"
                            Aspect="AspectFit"
                            HorizontalOptions="Center" />
 
-                    <VerticalStackLayout Spacing="6">
-                        <Image Source="logotipoclaro.png"
+          <VerticalStackLayout Spacing="6">
+            <Image Source="logotipoclaro.png"
                                HeightRequest="36"
                                Aspect="AspectFit"
                                HorizontalOptions="Center" />
-                        <Label Text="{Binding Subtitulo}"
+            <Label Text="{Binding Subtitulo}"
                                Style="{StaticResource Subtitulo}"
                                HorizontalTextAlignment="Center"
                                HorizontalOptions="Center" />
-                    </VerticalStackLayout>
+          </VerticalStackLayout>
 
-                    <!-- cartão de entrada -->
-                    <Border Style="{StaticResource CardElevado}">
-                        <VerticalStackLayout Spacing="14">
+          <!-- cartão de entrada -->
+          <Border Style="{StaticResource CardElevado}">
+            <VerticalStackLayout Spacing="14">
 
-                            <Label Text="USUÁRIO" Style="{StaticResource Rotulo}" />
+              <Label Text="USUÁRIO" Style="{StaticResource Rotulo}" />
 
-                            <Border Style="{StaticResource Campo}">
-                                <Picker Title="Selecione o usuário"
+              <Border Style="{StaticResource Campo}">
+                <Picker Title="Selecione o usuário"
                                         ItemsSource="{Binding Usuarios}"
                                         ItemDisplayBinding="{Binding Nome}"
                                         SelectedItem="{Binding UsuarioSelecionado}" />
-                            </Border>
+              </Border>
 
-                            <Label Text="SENHA" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
+              <Label Text="SENHA" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
 
-                            <Border Style="{StaticResource Campo}">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Entry Text="{Binding Senha}"
+              <Border Style="{StaticResource Campo}">
+                <Grid ColumnDefinitions="*,Auto">
+                  <Entry Text="{Binding Senha}"
                                            IsPassword="{Binding SenhaMascarada}"
                                            Placeholder="Digite sua senha"
                                            ReturnType="Go"
                                            ReturnCommand="{Binding EntrarCommand}" />
-                                    <Button Grid.Column="1"
+                  <Button Grid.Column="1"
                                             Text="👁"
                                             Command="{Binding AlternarSenhaCommand}"
                                             Style="{StaticResource BotaoTexto}"
                                             FontSize="16"
                                             VerticalOptions="Center" />
-                                </Grid>
-                            </Border>
+                </Grid>
+              </Border>
 
-                            <Label Text="{Binding DicaSenha, StringFormat='Dica: {0}'}"
+              <Label Text="{Binding DicaSenha, StringFormat='Dica: {0}'}"
                                    IsVisible="{Binding MostrarDica}"
                                    Style="{StaticResource Subtitulo}" />
 
-                            <Label Text="{Binding Mensagem}"
+              <Label Text="{Binding Mensagem}"
                                    IsVisible="{Binding Mensagem, Converter={StaticResource TextoPreenchido}}"
                                    TextColor="{StaticResource Negativo}"
                                    FontSize="13" />
 
-                            <ActivityIndicator IsRunning="{Binding Ocupado}"
+              <ActivityIndicator IsRunning="{Binding Ocupado}"
                                                IsVisible="{Binding Ocupado}"
                                                HeightRequest="22" />
 
-                            <Button Text="Entrar"
+              <Button Text="Entrar"
                                     Command="{Binding EntrarCommand}"
                                     Margin="0,6,0,0" />
 
-                            <Button Text="Entrar com biometria"
+              <Button Text="Entrar com biometria"
                                     Command="{Binding BiometriaCommand}"
                                     IsVisible="{Binding MostrarBiometria}"
                                     Style="{StaticResource BotaoSecundario}" />
+            </VerticalStackLayout>
+          </Border>
 
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!-- ações secundárias -->
-                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
-                        <Button Text="Esqueci a senha"
+          <!-- ações secundárias -->
+          <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+            <Button Text="Esqueci a senha"
                                 Command="{Binding RecuperarSenhaCommand}"
                                 Style="{StaticResource BotaoTexto}" />
-                        <Label Text="•" TextColor="{StaticResource TextoFraco}" VerticalOptions="Center" />
-                        <Button Text="Primeiro acesso"
+            <Label Text="•" TextColor="{StaticResource TextoFraco}" VerticalOptions="Center" />
+            <Button Text="Primeiro acesso"
                                 Command="{Binding PrimeiroAcessoCommand}"
                                 Style="{StaticResource BotaoTexto}" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
+          </HorizontalStackLayout>
+        </VerticalStackLayout>
 
-                <Label Grid.Row="1"
+        <Label Grid.Row="1"
                        Text="{Binding Rodape}"
                        Margin="0,28,0,0"
                        FontSize="11"
                        TextColor="{StaticResource TextoFraco}"
                        HorizontalOptions="Center" />
-
-            </Grid>
-        </ScrollView>
-    </Grid>
-
+      </Grid>
+    </ScrollView>
+  </Grid>
 </ContentPage>

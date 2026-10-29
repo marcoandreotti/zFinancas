@@ -1,4 +1,4 @@
-﻿using zFinancas.App.ViewModels;
+using zFinancas.App.ViewModels;
 
 namespace zFinancas.App.Controles;
 

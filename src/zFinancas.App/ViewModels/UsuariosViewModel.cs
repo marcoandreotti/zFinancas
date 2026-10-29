@@ -1,8 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
-using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Aplicacao.Servicos;
 using zFinancas.Core.Dominio.Enums;
 
@@ -120,6 +119,7 @@ public sealed class UsuariosViewModel : BaseViewModel
                 "Entregue essas informações ao usuário e peça para trocar a senha.");
         }, "Não foi possível redefinir a senha");
     }
+
     /// <summary>Menu de ações do usuário na lista (editar, redefinir senha, ativar/desativar).</summary>
     private async Task ExecutarAcoesAsync(UsuarioVm? item)
     {

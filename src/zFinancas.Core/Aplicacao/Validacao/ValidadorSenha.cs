@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Dominio.Excecoes;
+using zFinancas.Core.Dominio.Excecoes;
 
 namespace zFinancas.Core.Aplicacao.Validacao;
 

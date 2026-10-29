@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Storage;
-using Microsoft.Maui.Storage;
+using CommunityToolkit.Maui.Storage;
 
 namespace zFinancas.App.Servicos;
 

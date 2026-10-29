@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Dominio.Entidades;
+namespace zFinancas.Core.Dominio.Entidades;
 
 /// <summary>
 /// Vínculo usuário ↔ conta corrente (tabela USUARIOCONTACORRENTE).

@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Data.Infra;

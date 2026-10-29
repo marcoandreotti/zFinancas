@@ -1,4 +1,4 @@
-﻿using zFinancas.App.ViewModels;
+using zFinancas.App.ViewModels;
 
 namespace zFinancas.App.Servicos;
 
@@ -166,6 +166,3 @@ public sealed class ServicoNavegacao
         _ => new Pages.DashboardPage()
     };
 }
-
-
-

@@ -27,25 +27,25 @@ public partial class LancamentosPage : ContentPage
 #if DEBUG
         if (!_hookDeModalExecutado)
         {
-        var modal = Environment.GetEnvironmentVariable("ZFINANCAS_MODAL");
-        if (!string.IsNullOrWhiteSpace(modal))
-        {
-            await Task.Delay(1500);
-            if (modal == "quitar")
+            var modal = Environment.GetEnvironmentVariable("ZFINANCAS_MODAL");
+            if (!string.IsNullOrWhiteSpace(modal))
             {
-                await _viewModel.DepurarQuitacaoAsync();
-            }
-            else if (modal == "excluir")
-            {
-                await _viewModel.DepurarExclusaoAsync();
-            }
-            else if (modal == "compensar")
-            {
-                await _viewModel.DepurarCompensacaoAsync();
-            }
+                await Task.Delay(1500);
+                if (modal == "quitar")
+                {
+                    await _viewModel.DepurarQuitacaoAsync();
+                }
+                else if (modal == "excluir")
+                {
+                    await _viewModel.DepurarExclusaoAsync();
+                }
+                else if (modal == "compensar")
+                {
+                    await _viewModel.DepurarCompensacaoAsync();
+                }
 
-            _hookDeModalExecutado = true;
-        }
+                _hookDeModalExecutado = true;
+            }
         }
 #endif
     }

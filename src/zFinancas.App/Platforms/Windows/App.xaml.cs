@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using zFinancas.App.Servicos;
 
 // Projeto WinUI do zFinancas: captura falhas não tratadas em um arquivo local.

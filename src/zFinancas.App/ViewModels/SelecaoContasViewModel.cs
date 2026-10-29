@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
@@ -10,10 +10,10 @@ public sealed class ContaFiltro : INotifyPropertyChanged
 {
     private bool _selecionada;
 
-    public required long Id { get; init; }
-    public required string Descricao { get; init; }
-    public required string Icone { get; init; }
-    public required bool Principal { get; init; }
+    public long Id { get; init; }
+    public string Descricao { get; init; }
+    public string Icone { get; init; }
+    public bool Principal { get; init; }
 
     public string Rotulo => $"{Icone}  {Descricao}";
 
@@ -34,6 +34,7 @@ public sealed class ContaFiltro : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
     public event EventHandler? SelecaoAlterada;
 
     private void OnPropertyChanged([CallerMemberName] string? nome = null)

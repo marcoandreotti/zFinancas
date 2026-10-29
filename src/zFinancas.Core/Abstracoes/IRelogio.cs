@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Abstracoes;
+namespace zFinancas.Core.Abstracoes;
 
 /// <summary>
 /// Relógio injetável: mantém domínio e testes determinísticos

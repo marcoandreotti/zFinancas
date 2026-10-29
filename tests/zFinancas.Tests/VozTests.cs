@@ -165,7 +165,6 @@ public class InterpretadorDeVozTests
         Assert.Equal("saude alimentacao", InterpretadorDeVoz.Normalizar("Saúde, alimentação!"));
     }
 
-
     [Fact]
     public void Frase_recebimento_com_moeda_falada_limpa_a_descricao()
     {

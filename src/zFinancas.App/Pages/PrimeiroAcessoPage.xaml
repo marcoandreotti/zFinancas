@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
@@ -7,83 +7,80 @@
              Title="Primeiro acesso"
              Background="{StaticResource GradienteFundo}">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="24,28,24,32"
+  <ScrollView>
+    <VerticalStackLayout Padding="24,28,24,32"
                              MaximumWidthRequest="520"
                              Spacing="18"
                              HorizontalOptions="Center">
 
-            <Border Style="{StaticResource CardElevado}">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Vamos começar" Style="{StaticResource TituloPagina}" />
-                    <Label Text="{Binding Explicacao}" Style="{StaticResource Subtitulo}" />
-                </VerticalStackLayout>
-            </Border>
+      <Border Style="{StaticResource CardElevado}">
+        <VerticalStackLayout Spacing="8">
+          <Label Text="Vamos começar" Style="{StaticResource TituloPagina}" />
+          <Label Text="{Binding Explicacao}" Style="{StaticResource Subtitulo}" />
+        </VerticalStackLayout>
+      </Border>
 
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="14">
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="14">
 
-                    <Label Text="SEU NOME" Style="{StaticResource Rotulo}" />
-                    <Border Style="{StaticResource Campo}">
-                        <Entry Text="{Binding Nome}"
+          <Label Text="SEU NOME" Style="{StaticResource Rotulo}" />
+          <Border Style="{StaticResource Campo}">
+            <Entry Text="{Binding Nome}"
                                Placeholder="Ex.: Marco"
                                MaxLength="30" />
-                    </Border>
+          </Border>
 
-                    <Label Text="SENHA DO ADMINISTRADOR" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
-                    <Border Style="{StaticResource Campo}">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Entry Text="{Binding Senha}"
+          <Label Text="SENHA DO ADMINISTRADOR" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
+          <Border Style="{StaticResource Campo}">
+            <Grid ColumnDefinitions="*,Auto">
+              <Entry Text="{Binding Senha}"
                                    IsPassword="{Binding SenhaMascarada}"
                                    Placeholder="Mínimo de 4 caracteres"
                                    MaxLength="50" />
-                            <Button Grid.Column="1"
+              <Button Grid.Column="1"
                                     Text="👁"
                                     Command="{Binding AlternarSenhaCommand}"
                                     Style="{StaticResource BotaoTexto}"
                                     FontSize="16"
                                     VerticalOptions="Center" />
-                        </Grid>
-                    </Border>
+            </Grid>
+          </Border>
 
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                        <ProgressBar Progress="{Binding ForcaSenha}"
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <ProgressBar Progress="{Binding ForcaSenha}"
                                      ProgressColor="{StaticResource Primaria}"
                                      HeightRequest="4"
                                      VerticalOptions="Center" />
-                        <Label Grid.Column="1"
+            <Label Grid.Column="1"
                                Text="{Binding RotuloForcaSenha}"
                                Style="{StaticResource Rotulo}" />
-                    </Grid>
+          </Grid>
 
-                    <Label Text="CONFIRME A SENHA" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
-                    <Border Style="{StaticResource Campo}">
-                        <Entry Text="{Binding Confirmacao}"
+          <Label Text="CONFIRME A SENHA" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
+          <Border Style="{StaticResource Campo}">
+            <Entry Text="{Binding Confirmacao}"
                                IsPassword="{Binding SenhaMascarada}"
                                Placeholder="Repita a senha"
                                MaxLength="50" />
-                    </Border>
+          </Border>
 
-                    <Label Text="DICA DA SENHA (OPCIONAL)" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
-                    <Border Style="{StaticResource Campo}">
-                        <Entry Text="{Binding Dica}"
+          <Label Text="DICA DA SENHA (OPCIONAL)" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
+          <Border Style="{StaticResource Campo}">
+            <Entry Text="{Binding Dica}"
                                Placeholder="Ex.: nome do meu primeiro cachorro"
                                MaxLength="50" />
-                    </Border>
+          </Border>
 
-                    <Button Text="Criar administrador"
+          <Button Text="Criar administrador"
                             Command="{Binding CriarCommand}"
                             IsEnabled="{Binding NaoOcupado}"
                             Margin="0,10,0,0" />
 
-                    <ActivityIndicator IsRunning="{Binding Ocupado}"
+          <ActivityIndicator IsRunning="{Binding Ocupado}"
                                        IsVisible="{Binding Ocupado}"
                                        HeightRequest="22" />
-
-                </VerticalStackLayout>
-            </Border>
-
         </VerticalStackLayout>
-    </ScrollView>
-
+      </Border>
+    </VerticalStackLayout>
+  </ScrollView>
 </ContentPage>

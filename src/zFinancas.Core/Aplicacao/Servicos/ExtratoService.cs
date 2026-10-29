@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Abstracoes;
+using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Dominio.Excecoes;
 using zFinancas.Core.Dominio.Servicos;
 

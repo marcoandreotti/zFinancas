@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using zFinancas.App.Pages;
 using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
@@ -122,6 +122,3 @@ public partial class AppShell : FlyoutPage
         }
     }
 }
-
-
-

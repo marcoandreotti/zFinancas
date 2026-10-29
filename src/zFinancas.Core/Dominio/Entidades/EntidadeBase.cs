@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Dominio.Entidades;
+namespace zFinancas.Core.Dominio.Entidades;
 
 /// <summary>
 /// Base para as entidades sincronizáveis.

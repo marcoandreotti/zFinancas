@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Aplicacao.Servicos;
 using zFinancas.Core.Aplicacao.Validacao;

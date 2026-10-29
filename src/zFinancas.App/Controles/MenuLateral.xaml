@@ -1,42 +1,42 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:zFinancas.App.ViewModels"
              x:Class="zFinancas.App.Controles.MenuLateral"
              x:DataType="vm:MenuViewModel">
 
-    <Grid RowDefinitions="Auto,*,Auto" BackgroundColor="{StaticResource FundoSecundario}">
+  <Grid RowDefinitions="Auto,*,Auto" BackgroundColor="{StaticResource FundoSecundario}">
 
-        <!-- Cabeçalho com identidade do usuário -->
-        <Grid Grid.Row="0" RowDefinitions="Auto,Auto,Auto" Padding="22,28,22,20">
-            <Border WidthRequest="58"
+    <!-- Cabeçalho com identidade do usuário -->
+    <Grid Grid.Row="0" RowDefinitions="Auto,Auto,Auto" Padding="22,28,22,20">
+      <Border WidthRequest="58"
                     HeightRequest="58"
                     StrokeThickness="0"
                     HorizontalOptions="Start"
                     Background="{StaticResource GradienteHero}"
                     StrokeShape="RoundRectangle 18">
-                <Label Text="{Binding Iniciais}"
+        <Label Text="{Binding Iniciais}"
                        FontSize="20"
                        FontFamily="OpenSansSemibold"
                        HorizontalOptions="Center"
                        VerticalOptions="Center" />
-            </Border>
+      </Border>
 
-            <Label Grid.Row="1"
+      <Label Grid.Row="1"
                    Text="{Binding NomeUsuario}"
                    FontFamily="OpenSansSemibold"
                    FontSize="17"
                    Margin="0,14,0,2" />
 
-            <Label Grid.Row="2"
+      <Label Grid.Row="2"
                    Text="{Binding PerfilDescricao}"
                    Style="{StaticResource Rotulo}" />
-        </Grid>
+    </Grid>
 
-        <!-- Itens de navegação -->
-        <!-- Itens de navegação: CollectionView + SelectionChanged é bem mais confiável que
+    <!-- Itens de navegação -->
+    <!-- Itens de navegação: CollectionView + SelectionChanged é bem mais confiável que
              TapGestureRecognizer dentro do painel do FlyoutPage no Windows. -->
-        <CollectionView Grid.Row="1"
+    <CollectionView Grid.Row="1"
                         x:Name="ListaItens"
                         ItemsSource="{Binding Itens}"
                         SelectionMode="Single"
@@ -44,38 +44,37 @@
                         VerticalScrollBarVisibility="Never"
                         Margin="12,4"
                         BackgroundColor="Transparent">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="vm:ItemMenu">
-                    <Border BackgroundColor="{Binding CorFundo}"
+      <CollectionView.ItemTemplate>
+        <DataTemplate x:DataType="vm:ItemMenu">
+          <Border BackgroundColor="{Binding CorFundo}"
                             StrokeThickness="0"
                             Padding="12,11"
                             Margin="0,1"
                             HorizontalOptions="Fill"
                             StrokeShape="RoundRectangle 12">
-                        <Grid ColumnDefinitions="30,*">
-                            <Label Text="{Binding Icone}" FontSize="16" VerticalOptions="Center" />
-                            <Label Grid.Column="1"
+            <Grid ColumnDefinitions="30,*">
+              <Label Text="{Binding Icone}" FontSize="16" VerticalOptions="Center" />
+              <Label Grid.Column="1"
                                    Text="{Binding Titulo}"
                                    FontSize="14"
                                    TextColor="{Binding CorTexto}"
                                    VerticalOptions="Center" />
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </CollectionView.ItemTemplate>
+    </CollectionView>
 
-        <!-- Rodapé -->
-        <VerticalStackLayout Grid.Row="2" Padding="18,12,18,20" Spacing="12">
-            <Label Text="{Binding DetalheSessao}" Style="{StaticResource Rotulo}" />
-            <Button Text="Sair"
+    <!-- Rodapé -->
+    <VerticalStackLayout Grid.Row="2" Padding="18,12,18,20" Spacing="12">
+      <Label Text="{Binding DetalheSessao}" Style="{StaticResource Rotulo}" />
+      <Button Text="Sair"
                     Command="{Binding SairCommand}"
                     Style="{StaticResource BotaoPerigo}" />
-            <Label Text="{Binding Versao}"
+      <Label Text="{Binding Versao}"
                    FontSize="11"
                    TextColor="{StaticResource TextoFraco}"
                    HorizontalOptions="Center" />
-        </VerticalStackLayout>
-
-    </Grid>
+    </VerticalStackLayout>
+  </Grid>
 </ContentView>

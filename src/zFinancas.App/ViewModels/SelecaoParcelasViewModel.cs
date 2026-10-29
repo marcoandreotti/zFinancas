@@ -9,10 +9,10 @@ public sealed class ParcelaSelecionavel : INotifyPropertyChanged
 {
     private bool _selecionada;
 
-    public required long Id { get; init; }
-    public required string Descricao { get; init; }
-    public required string Detalhe { get; init; }
-    public required decimal Valor { get; init; }
+    public long Id { get; init; }
+    public string Descricao { get; init; }
+    public string Detalhe { get; init; }
+    public decimal Valor { get; init; }
 
     public string ValorTexto => Formatador.MoedaComSinal(Valor);
 
@@ -36,6 +36,7 @@ public sealed class ParcelaSelecionavel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
     public event EventHandler? SelecaoAlterada;
 
     private void OnPropertyChanged([CallerMemberName] string? nome = null)

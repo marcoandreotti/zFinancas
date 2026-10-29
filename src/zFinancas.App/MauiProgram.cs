@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
@@ -111,5 +111,4 @@ public static class MauiProgram
             }
         }
     }
-
 }

@@ -1,4 +1,4 @@
-﻿namespace zFinancas.App.Conversores;
+namespace zFinancas.App.Conversores;
 
 /// <summary>Verdadeiro quando a string tem conteúdo (para controlar visibilidade).</summary>
 public sealed class TextoPreenchidoConverter : IValueConverter

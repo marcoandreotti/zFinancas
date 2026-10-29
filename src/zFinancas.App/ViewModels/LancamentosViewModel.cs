@@ -1,10 +1,8 @@
-using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Aplicacao.Servicos;
 using zFinancas.Core.Dominio.Entidades;
-using zFinancas.Core.Dominio.Excecoes;
 
 namespace zFinancas.App.ViewModels;
 

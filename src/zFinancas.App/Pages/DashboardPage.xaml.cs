@@ -1,4 +1,4 @@
-﻿using zFinancas.App.Servicos;
+using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
 
 namespace zFinancas.App.Pages;
@@ -19,6 +19,5 @@ public partial class DashboardPage : ContentPage
     {
         base.OnAppearing();
         await _viewModel.CarregarAsync();
-
     }
 }

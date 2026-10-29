@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Dominio.Excecoes;
+namespace zFinancas.Core.Dominio.Excecoes;
 
 /// <summary>
 /// Violação de regra de negócio. A UI traduz essa exceção em uma mensagem amigável

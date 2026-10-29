@@ -106,7 +106,7 @@
                       <Label Text="{Binding Detalhe}" Style="{StaticResource Subtitulo}" FontSize="11" />
                       <Label Text="{Binding ContaDescricao}" FontSize="10" TextColor="{StaticResource TextoFraco}" />
                     </VerticalStackLayout>
-                    
+
                     <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="End">
                       <Label Text="{Binding ValorTexto}"
                                          FontFamily="OpenSansSemibold"
@@ -250,7 +250,7 @@
         </Grid>
       </Border>
     </Grid>
-    
+
     <!-- ===================== painel de seleção de contas ===================== -->
     <Grid Grid.RowSpan="2"
           IsVisible="{Binding SelecaoContasAtiva}"

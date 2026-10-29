@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Dominio.Entidades;
+using zFinancas.Core.Dominio.Entidades;
 
 namespace zFinancas.Core.Dominio.Servicos;
 
@@ -179,4 +179,3 @@ public sealed class CalculadoraDeSaldo
     private static bool EstaPendenteAnterior(Lancamento lancamento, DateTime inicio)
         => !lancamento.Compensado && lancamento.DataVencimento.Date < inicio.Date;
 }
-

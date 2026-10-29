@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
@@ -14,10 +14,10 @@ public sealed class ContaSelecionavel : BaseViewModel
 {
     private bool _selecionada;
 
-    public required long Id { get; init; }
-    public required string Descricao { get; init; }
-    public required string Icone { get; init; }
-    public required string CorHex { get; init; }
+    public long Id { get; init; }
+    public string Descricao { get; init; }
+    public string Icone { get; init; }
+    public string CorHex { get; init; }
     public bool Ativa { get; init; }
 
     public bool Selecionada

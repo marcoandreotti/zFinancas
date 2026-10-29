@@ -1,9 +1,8 @@
-﻿using zFinancas.Core.Abstracoes;
 using zFinancas.Core.Aplicacao;
 using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Aplicacao.Servicos;
-using zFinancas.Core.Dominio.Enums;
 using zFinancas.Core.Dominio.Entidades;
+using zFinancas.Core.Dominio.Enums;
 using zFinancas.Core.Dominio.Servicos;
 using zFinancas.Core.Seguranca;
 using zFinancas.Data.Infra;

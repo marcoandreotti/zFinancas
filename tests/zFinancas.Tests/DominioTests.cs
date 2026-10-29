@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Dominio.Entidades;
+using zFinancas.Core.Dominio.Entidades;
 using zFinancas.Core.Dominio.Enums;
 using zFinancas.Core.Dominio.Excecoes;
 using zFinancas.Core.Dominio.Servicos;

@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Dominio.Enums;
+namespace zFinancas.Core.Dominio.Enums;
 
 /// <summary>Perfil de acesso do usuário (coluna PERFIL, char(3)).</summary>
 public enum PerfilUsuario

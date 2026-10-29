@@ -1,8 +1,7 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Hardware.Biometrics;
 using Android.OS;
 using AndroidX.Core.Content;
-using Microsoft.Maui.ApplicationModel;
 using zFinancas.App.Servicos;
 
 // Biometria no Android com o BiometricPrompt nativo (API 28+).
@@ -162,6 +161,7 @@ public sealed class ServicoBiometriaAndroid : IServicoBiometria
         /// binding muda de nome entre versões, então comparamos por número).
         /// </summary>
         private const int ErroCancelado = 5;
+
         private const int ErroLockout = 7;
         private const int ErroPermanente = 9;
         private const int ErroUsuarioCancelou = 10;

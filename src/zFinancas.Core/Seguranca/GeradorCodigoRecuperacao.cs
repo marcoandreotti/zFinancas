@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 
 namespace zFinancas.Core.Seguranca;
 
@@ -10,6 +10,7 @@ public static class GeradorCodigoRecuperacao
 {
     // Sem caracteres ambíguos (0/O, 1/I/L) para facilitar a digitação.
     private const string Alfabeto = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
     private const int Blocos = 3;
     private const int TamanhoBloco = 4;
 

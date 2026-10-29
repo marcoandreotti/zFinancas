@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Abstracoes;
+namespace zFinancas.Core.Abstracoes;
 
 /// <summary>Seriação de pacotes de sincronização (implementação concreta na camada de dados).</summary>
 public interface ISerializadorJson

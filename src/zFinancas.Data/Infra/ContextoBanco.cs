@@ -33,7 +33,6 @@ public sealed class ContextoBanco : IAsyncDisposable
     {
     }
 
-
     public ContextoBanco(string caminhoArquivo)
     {
         if (string.IsNullOrWhiteSpace(caminhoArquivo))

@@ -1,4 +1,4 @@
-﻿using zFinancas.App.Servicos;
+using zFinancas.App.Servicos;
 using zFinancas.App.ViewModels;
 
 namespace zFinancas.App.Pages;
@@ -28,6 +28,7 @@ public partial class ContasPage : ContentPage
             _viewModel.DefinirCor(cor.Hex);
         }
     }
+
     /// <summary>
     /// Seleção de cor pela CollectionView (toque nativo) — o TapGestureRecognizer em Border
     /// não é confiável no Android.

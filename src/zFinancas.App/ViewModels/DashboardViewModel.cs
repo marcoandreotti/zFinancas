@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using zFinancas.App.Servicos;
 using zFinancas.Core.Abstracoes;
-using zFinancas.Core.Aplicacao.Modelos;
 using zFinancas.Core.Aplicacao.Servicos;
 using zFinancas.Core.Dominio.Entidades;
 

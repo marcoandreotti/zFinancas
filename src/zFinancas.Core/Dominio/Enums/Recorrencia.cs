@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Dominio.Enums;
+namespace zFinancas.Core.Dominio.Enums;
 
 /// <summary>
 /// Periodicidade de repetição de um lançamento.

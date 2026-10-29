@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Microsoft.Data.Sqlite;
 using zFinancas.Data.Infra;
 

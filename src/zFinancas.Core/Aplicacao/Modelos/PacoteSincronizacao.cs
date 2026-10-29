@@ -1,4 +1,4 @@
-﻿namespace zFinancas.Core.Aplicacao.Modelos;
+namespace zFinancas.Core.Aplicacao.Modelos;
 
 /// <summary>
 /// Pacote de sincronização trocado entre PC e celular (arquivo <c>.zfsync</c>, JSON).
@@ -104,6 +104,7 @@ public sealed class LancamentoSync
 
     /// <summary>Periodicidade da série (nulo nos lançamentos antigos).</summary>
     public int? Recorrencia { get; set; }
+
     public string? Observacao { get; set; }
     public DateTime AtualizadoEm { get; set; }
     public bool Excluido { get; set; }

@@ -1,6 +1,3 @@
-﻿using Microsoft.Maui.Storage;
-using zFinancas.Core.Dominio.Excecoes;
-
 namespace zFinancas.App.Servicos;
 
 /// <summary>

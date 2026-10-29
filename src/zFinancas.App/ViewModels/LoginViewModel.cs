@@ -18,6 +18,7 @@ public sealed class LoginViewModel : BaseViewModel
 
     /// <summary>A biometria é pedida uma vez por abertura da tela de login.</summary>
     private bool _biometriaSolicitada;
+
     private readonly ServicoNavegacao _navegacao;
     private readonly ServicoDialogos _dialogos;
     private readonly IInfoDispositivo _dispositivo;
@@ -64,7 +65,6 @@ public sealed class LoginViewModel : BaseViewModel
     public ICommand AlternarSenhaCommand { get; }
     public ICommand RecuperarSenhaCommand { get; }
     public ICommand PrimeiroAcessoCommand { get; }
-
 
     public Usuario? UsuarioSelecionado
     {
@@ -166,7 +166,6 @@ public sealed class LoginViewModel : BaseViewModel
             }
 #endif
 
-
 #if DEBUG
             // Atalho de desenvolvimento: ZFINANCAS_AUTOLOGIN="Marco" entra direto,
             // útil para gerar telas de demonstração e depurar. Nunca existe em Release.
@@ -215,7 +214,6 @@ public sealed class LoginViewModel : BaseViewModel
             await EntrarComBiometriaAsync();
         }
     }
-
 
     private async Task ConfigurarBiometriaAsync()
     {
@@ -295,7 +293,3 @@ public sealed class LoginViewModel : BaseViewModel
         }, "Não foi possível entrar");
     }
 }
-
-
-
-

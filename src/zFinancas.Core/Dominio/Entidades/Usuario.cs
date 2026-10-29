@@ -1,4 +1,4 @@
-﻿using zFinancas.Core.Dominio.Enums;
+using zFinancas.Core.Dominio.Enums;
 
 namespace zFinancas.Core.Dominio.Entidades;
 
