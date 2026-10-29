@@ -179,9 +179,11 @@ foreach (var vinculo in vinculosAccess)
 Console.WriteLine($"  vínculos: {adicionados.Count}");
 
 // -------------------------------------------------------------- lançamentos
-const int AgrupadorMercadoSemanal = 221;
+var agrupadores = new Dictionary<string, string>();
 
-var agrupadores = new Dictionary<int, string>();
+// Espaçamento mediano (em dias) por série: define se ela é semanal ou mensal.
+var espacamento = CalcularEspacamentoDasSeries(lancamentosAccess);
+
 var lote = new List<Lancamento>(512);
 var importados = 0;
 var mensais = 0;
@@ -220,14 +222,16 @@ foreach (var l in lancamentosAccess.OrderBy(l => l.lancamentoID))
     var dataCompensado = l.dataCompensado ?? vencimentoOriginal;
     var dataBase = l.compensado ? dataCompensado : vencimentoOriginal;
 
-    // Regra combinada para a base antiga:
-    //  - toda série é MENSAL, exceto "DESPESA MERCADO" do agrupador 221 (semanal);
+    // Recorrência inferida pelo espaçamento real das parcelas do grupo:
+    //  - até 10 dias entre parcelas = SEMANAL (ex.: as compras de mercado);
+    //  - o resto = MENSAL;
     //  - avulso fica sem recorrência (equivale a "Não repetir").
-    var ehMercadoSemanal = l.agrupador == AgrupadorMercadoSemanal
-                           && descricao.Contains("DESPESA MERCADO", StringComparison.OrdinalIgnoreCase);
+    var chaveDoGrupo = ChaveDoGrupo(l.agrupador, descricao, total);
 
     var recorrencia = total > 1
-        ? ehMercadoSemanal ? Recorrencia.Semanal : Recorrencia.Mensal
+        ? espacamento.TryGetValue(chaveDoGrupo, out var dias) && dias <= 10
+            ? Recorrencia.Semanal
+            : Recorrencia.Mensal
         : (Recorrencia?)null;
 
     if (recorrencia == Recorrencia.Semanal)
@@ -253,7 +257,7 @@ foreach (var l in lancamentosAccess.OrderBy(l => l.lancamentoID))
         QuantidadeParcelas = total,
         Agrupador = l.agrupador,
         // UUID só faz sentido em série; avulso fica sem (senão vira "série" de 1 parcela).
-        AgrupadorUuid = total > 1 ? UuidDoAgrupador(l.agrupador, agrupadores) : null,
+        AgrupadorUuid = total > 1 ? UuidDoGrupo(chaveDoGrupo, agrupadores) : null,
         Recorrencia = recorrencia,
         AtualizadoEm = DateTime.UtcNow
     };
@@ -337,20 +341,75 @@ Console.WriteLine($"Pronto: {destino}");
 Console.WriteLine("Abra o app com  ZFINANCAS_DB=" + destino);
 
 // ------------------------------------------------------------------ helpers
-static string UuidDoAgrupador(int agrupador, Dictionary<int, string> cache)
-{
-    if (agrupador == 0)
-    {
-        return Guid.NewGuid().ToString("N");
-    }
+/// <summary>
+/// Chave do grupo na base antiga. Normalmente é o AGRUPADOR; quando ele vem 0 (parcelas
+/// órfãs), agrupa pela descrição + total de parcelas, para não virar uma série por linha.
+/// </summary>
+static string ChaveDoGrupo(int agrupador, string descricao, int total)
+    => agrupador > 0 ? $"A{agrupador}" : $"D{descricao.ToUpperInvariant()}|{total}";
 
-    if (!cache.TryGetValue(agrupador, out var uuid))
+static string UuidDoGrupo(string chave, Dictionary<string, string> cache)
+{
+    if (!cache.TryGetValue(chave, out var uuid))
     {
         uuid = Guid.NewGuid().ToString("N");
-        cache[agrupador] = uuid;
+        cache[chave] = uuid;
     }
 
     return uuid;
+}
+
+/// <summary>
+/// Espaçamento mediano (dias) entre as parcelas de cada grupo — base para decidir entre
+/// recorrência semanal (até 10 dias) e mensal.
+/// </summary>
+static Dictionary<string, double> CalcularEspacamentoDasSeries(List<LancamentoAccess> lancamentos)
+{
+    var mapa = new Dictionary<string, double>(StringComparer.Ordinal);
+
+    var grupos = lancamentos
+        .Where(l => (int)l.totalParcelas > 1)
+        .GroupBy(l => ChaveDoGrupo(
+            l.agrupador,
+            (l.historico ?? string.Empty).Trim(),
+            Math.Max(1, (int)l.totalParcelas)));
+
+    foreach (var grupo in grupos)
+    {
+        var datas = grupo
+            .Select(l => (l.dataVencimento ?? l.dataLancamento)?.Date)
+            .Where(d => d is not null)
+            .Select(d => d!.Value)
+            .OrderBy(d => d)
+            .ToList();
+
+        if (datas.Count < 2)
+        {
+            continue;
+        }
+
+        var diferencas = new List<int>(datas.Count - 1);
+
+        for (var i = 1; i < datas.Count; i++)
+        {
+            var dias = (int)(datas[i] - datas[i - 1]).TotalDays;
+
+            if (dias > 0)
+            {
+                diferencas.Add(dias);
+            }
+        }
+
+        if (diferencas.Count == 0)
+        {
+            continue;
+        }
+
+        diferencas.Sort();
+        mapa[grupo.Key] = diferencas[diferencas.Count / 2];
+    }
+
+    return mapa;
 }
 
 static string Limpar(string? texto)
