@@ -8,11 +8,11 @@
              Background="{StaticResource GradienteFundo}">
 
   <ScrollView>
-    <VerticalStackLayout Padding="26,18,26,34" Spacing="20" MaximumWidthRequest="1180">
+    <VerticalStackLayout Padding="26,18,26,34" Spacing="12" MaximumWidthRequest="1180">
 
       <!-- ============================ cabeçalho -->
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-        <VerticalStackLayout Spacing="2">
+        <VerticalStackLayout Spacing="0">
           <Grid ColumnDefinitions="Auto,*" VerticalOptions="Center">
             <Image Source="simbolo.png"
                    HeightRequest="36"
@@ -40,12 +40,12 @@
       </Grid>
 
       <!-- ============================ saldo consolidado -->
-      <Border StrokeThickness="0" Padding="24" Background="{StaticResource GradienteHero}">
+      <Border StrokeThickness="0" Padding="14" Background="{StaticResource GradienteHero}">
         <Border.StrokeShape>
           <RoundRectangle CornerRadius="24" />
         </Border.StrokeShape>
 
-        <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
           <Label Text="SALDO EM CONTA (TODAS AS CONTAS)"
                            FontSize="11"
                            CharacterSpacing="1.2"
@@ -92,10 +92,11 @@
 
       <!-- Coleção horizontal (no lugar do CarouselView, que “deslizava” no Windows) -->
       <CollectionView ItemsSource="{Binding Contas}"
-                            HeightRequest="216"
-                            HorizontalScrollBarVisibility="Never"
-                            VerticalScrollBarVisibility="Never"
-                            SelectionMode="None">
+                      HeightRequest="216"
+                      HorizontalScrollBarVisibility="Never"
+                      VerticalScrollBarVisibility="Never"
+                      HorizontalOptions="Center"
+                      SelectionMode="None">
         <CollectionView.ItemsLayout>
           <LinearItemsLayout Orientation="Horizontal"
                                        ItemSpacing="12"

@@ -21,13 +21,13 @@
     <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
       <VerticalStackLayout Spacing="12" Padding="0,0,0,20">
 
-        <Border Style="{StaticResource CardElevado}" IsVisible="{Binding FormularioVisivel}">
+        <Border Style="{StaticResource CardElevado}" IsVisible="{Binding FormularioVisivel}" StrokeShape="RoundRectangle 0 0 12 12">
           <VerticalStackLayout Spacing="12">
             <Label Text="{Binding TituloFormulario}" Style="{StaticResource TituloSecao}" />
 
             <VerticalStackLayout Spacing="6">
               <Label Text="DESCRIÇÃO" Style="{StaticResource Rotulo}" />
-              <Border Style="{StaticResource Campo}">
+              <Border>
                 <Entry Text="{Binding Descricao}" Placeholder="Ex.: Alimentação" MaxLength="50" />
               </Border>
             </VerticalStackLayout>

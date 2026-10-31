@@ -6,17 +6,17 @@
              x:DataType="vm:LoginViewModel"
              Background="{StaticResource GradienteFundo}">
 
-  <Grid>
+  <Grid ColumnDefinitions="*, Auto">
     <!-- brilho decorativo no topo -->
-    <Border WidthRequest="320"
-                HeightRequest="320"
+    <Border WidthRequest="680"
+                HeightRequest="780"
                 HorizontalOptions="Center"
                 VerticalOptions="Start"
                 TranslationY="-150"
-                StrokeThickness="0"
+                StrokeThickness="10"
                 Opacity="0.35"
                 BackgroundColor="{StaticResource Primaria}"
-                StrokeShape="RoundRectangle 200" />
+                StrokeShape="RoundRectangle 0 0 120 120" />
 
     <ScrollView>
       <Grid Padding="24,40,24,28" RowDefinitions="*,Auto">
@@ -39,6 +39,7 @@
                                HeightRequest="36"
                                Aspect="AspectFit"
                                HorizontalOptions="Center" />
+            
             <Label Text="{Binding Subtitulo}"
                                Style="{StaticResource Subtitulo}"
                                HorizontalTextAlignment="Center"
@@ -51,7 +52,7 @@
 
               <Label Text="USUÁRIO" Style="{StaticResource Rotulo}" />
 
-              <Border Style="{StaticResource Campo}">
+              <Border>
                 <Picker Title="Selecione o usuário"
                                         ItemsSource="{Binding Usuarios}"
                                         ItemDisplayBinding="{Binding Nome}"
@@ -60,7 +61,7 @@
 
               <Label Text="SENHA" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
 
-              <Border Style="{StaticResource Campo}">
+              <Border>
                 <Grid ColumnDefinitions="*,Auto">
                   <Entry Text="{Binding Senha}"
                                            IsPassword="{Binding SenhaMascarada}"
@@ -111,13 +112,6 @@
                                 Style="{StaticResource BotaoTexto}" />
           </HorizontalStackLayout>
         </VerticalStackLayout>
-
-        <Label Grid.Row="1"
-                       Text="{Binding Rodape}"
-                       Margin="0,28,0,0"
-                       FontSize="11"
-                       TextColor="{StaticResource TextoFraco}"
-                       HorizontalOptions="Center" />
       </Grid>
     </ScrollView>
   </Grid>

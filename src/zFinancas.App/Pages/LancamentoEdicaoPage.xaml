@@ -11,7 +11,7 @@
     <VerticalStackLayout Padding="24,18,24,32" Spacing="16" MaximumWidthRequest="720">
 
       <!-- ===================== voz -->
-      <Border Style="{StaticResource Card}" Padding="14">
+      <Border Style="{StaticResource Card}" Padding="14" BackgroundColor="{StaticResource Primaria}">
         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
           <Button
                             Text="{Binding RotuloFalar}"
@@ -51,14 +51,14 @@
         <VerticalStackLayout Spacing="14">
 
           <Label Text="DESCRIÇÃO" Style="{StaticResource Rotulo}" />
-          <Border Style="{StaticResource Campo}">
+          <Border>
             <Entry Text="{Binding Descricao}"
                                Placeholder="Ex.: Mercado, Pix recebido, Aluguel"
                                MaxLength="50" />
           </Border>
 
           <Label Text="VALOR" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
-          <Border Style="{StaticResource Campo}">
+          <Border>
             <Grid ColumnDefinitions="Auto,*">
               <Label Text="R$"
                                    FontFamily="OpenSansSemibold"
@@ -84,7 +84,7 @@
           <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
             <VerticalStackLayout Spacing="6">
               <Label Text="CONTA CORRENTE" Style="{StaticResource Rotulo}" />
-              <Border Style="{StaticResource Campo}">
+              <Border>
                 <Picker ItemsSource="{Binding Contas}"
                                         ItemDisplayBinding="{Binding Descricao}"
                                         SelectedItem="{Binding ContaSelecionada}"
@@ -94,7 +94,7 @@
 
             <VerticalStackLayout Grid.Column="1" Spacing="6">
               <Label Text="CENTRO DE CUSTO" Style="{StaticResource Rotulo}" />
-              <Border Style="{StaticResource Campo}">
+              <Border>
                 <Picker ItemsSource="{Binding Centros}"
                                         ItemDisplayBinding="{Binding Descricao}"
                                         SelectedItem="{Binding CentroSelecionado}"
@@ -106,14 +106,14 @@
           <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
             <VerticalStackLayout Spacing="6">
               <Label Text="VENCIMENTO" Style="{StaticResource Rotulo}" />
-              <Border Style="{StaticResource Campo}">
+              <Border>
                 <DatePicker Date="{Binding DataVencimento}" Format="dd/MM/yyyy" />
               </Border>
             </VerticalStackLayout>
 
             <VerticalStackLayout Grid.Column="1" Spacing="6">
               <Label Text="DATA DO LANÇAMENTO" Style="{StaticResource Rotulo}" />
-              <Border Style="{StaticResource Campo}">
+              <Border>
                 <DatePicker Date="{Binding DataLancamento}" Format="dd/MM/yyyy" />
               </Border>
             </VerticalStackLayout>
@@ -138,7 +138,7 @@
             </Border>
           </Grid>
 
-          <Border Style="{StaticResource Campo}">
+          <Border>
             <Picker ItemsSource="{Binding Recorrencias}"
                                 ItemDisplayBinding="{Binding Descricao}"
                                 SelectedItem="{Binding RecorrenciaSelecionada}" />
@@ -147,7 +147,7 @@
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding PermiteParcelas}">
             <VerticalStackLayout Spacing="6">
               <Label Text="{Binding RotuloQuantidadeParcelas}" Style="{StaticResource Rotulo}" />
-              <Border Style="{StaticResource Campo}">
+              <Border>
                 <Entry Text="{Binding QuantidadeParcelas}" Keyboard="Numeric" Placeholder="12" />
               </Border>
             </VerticalStackLayout>
@@ -186,13 +186,13 @@
 
           <VerticalStackLayout Spacing="6" IsVisible="{Binding MostraDataCompensacao}">
             <Label Text="DATA DA COMPENSAÇÃO" Style="{StaticResource Rotulo}" />
-            <Border Style="{StaticResource Campo}">
+            <Border>
               <DatePicker Date="{Binding DataCompensado}" Format="dd/MM/yyyy" />
             </Border>
           </VerticalStackLayout>
 
           <Label Text="OBSERVAÇÃO (OPCIONAL)" Style="{StaticResource Rotulo}" Margin="0,4,0,0" />
-          <Border Style="{StaticResource Campo}" Padding="12,8">
+          <Border Padding="12,8">
             <Editor Text="{Binding Observacao}" AutoSize="TextChanges" HeightRequest="70" MaxLength="200" />
           </Border>
         </VerticalStackLayout>

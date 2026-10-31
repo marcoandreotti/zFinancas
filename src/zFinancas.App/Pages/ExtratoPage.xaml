@@ -62,7 +62,7 @@
     </VerticalStackLayout>
 
     <!-- ============================ resumo de saldos -->
-    <Border Grid.Row="1" Style="{StaticResource CardElevado}">
+    <Border Grid.Row="1" Style="{StaticResource CardElevado}" StrokeShape="RoundRectangle 0 0 12 12">
       <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
         <VerticalStackLayout Spacing="2">
           <Label Text="SALDO ANTERIOR" Style="{StaticResource Rotulo}" />

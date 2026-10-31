@@ -14,7 +14,7 @@
         <VerticalStackLayout Spacing="14">
           <Label Text="DADOS DO USUÁRIO" Style="{StaticResource Rotulo}" />
 
-          <Border Style="{StaticResource Campo}">
+          <Border>
             <Entry Text="{Binding Nome}" Placeholder="Nome do usuário" MaxLength="30" />
           </Border>
 
@@ -41,7 +41,7 @@
         <VerticalStackLayout Spacing="14">
           <Label Text="{Binding RotuloSenha}" Style="{StaticResource Rotulo}" />
 
-          <Border Style="{StaticResource Campo}">
+          <Border>
             <Grid ColumnDefinitions="*,Auto">
               <Entry Text="{Binding Senha}"
                                    IsPassword="{Binding SenhaMascarada}"
@@ -56,12 +56,12 @@
             </Grid>
           </Border>
 
-          <Border Style="{StaticResource Campo}">
+          <Border>
             <Entry Text="{Binding Confirmacao}" IsPassword="{Binding SenhaMascarada}" Placeholder="Confirme a senha" MaxLength="50" />
           </Border>
 
           <Label Text="DICA DA SENHA (OPCIONAL)" Style="{StaticResource Rotulo}" />
-          <Border Style="{StaticResource Campo}">
+          <Border>
             <Entry Text="{Binding Dica}" Placeholder="Ex.: apelido da infância" MaxLength="50" />
           </Border>
         </VerticalStackLayout>

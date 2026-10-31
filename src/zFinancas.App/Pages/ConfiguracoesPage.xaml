@@ -8,12 +8,12 @@
              Background="{StaticResource GradienteFundo}">
 
   <ScrollView>
-    <VerticalStackLayout Padding="24,16,24,32" Spacing="16" MaximumWidthRequest="820">
+    <VerticalStackLayout Padding="24,16,24,32" Spacing="12" MaximumWidthRequest="820">
 
       <Label Text="Configurações" Style="{StaticResource TituloPagina}" />
 
       <!-- ===== usuário -->
-      <Border Style="{StaticResource CardElevado}">
+      <Border Style="{StaticResource CardElevado}" StrokeShape="RoundRectangle 0 0 12 12">
         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
           <Border WidthRequest="54"
                             HeightRequest="54"
@@ -41,7 +41,7 @@
         <VerticalStackLayout Spacing="10">
           <Label Text="CONTA PADRÃO" Style="{StaticResource Rotulo}" />
           <Label Text="Usada como padrão ao registrar lançamentos." Style="{StaticResource Subtitulo}" FontSize="11" />
-          <Border Style="{StaticResource Campo}">
+          <Border>
             <Picker ItemsSource="{Binding Contas}"
                                 ItemDisplayBinding="{Binding Descricao}"
                                 SelectedItem="{Binding ContaAtiva}" />

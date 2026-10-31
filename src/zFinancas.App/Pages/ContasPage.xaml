@@ -29,14 +29,14 @@
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
               <VerticalStackLayout Spacing="6">
                 <Label Text="DESCRIÇÃO" Style="{StaticResource Rotulo}" />
-                <Border Style="{StaticResource Campo}">
+                <Border>
                   <Entry Text="{Binding Descricao}" Placeholder="Ex.: Conta Principal" MaxLength="50" />
                 </Border>
               </VerticalStackLayout>
 
               <VerticalStackLayout Grid.Column="1" Spacing="6" WidthRequest="96">
                 <Label Text="ÍCONE" Style="{StaticResource Rotulo}" />
-                <Border Style="{StaticResource Campo}">
+                <Border>
                   <Picker ItemsSource="{Binding Icones}" SelectedItem="{Binding Icone}" />
                 </Border>
               </VerticalStackLayout>

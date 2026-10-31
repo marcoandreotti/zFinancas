@@ -115,7 +115,7 @@ public sealed class LoginViewModel : BaseViewModel
         private set => SetProperty(ref _mensagem, value);
     }
 
-    public string Subtitulo => "Controle financeiro pessoal, offline e no seu aparelho";
+    public string Subtitulo => "Controle financeiro pessoal, offline";
 
     public string Rodape => $"zFinancas 1.0 • {_dispositivo.Plataforma} • dados locais (SQLite)";
 
