@@ -63,7 +63,8 @@
 
               <Border>
                 <Grid ColumnDefinitions="*,Auto">
-                  <Entry Text="{Binding Senha}"
+                  <Entry x:Name="CampoSenha"
+                                           Text="{Binding Senha}"
                                            IsPassword="{Binding SenhaMascarada}"
                                            Placeholder="Digite sua senha"
                                            ReturnType="Go"
