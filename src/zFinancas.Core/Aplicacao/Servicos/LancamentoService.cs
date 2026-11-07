@@ -63,7 +63,6 @@ public sealed class LancamentoService
         ArgumentNullException.ThrowIfNull(requisicao);
 
         GarantirAcessoConta(requisicao.ContaCorrenteId);
-        ValidarValor(requisicao.Valor);
 
         var agora = _relogio.AgoraUtc;
         var hoje = _relogio.Hoje;
@@ -122,7 +121,6 @@ public sealed class LancamentoService
     public async Task<Lancamento> AtualizarAsync(RequisicaoLancamento requisicao, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(requisicao);
-        ValidarValor(requisicao.Valor);
 
         var agora = _relogio.AgoraUtc;
         var hoje = _relogio.Hoje;
@@ -378,8 +376,6 @@ public sealed class LancamentoService
     /// </summary>
     public async Task<int> PropagarValorAsync(long id, decimal valor, CancellationToken ct = default)
     {
-        ValidarValor(valor);
-
         var agora = _relogio.AgoraUtc;
         var ajustadas = 0;
 
@@ -633,14 +629,6 @@ public sealed class LancamentoService
         if (_sessao.Autenticado && !_sessao.PodeAcessarConta(contaCorrenteId))
         {
             throw new DominioException("Você não tem acesso a esta conta corrente.");
-        }
-    }
-
-    private static void ValidarValor(decimal valor)
-    {
-        if (valor == 0m)
-        {
-            throw new DominioException("O valor do lançamento não pode ser zero.");
         }
     }
 }

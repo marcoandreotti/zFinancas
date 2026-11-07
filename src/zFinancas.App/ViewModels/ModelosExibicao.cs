@@ -197,7 +197,7 @@ public sealed class LancamentoVm : System.ComponentModel.INotifyPropertyChanged
 
     public string DataTexto => Formatador.Data(DataVencimento);
 
-    public Color CorValor => Valor < 0 ? Paleta.Negativo : Paleta.Positivo;
+    public Color CorValor => Valor == 0 ? Paleta.Texto : Valor < 0 ? Paleta.Negativo : Paleta.Positivo;
 
     public Color CorPendente => Pendente ? Paleta.Alerta : Paleta.Texto;
 

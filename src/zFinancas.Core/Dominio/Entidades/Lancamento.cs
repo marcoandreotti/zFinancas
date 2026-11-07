@@ -144,11 +144,6 @@ public class Lancamento : EntidadeBase
             erros.Add($"A descrição do lançamento deve ter no máximo {TamanhoMaximoDescricao} caracteres.");
         }
 
-        if (Valor == 0m)
-        {
-            erros.Add("O valor do lançamento não pode ser zero.");
-        }
-
         if (ContaCorrenteId <= 0)
         {
             erros.Add("Selecione a conta corrente do lançamento.");

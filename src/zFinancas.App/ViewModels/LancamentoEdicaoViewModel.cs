@@ -389,10 +389,10 @@ public sealed class LancamentoEdicaoViewModel : BaseViewModel
             throw new DominioException("Valor inválido. Use, por exemplo, 1.234,56.");
         }
 
-        if (valor <= 0m)
-        {
-            throw new DominioException("O valor deve ser maior que zero. Use despesa ou recebimento para definir o sinal.");
-        }
+        //if (valor <= 0m)
+        //{
+        //    throw new DominioException("O valor deve ser maior que zero. Use despesa ou recebimento para definir o sinal.");
+        //}
 
         return valor;
     }
