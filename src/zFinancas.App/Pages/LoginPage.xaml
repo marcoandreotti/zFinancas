@@ -29,8 +29,8 @@
 
           <!-- marca -->
           <Image Source="simbolo.png"
-                           WidthRequest="104"
-                           HeightRequest="104"
+                           WidthRequest="164"
+                           HeightRequest="164"
                            Aspect="AspectFit"
                            HorizontalOptions="Center" />
 
@@ -39,7 +39,7 @@
                                HeightRequest="36"
                                Aspect="AspectFit"
                                HorizontalOptions="Center" />
-            
+
             <Label Text="{Binding Subtitulo}"
                                Style="{StaticResource Subtitulo}"
                                HorizontalTextAlignment="Center"
@@ -92,8 +92,8 @@
                                                HeightRequest="22" />
 
               <Button Text="Entrar"
-                                    Command="{Binding EntrarCommand}"
-                                    Margin="0,6,0,0" />
+                      Command="{Binding EntrarCommand}"
+                      Margin="0,6,0,0" />
 
               <Button Text="Entrar com biometria"
                                     Command="{Binding BiometriaCommand}"
