@@ -58,6 +58,8 @@ public sealed class LancamentosViewModel : BaseViewModel
         AcoesCommand = new ComandoAssincrono<LancamentoVm>(ExecutarAcoesAsync);
         CompensarCommand = new ComandoAssincrono<LancamentoVm>(CompensarAsync);
         AbrirSelecaoContasCommand = new ComandoAssincrono(AbrirSelecaoContasAsync);
+
+        IniciarFiltroNaContaPadrao();
     }
 
     private IReadOnlyList<LancamentoVm> _itens = [];
@@ -310,6 +312,29 @@ public sealed class LancamentosViewModel : BaseViewModel
         => lancamento.DataCompensado ?? lancamento.DataVencimento;
 
     // ------------------------------------------------------------- seleção de contas
+
+    /// <summary>
+    /// O filtro nasce na <b>conta padrão</b> do app (Configurações → conta padrão, que por sua
+    /// vez nasce como a principal), em vez de vir com todas as contas marcadas.
+    /// Sem conta padrão válida, cai para a principal e depois para a primeira permitida.
+    /// </summary>
+    private void IniciarFiltroNaContaPadrao()
+    {
+        var permitidas = _sessao.ContasPermitidas;
+
+        var padrao = permitidas.FirstOrDefault(c => c.Id == _sessao.ContaAtivaId)
+                     ?? permitidas.FirstOrDefault(c => c.Principal)
+                     ?? permitidas.FirstOrDefault();
+
+        if (padrao is null)
+        {
+            // Sem sessão/contas (ex.: tela instanciada antes do login): segue com "todas".
+            return;
+        }
+
+        _idsContas = [padrao.Id];
+        _resumoContas = padrao.Descricao;
+    }
 
     private async Task AbrirSelecaoContasAsync()
     {

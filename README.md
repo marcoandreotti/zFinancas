@@ -58,7 +58,7 @@ separadamente que geraram a mesma conta/centro/usuário (nomes iguais, UUIDs dif
 | **Login** | seleção de usuário, senha, dica de senha e **biometria** (digital/rosto, pedida automaticamente) |
 | **Primeiro acesso** | cria o usuário ADM, semeia conta e centro de custo principais e entrega o código de recuperação |
 | **Dashboard** | carrossel de contas, saldo compensado / a compensar / vencido, entradas e saídas e últimos 7 dias |
-| **Lançamentos** | filtros por contas/pendência/busca, **Compensar** direto na linha (data escolhida), descompensar, excluir uma ou várias parcelas e quitar parcelas escolhidas |
+| **Lançamentos** | já abre na conta padrão, com filtros por contas/pendência/busca, **Compensar** direto na linha (data escolhida), descompensar, excluir uma ou várias parcelas e quitar parcelas escolhidas |
 | **Lançamento por voz** | toque no microfone e fale: “gastei 32,50 no mercado ontem” — o formulário abre preenchido (descrição limpa de “mil”, “reais”, “R$”) |
 | **Novo lançamento** | despesa ou recebimento, recorrência (semanal, quinzenal, mensal, anual) com parcelas e agrupador; valor com **máscara de moeda** (digite 3250 → 32,50) |
 | **Extrato** | conta + período, saldo anterior (só compensados), saldo linha a linha e destaque dos pendentes |

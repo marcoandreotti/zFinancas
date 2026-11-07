@@ -121,8 +121,11 @@ Entrada: conta + período (`inicio`, `fim`).
 
 ## 5.1 Seleção de contas (exibição/conciliação)
 
-- Lançamentos e Extrato aceitam **várias contas** selecionadas; sem seleção, valem todas
-  as contas permitidas ao usuário.
+- Lançamentos e Extrato aceitam **várias contas** selecionadas.
+- **Ao abrir, Lançamentos já vem filtrado na conta padrão** (Configurações → conta padrão,
+  que nasce como a principal). Dá para marcar outras contas — ou “marcar todas”.
+- Sem seleção aplicada (ex.: nenhuma conta padrão válida), valem todas as contas permitidas
+  ao usuário.
 - **Extrato com mais de uma conta** é consolidado:
   - `SaldoAnterior`, `SaldoFinal`, `SaldoCompensado`, entradas e saídas são **somados**;
   - os lançamentos são ordenados por `DATAVENCIMENTO` (empate por `ID`) e o saldo
