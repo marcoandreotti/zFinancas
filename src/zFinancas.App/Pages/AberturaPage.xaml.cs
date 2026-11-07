@@ -48,10 +48,10 @@ public partial class AberturaPage : ContentPage
             Marca.Scale = 0.86;
 
             await Task.WhenAll(
-                Marca.FadeTo(1, 520, Easing.CubicOut),
-                Marca.ScaleTo(1, 620, Easing.SpringOut));
+                Marca.FadeToAsync(1, 520, Easing.CubicOut),
+                Marca.ScaleToAsync(1, 620, Easing.SpringOut));
 
-            await Rodape.FadeTo(1, 380, Easing.CubicOut);
+            await Rodape.FadeToAsync(1, 380, Easing.CubicOut);
 
             await Task.WhenAny(preparo, Task.Delay(900));
 

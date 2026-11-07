@@ -22,7 +22,7 @@ sem telemetria e sem depender de internet.
 | Símbolo | cabeçalho do dashboard | `Resources/Images/simbolo.png` |
 
 > **Troquei a arte e o ícone não muda?** O `resizetizer` do MAUI guarda o resultado em
-> `obj\Debug\net9.0-android` e pode reaproveitar o ícone antigo. Limpe e reconstrua:
+> `obj\Debug\net10.0-android` e pode reaproveitar o ícone antigo. Limpe e reconstrua:
 >
 > ```powershell
 > .\build.ps1 -Target android -Clean
@@ -108,8 +108,19 @@ SQLite, MAUI nem qualquer detalhe de infraestrutura.
 
 ## Como executar
 
-Pré-requisitos: **.NET SDK 9** (o `global.json` fixa 9.0.305) e workloads
-`maui-windows` / `maui-android`.
+Pré-requisitos: **.NET SDK 10 (LTS)** — o `global.json` fixa a linha `10.0.1xx` — e o workload
+MAUI (`maui-windows` / `maui-android`).
+
+> **SDK não encontrado ou workload ausente?** Instale o .NET 10 pelo **Visual Studio 2026**
+> (workload *Desenvolvimento de aplicativos multiplataforma com .NET MAUI*) ou, fora do VS:
+>
+> ```powershell
+> winget install Microsoft.DotNet.SDK.10
+> dotnet workload install maui
+> ```
+>
+> Confira com `dotnet --list-sdks` e `dotnet workload list`. Para o Android também são
+> necessários **JDK 17+** e a plataforma **android-36** do Android SDK.
 
 ```powershell
 # compila o desktop
@@ -137,22 +148,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Publish
 Ou direto com `dotnet`:
 
 ```powershell
-dotnet build src\zFinancas.App -f net9.0-windows10.0.19041.0
+dotnet build src\zFinancas.App -f net10.0-windows10.0.19041.0
 dotnet test  tests\zFinancas.Tests
 dotnet run   --project tools\zFinancas.Demo
 ```
 
 ### Abrindo no Visual Studio
 
-1. Abra `zFinancas.sln` (VS 2022 17.12+ ou VS 2026) — o `global.json` fixa o SDK em **9.0.305**,
-   então o VS precisa do .NET 9 + workloads MAUI instalados.
+1. Abra `zFinancas.sln` no **Visual Studio 2026** (18.x) com o workload MAUI — o `global.json`
+   fixa a linha **10.0.1xx** do SDK (o VS 2022 não compila `net10.0`, use-o só se ficar no .NET 9).
 2. O VS vai restaurar os pacotes do **nuget.org** (o cache local do `build.ps1` fica em
    `.dotnetcli\` e é exclusivo do script) — na primeira abertura é preciso internet para
-   baixar o `CommunityToolkit.Maui 12.1.0`.
+   baixar o `CommunityToolkit.Maui 15.0.1`.
 3. Marque **zFinancas.App** como projeto de inicialização e escolha o alvo:
-   - `net9.0-windows10.0.19041.0` → F5 roda no PC (primeira execução abre o **Primeiro acesso**);
-   - `net9.0-android` → escolha dispositivo/emulador (precisa de **JDK 17** e plataforma
-     **android-35**); aceite a permissão de microfone quando o app pedir.
+   - `net10.0-windows10.0.19041.0` → F5 roda no PC (primeira execução abre o **Primeiro acesso**);
+   - `net10.0-android` → escolha dispositivo/emulador (precisa de **JDK 17+** e plataforma
+     **android-36**); aceite a permissão de microfone quando o app pedir.
 4. Para ver o app já com dados: rode `tools\zFinancas.Demo` e aponte `ZFINANCAS_DB` para o
    arquivo gerado (ou use `.\build.ps1 -Demo -Run` no terminal).
 

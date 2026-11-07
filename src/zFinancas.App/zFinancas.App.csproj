@@ -5,8 +5,8 @@
          Core (domínio + aplicação)  ?  Data (SQLite)  ?  App (MAUI/UI).
        O App só conhece as interfaces do Core. -->
   <PropertyGroup>
-    <TargetFrameworks>net9.0-android</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 
     <OutputType>Exe</OutputType>
     <RootNamespace>zFinancas.App</RootNamespace>
@@ -39,9 +39,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-    <!-- Reconhecimento de voz nativo (SpeechToText) sem escrever código por plataforma -->
-    <PackageReference Include="CommunityToolkit.Maui" Version="12.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
+    <!-- Reconhecimento de voz nativo (SpeechToText) sem escrever código por plataforma.
+         A versão 13+ (necessária no MAUI 10) não pede mais a permissão de microfone
+         sozinha: o app faz isso em ServicoVoz. -->
+    <PackageReference Include="CommunityToolkit.Maui" Version="15.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(ExtensionsVersion)" />
   </ItemGroup>
 
   <ItemGroup>

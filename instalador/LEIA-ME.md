@@ -103,7 +103,7 @@ confie (cadeia até uma raiz confiável). Receita:
 .\instalador\criar-certificado.ps1
 
 # 2. publique assinando (usa o thumbprint devolvido pelo script)
-dotnet publish src\zFinancas.App -f net9.0-windows10.0.19041.0 -c Release `
+dotnet publish src\zFinancas.App -f net10.0-windows10.0.19041.0 -c Release `
   -p:WindowsPackageType=MSIX `
   -p:GenerateAppxPackageOnBuild=true `
   -p:AppxPackageSigningEnabled=true `
@@ -135,7 +135,7 @@ signtool sign /fd SHA256 /a /f instalador\zFinancas.pfx /p <SENHA> caminho\zFina
 O projeto MAUI também pode ser empacotado como MSIX:
 
 ```powershell
-dotnet publish src\zFinancas.App -f net9.0-windows10.0.19041.0 -c Release `
+dotnet publish src\zFinancas.App -f net10.0-windows10.0.19041.0 -c Release `
   -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false
 ```
 

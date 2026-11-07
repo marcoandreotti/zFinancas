@@ -4,7 +4,7 @@
        Depende apenas do Core (inversão de dependência): implementa as interfaces de
        repositório definidas no domínio e não expõe detalhes de SQL para cima. -->
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>zFinancas.Data</RootNamespace>
     <AssemblyName>zFinancas.Data</AssemblyName>
   </PropertyGroup>

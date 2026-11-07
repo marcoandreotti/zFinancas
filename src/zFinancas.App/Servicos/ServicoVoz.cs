@@ -1,5 +1,6 @@
 using System.Globalization;
 using CommunityToolkit.Maui.Media;
+using Microsoft.Maui.ApplicationModel;
 
 namespace zFinancas.App.Servicos;
 
@@ -46,6 +47,19 @@ public sealed class ServicoVoz : IServicoVoz
             reconhecimento = SpeechToText.Default;
             conclusao = new TaskCompletionSource<SpeechToTextResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             reconhecimento.RecognitionResultCompleted += AoCompletar;
+
+#if ANDROID
+            // O CommunityToolkit 13+ não pede mais a permissão de microfone por conta própria.
+            // Sem o RECORD_AUDIO concedido, o reconhecedor nativo não escuta nada.
+            if (await Permissions.RequestAsync<Permissions.Microphone>().ConfigureAwait(true)
+                != PermissionStatus.Granted)
+            {
+                return new ResultadoVoz(
+                    false,
+                    null,
+                    "Permita o microfone para o zFinancas nas configurações do aparelho e tente de novo.");
+            }
+#endif
 
             await reconhecimento.RequestPermissions(ct).ConfigureAwait(true);
 

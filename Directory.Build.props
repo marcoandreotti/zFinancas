@@ -10,9 +10,11 @@
 
     <!-- Versões centralizadas (sem gerenciamento central de pacotes para não
          conflitar com os item groups implícitos do SDK do MAUI). -->
-    <MauiVersion>9.0.82</MauiVersion>
-    <SqliteVersion>9.0.10</SqliteVersion>
-    <ExtensionsVersion>9.0.10</ExtensionsVersion>
+    <!-- .NET 10 (LTS). Mantenha o MauiVersion igual ao workload instalado
+         (`dotnet workload list`); o build usa os pacotes NuGet nessa versão. -->
+    <MauiVersion>10.0.120</MauiVersion>
+    <SqliteVersion>10.0.14</SqliteVersion>
+    <ExtensionsVersion>10.0.14</ExtensionsVersion>
     <XunitVersion>2.9.3</XunitVersion>
     <XunitRunnerVersion>2.8.2</XunitRunnerVersion>
     <TestSdkVersion>17.14.1</TestSdkVersion>

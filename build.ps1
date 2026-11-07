@@ -61,13 +61,13 @@ if ($Demo) {
 }
 
 if ($Target -in 'windows', 'all') {
-    Invoke-DotNet @('build', $appProject, '-f', 'net9.0-windows10.0.19041.0', '-c', $Configuration, '-v:m')
+    Invoke-DotNet @('build', $appProject, '-f', 'net10.0-windows10.0.19041.0', '-c', $Configuration, '-v:m')
 }
 
 if ($Target -in 'android', 'all') {
-    $argumentos = @('build', $appProject, '-f', 'net9.0-android', '-c', $Configuration, '-v:m')
+    $argumentos = @('build', $appProject, '-f', 'net10.0-android', '-c', $Configuration, '-v:m')
 
-    # Localiza um SDK Android que tenha a plataforma exigida (android-35).
+    # Localiza um SDK Android que tenha a plataforma exigida (android-36, API do .NET 10).
     $candidatos = @(
         $env:ANDROID_HOME,
         (Join-Path $env:LOCALAPPDATA 'Android\Sdk'),
@@ -75,7 +75,7 @@ if ($Target -in 'android', 'all') {
     ) | Where-Object { $_ -and (Test-Path $_) }
 
     foreach ($candidato in $candidatos) {
-        if (Test-Path (Join-Path $candidato 'platforms\android-35\android.jar')) {
+        if (Test-Path (Join-Path $candidato 'platforms\android-36\android.jar')) {
             $argumentos += "-p:AndroidSdkDirectory=$candidato"
             Write-Host "> Android SDK: $candidato" -ForegroundColor DarkGray
             break
@@ -105,7 +105,7 @@ if ($Publish) {
     # restore tentar runtime packs de outras plataformas (erro NU1102 com Mono.win-x64).
     Invoke-DotNet @(
         'publish', $appProject,
-        '-f', 'net9.0-windows10.0.19041.0',
+        '-f', 'net10.0-windows10.0.19041.0',
         '-c', 'Release',
         '-p:WindowsPackageType=None',
         '-p:WindowsAppSDKSelfContained=true',
@@ -131,7 +131,7 @@ if ($Publish) {
 }
 
 if ($Run) {
-    $exe = Join-Path $root "src\zFinancas.App\bin\$Configuration\net9.0-windows10.0.19041.0\win10-x64\zFinancas.App.exe"
+    $exe = Join-Path $root "src\zFinancas.App\bin\$Configuration\net10.0-windows10.0.19041.0\win10-x64\zFinancas.App.exe"
     if (-not (Test-Path $exe)) { throw "Executável não encontrado: $exe (rode sem -Run primeiro)" }
 
     if ($Demo) {

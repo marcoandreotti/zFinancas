@@ -25,11 +25,11 @@ public sealed class ServicoDialogos
 
     public Task AlertaAsync(string titulo, string mensagem, string botao = "OK")
         => MainThread.InvokeOnMainThreadAsync(() =>
-            PaginaAtual?.DisplayAlert(titulo, mensagem, botao) ?? Task.CompletedTask);
+            PaginaAtual?.DisplayAlertAsync(titulo, mensagem, botao) ?? Task.CompletedTask);
 
     public Task<bool> ConfirmarAsync(string titulo, string mensagem, string sim = "Confirmar", string nao = "Cancelar")
         => MainThread.InvokeOnMainThreadAsync(() =>
-            PaginaAtual?.DisplayAlert(titulo, mensagem, sim, nao) ?? Task.FromResult(false));
+            PaginaAtual?.DisplayAlertAsync(titulo, mensagem, sim, nao) ?? Task.FromResult(false));
 
     public Task<string?> PerguntarAsync(string titulo, string mensagem, string valorInicial = "", string placeholder = "Valor")
         => MainThread.InvokeOnMainThreadAsync(() =>
@@ -38,7 +38,7 @@ public sealed class ServicoDialogos
 
     public Task<string?> EscolherAsync(string titulo, params string[] opcoes)
         => MainThread.InvokeOnMainThreadAsync(() =>
-            PaginaAtual?.DisplayActionSheet(titulo, "Cancelar", null, opcoes)
+            PaginaAtual?.DisplayActionSheetAsync(titulo, "Cancelar", null, opcoes)
             ?? Task.FromResult<string?>(null));
 
     /// <summary>Informa um resultado importante com destaque (ex.: código de recuperação).</summary>

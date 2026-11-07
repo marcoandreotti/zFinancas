@@ -75,7 +75,7 @@ sem ambiguidade, capturar lançamento por voz e sincronizar duas bases criadas s
 .\build.ps1 -Test                        # 64 testes
 .\build.ps1 -Demo -Run                   # desktop com dados de demonstração
 .\build.ps1 -Target android              # APK
-adb install -r src\zFinancas.App\bin\Debug\net9.0-android\br.com.zfinancas.app-Signed.apk
+adb install -r src\zFinancas.App\bin\Debug\net10.0-android\br.com.zfinancas.app-Signed.apk
 ```
 
 Roteiro sugerido:

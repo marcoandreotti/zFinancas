@@ -14,7 +14,7 @@
 
 ## Camadas
 
-### `zFinancas.Core` (net9.0, zero dependências)
+### `zFinancas.Core` (net10.0, zero dependências)
 
 ```
 Dominio/
@@ -37,7 +37,7 @@ Aplicacao/
 Entidades são ricas onde importa: `Validar()`, `Compensar()`, `Descompensar()`,
 `MarcarExclusao()` (lápide), `ChaveDaSerie`, `EstaVencido()`.
 
-### `zFinancas.Data` (net9.0, Microsoft.Data.Sqlite)
+### `zFinancas.Data` (net10.0, Microsoft.Data.Sqlite)
 
 - **`ContextoBanco`**: dona da conexão, aplica `WAL`, `foreign_keys` e `busy_timeout`;
   serializa o acesso com semáforo e oferece a transação corrente.
@@ -52,7 +52,7 @@ Entidades são ricas onde importa: `Validar()`, `Compensar()`, `Descompensar()`,
 > um **token de escopo**: quem adquire o semáforo publica o token
 > (`AssumirEscopoNesteFluxo()`) e as chamadas aninhadas o reconhecem por identidade.
 
-### `zFinancas.App` (MAUI: `net9.0-android` + `net9.0-windows`)
+### `zFinancas.App` (MAUI: `net10.0-android` + `net10.0-windows`)
 
 ```
 AppShell (FlyoutPage) ── Flyout: MenuPage → MenuLateral (menu do app)
